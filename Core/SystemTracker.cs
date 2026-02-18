@@ -63,7 +63,7 @@ public class SystemTracker
     /// </summary>
     public void MakeSnapshot()
     {
-        List<IProgramData> programData = ProgramDataProducer.Produce(Rate);
+        List<IProgramData> programData = [.. ProgramDataProducer.Produce(Rate)];
 
         //Make room for new data.
         if(Data.Count >= Capacity) Data.RemoveLast();
