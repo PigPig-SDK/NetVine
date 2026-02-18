@@ -11,5 +11,5 @@ public interface IProgramDataProducer
     /// </summary>
     /// <param name="rate">Metadata about how long the current collection timespan</param>
     /// <returns></returns>
-    public IEnumerable<IProgramData> Produce(float rate);
+    public ICollection<IProgramData> Produce(float rate);
 }

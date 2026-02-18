@@ -1,10 +1,9 @@
 ﻿using Core;
-using Microsoft.Diagnostics.Tracing.Parsers;
-using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
-using Microsoft.Diagnostics.Tracing.Session;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 
 namespace Infrastructure;
@@ -24,105 +23,197 @@ public class MockProgramDataClass : IProgramData
     public float MemoryUsage { get => _memoryUsage; set => _memoryUsage = value; }
     public float Timespan { get => _timespan; set => _timespan = value; }
 }
-
 public class WindowsDataProducer : IProgramDataProducer, IDisposable
 {
-    private string? _systemName;
+    /// <summary>
+    /// The current system name, defaulting to "UnknownUser" if it cannot be determined.
+    /// </summary>
     public string SystemName { get => _systemName??"UnknownUser"; private set => _systemName = value; }
-    private TraceEventSession _networkSession = new TraceEventSession("NetworkSession");
-    private Thread? _networkThread;
-    private Dictionary<int, string> _procmap = new Dictionary<int, string>();
+    private string? _systemName;
+    /// <summary>
+    /// Tracks incoming usage per process. Updated by the network tracing events.
+    /// Key : Process name
+    /// Value : Total bytes received
+    /// </summary>
+    private Dictionary<NetworkClassification, Dictionary<int, ulong>> _networkUsage 
+        = new(){ {NetworkClassification.NetworkIncoming, new() }, { NetworkClassification.NetworkOutgoing, new()} };
+    /// <summary>
+    /// A lock for a tracked resource
+    /// Key : The data classification
+    /// Value : The lock for that classification
+    /// </summary>
+    private Dictionary<NetworkClassification, Lock> _networkReadingLocks 
+        = new(2) { { NetworkClassification.NetworkIncoming, new() }, { NetworkClassification.NetworkOutgoing, new() } };
 
+    private Dictionary<string, TimeSpan> _cpuDelta = new();
+    private Dictionary<string, IoCounters> _diskDelta = new();
 
     public WindowsDataProducer()
     {
         SystemName = Environment.UserName;
+
+        _ = Produce(0.0f);//Initialize deltas.
+
         //Setup network tracing
         if (Environment.IsPrivilegedProcess)
         {
-            _networkSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
-            _networkSession.Source.Kernel.TcpIpSend += KernelTcpIpSend;
-            _networkSession.Source.Kernel.TcpIpRecv += KernelTcpIpRecv;
-            _networkSession.Source.Kernel.UdpIpRecv += KernelUdpIpRecev;
-            _networkSession.Source.Kernel.UdpIpSend += KernelTcpIpSend;
-
-            _networkThread = new Thread(() => _networkSession.Source.Process())
-            {
-                IsBackground = true
-            };
-            _networkThread.Start();
         }
         else
         {
             Console.WriteLine("Cannot enable network tracing without admin privileges. Network data will not be collected.");
         }
     }
+    /// <summary>
+    /// A P/Invoke declaration for the GetProcessIoCounters function, which retrieves I/O accounting information for a specified process.
+    /// This function is used to gather disk usage data for processes.
+    /// </summary>
+    /// <param name="ProcessHandle">An expected handle from a process (process.Handle)</param>
+    /// <param name="IoCounters">A struct returned</param>
+    /// <returns>True if a process counter was returned</returns>
+    /// https://stackoverflow.com/questions/53560561/get-disk-usage-of-a-specific-process-in-c-sharp
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool GetProcessIoCounters(IntPtr ProcessHandle, out IoCounters IoCounters);
 
-    private void KernelTcpIpSend(UdpIpTraceData data)
+    public static bool TryGetProcessIoCounters(Process process, out IoCounters ioCounters)
     {
-        if (!_procmap.ContainsKey(data.ProcessID)) return;
-        Console.WriteLine("TCP Send: " + _procmap[data.ProcessID] + " -> " + data.daddr + " Size: " + data.size);
+        try
+        {
+            return GetProcessIoCounters(process.Handle, out ioCounters);
+        }
+        catch (Exception ex) when (ex is Win32Exception || ex is InvalidOperationException)
+
+        {
+            ioCounters = default;
+            return false;
+        }
     }
 
-    private void KernelUdpIpRecev(UdpIpTraceData data)
+    /// <summary>
+    /// Writes the given "dataInfo" to its respective dictionary.
+    /// </summary>
+    /// <param name="processid">The process we are appending usage to</param>
+    /// <param name="size">The size of the data in bytes</param>
+    /// <param name="dataInfo">The data classification</param>
+    private void WriteNetworkDataToDictionary(int processid, int size, NetworkClassification dataInfo)
     {
-        if (!_procmap.ContainsKey(data.ProcessID)) return;
-        Console.WriteLine("UDP Recv: " + _procmap[data.ProcessID] + " -> " + data.daddr + " Size: " + data.size);
-    }
+        ulong value = (size < 0) ? 0 : (ulong)size;
 
-    private void KernelTcpIpRecv(TcpIpTraceData data)
-    {
-        if (!_procmap.ContainsKey(data.ProcessID)) return;
-        Console.WriteLine("TCP Recv: " + _procmap[data.ProcessID] + " -> " + data.daddr + " Size: " + data.size);
+        lock (_networkReadingLocks[dataInfo])
+        {
+            if (_networkUsage[dataInfo].ContainsKey(processid))
+                _networkUsage[dataInfo][processid] += value;
+            else
+                _networkUsage[dataInfo][processid] = value;
+        }
     }
-
-    private void KernelTcpIpSend(TcpIpSendTraceData data)
+    public ICollection<IProgramData> Produce(float rate)
     {
-        if (!_procmap.ContainsKey(data.ProcessID)) return;
-        Console.WriteLine("TCP Send: " + _procmap[data.ProcessID] + " -> " + data.daddr + " Size: " + data.size);
-    }
+        Dictionary<string, IProgramData> programs = new();
+        Dictionary<string, TimeSpan> freshCpuDelta = new();
+        Dictionary<string, IoCounters> freshDiskDelta = new();
+        //Reset network usage for next iteration, clone is to avoid losing during transactions
+        Dictionary<int, ulong> networkOut;
+        Dictionary<int, ulong> networkIn;
+        lock (_networkReadingLocks[NetworkClassification.NetworkOutgoing])
+        {
+            networkOut = _networkUsage[NetworkClassification.NetworkOutgoing];
+            _networkUsage[NetworkClassification.NetworkOutgoing] = [];
+        }
+        lock (_networkReadingLocks[NetworkClassification.NetworkIncoming])
+        {
+            networkIn = _networkUsage[NetworkClassification.NetworkIncoming];
+            _networkUsage[NetworkClassification.NetworkIncoming] = [];
+        }
 
-    public IEnumerable<IProgramData> Produce(float rate)
-    {
+        //Pull down network data, and reset for next iteration
+        foreach (NetworkClassification classification in Enum.GetValues<NetworkClassification>())
+        {
+            lock (_networkReadingLocks[classification])
+                _networkUsage[classification].Clear();
+        }
+
         foreach (Process process in Process.GetProcesses())
         {
             IProgramData? data = null;
+            IoCounters? ioCounters = null;
+            if (TryGetProcessIoCounters(process, out IoCounters tempCounter))
+                ioCounters = tempCounter;
+
             try
             {
-                var mem = process.WorkingSet64 / (1024f * 1024f);//Memory usage in MB as float
-                var time = (float)process.TotalProcessorTime.TotalSeconds;
-                
+                float mem = process.WorkingSet64 / (1024f * 1024f);
+                float networkUsage = 
+                    (float)(networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id))/rate/1000000.0f;//Bytes to MB
+                float diskUsage = 0;
+                float cpuUsage = 0;
+                //Compute CPU delta.
+                if(freshCpuDelta.ContainsKey(process.ProcessName))
+                    freshCpuDelta[process.ProcessName] += process.TotalProcessorTime;
+                else
+                    freshCpuDelta.Add(process.ProcessName, process.TotalProcessorTime);
+                if (_cpuDelta.TryGetValue(process.ProcessName, out TimeSpan oldCpuTime))
+                {
+                    TimeSpan cpuTime = process.TotalProcessorTime;
+                    TimeSpan delta = cpuTime - oldCpuTime;
 
+                    if (delta >= TimeSpan.Zero)
+                        cpuUsage = (float)(delta.TotalSeconds / rate / Environment.ProcessorCount * 100);//Convert to %
+                    else
+                        cpuUsage = 0f;//Process reset..
+                }
+                //Compute disk delta.
+                if (ioCounters.HasValue)
+                {
+                    if(!freshDiskDelta.ContainsKey(process.ProcessName))
+                        freshDiskDelta.Add(process.ProcessName, ioCounters.Value);
+
+                    if (_diskDelta.TryGetValue(process.ProcessName, out IoCounters oldIoCounter))
+                    {
+                        //Compute delta.
+                        diskUsage = ioCounters.Value.ReadTransferCount + ioCounters.Value.WriteTransferCount;
+                        diskUsage -= oldIoCounter.ReadTransferCount + oldIoCounter.WriteTransferCount;
+                    }
+                }
+                //Finalize
                 data = new MockProgramDataClass
                 {
                     SystemName = Environment.MachineName,
                     ProcessName = process.ProcessName,
                     MemoryUsage = mem,
-                    CpuUsage = time,
-                    DiskUsage = 0,
-                    NetworkUsage = 0,
-                    Timespan = time
+                    CpuUsage = cpuUsage,
+                    DiskUsage = diskUsage,
+                    NetworkUsage = networkUsage,
+                    Timespan = rate
                 };
-                if(!_procmap.ContainsKey(process.Id))
-                    _procmap[process.Id] = process.ProcessName;
             }
             catch (Win32Exception ex)
             {
-                Console.WriteLine($"Access denied to process {process.ProcessName}: {ex.Message}");
+                Debug.WriteLine($"Access denied to process {process.ProcessName}: {ex.Message}");
             }
             catch (InvalidOperationException ex)
             {
-                Console.WriteLine($"Process {process.ProcessName} exited before reading: {ex.Message}");
+                Debug.WriteLine($"Process {process.ProcessName} exited before reading: {ex.Message}");
             }
-
             if (data != null)
-                yield return data;
+            {
+                if (!programs.ContainsKey(process.ProcessName))
+                    programs.Add(process.ProcessName, data);
+                else
+                {
+                    programs[process.ProcessName].CpuUsage += data.CpuUsage;
+                    programs[process.ProcessName].DiskUsage += data.DiskUsage;
+                    programs[process.ProcessName].MemoryUsage += data.MemoryUsage;
+                    programs[process.ProcessName].NetworkUsage += data.NetworkUsage;
+                }
+            }
         }
+        _cpuDelta = freshCpuDelta;
+        _diskDelta = freshDiskDelta;
+        return programs.Values;
     }
 
     public void Dispose()
     {
-        _networkSession.Dispose();
-        _networkThread?.Join();
+
     }
 }
