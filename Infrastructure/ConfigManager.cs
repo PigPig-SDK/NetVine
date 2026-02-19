@@ -22,7 +22,7 @@ public class ConfigManager
 
 
     /// <summary>
-    /// Initializes a new instance of the Configuration class.
+    /// Initializes a new instance of the Configuration class, creating the filepath and ensuring a directory in appdata exists.
     /// </summary>
     private ConfigManager()
     {
@@ -81,6 +81,7 @@ public class ConfigManager
     /// </summary>
     /// <remarks>This method does not take any parameters and does not return a value. Ensure that the file to
     /// be read is accessible and in the expected format to avoid runtime errors.</remarks>
+    /// <returns> Returns true if the yaml file is read or created correctly </returns>
     public bool ReadFromFile() 
     {
         try
@@ -103,9 +104,10 @@ public class ConfigManager
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to create config file: {ex.Message}");
+                return false;
             }
 
-            return false;
+            return true;
         }
         catch (UnauthorizedAccessException)
         {
@@ -138,6 +140,10 @@ public class ConfigManager
     /// <remarks>This method does not take any parameters and writes to a predefined file location. Ensure
     /// that the application has the necessary permissions to write to the specified location. The file may be
     /// overwritten if it already exists.</remarks>
+    /// <exception cref="InvalidOperationException">Thrown if YAML file has invalid operations</exception>
+    /// <exception cref="InvalidOperationException">Thrown if unauthorized access</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the file in the directory isn't found</exception>
+    /// <exception cref="InvalidOperationException">Thrown if an I/O error occurs</exception>
     public void WriteToFile()
     {
         try
