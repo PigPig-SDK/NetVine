@@ -156,7 +156,7 @@ public class WindowsDataProducer : IProgramDataProducer
                 if (process.HasExited)
                     continue;
                 process.Refresh();
-                float mem = process.WorkingSet64 / (1024f * 1024f);
+                float mem = process.PrivateMemorySize64 / (1024f * 1024f);
                 float networkUsage = 
                     (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB
                 float diskUsage = 0;
