@@ -28,6 +28,9 @@ public class ConfigManager
     {
         ConfigSettings = new Settings();
 
+        Directory.CreateDirectory(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Netvine")
+            );
 
         filePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
