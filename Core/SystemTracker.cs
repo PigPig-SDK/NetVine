@@ -25,17 +25,11 @@ public class SystemTracker
     /// Maximum number of snapshots
     /// </summary>
     public uint Capacity { get; set; }
-    /// <summary>
-    /// How often snapshots are expected to be made
-    /// NOTE: This might not be the true rate given. It is up to the programmer to manage this value!
-    /// </summary>
-    public float Rate { get; set; }
 
-    public SystemTracker(IProgramDataProducer programDataProducer, uint capacity, float rate)
+    public SystemTracker(IProgramDataProducer programDataProducer, uint capacity)
     {
         ProgramDataProducer = programDataProducer;
         Capacity = capacity;
-        Rate = rate;
     }
     /// <summary>
     /// Gives a snapshot of the
@@ -61,13 +55,14 @@ public class SystemTracker
     /// <summary>
     /// Takes a snapshot of the current ProgramDataProducer and reshuffles the history.
     /// </summary>
-    public void MakeSnapshot()
+    public List<IProgramData> MakeSnapshot(TimeSpan rate)
     {
-        List<IProgramData> programData = [.. ProgramDataProducer.Produce(Rate)];
+        List<IProgramData> programData = [.. ProgramDataProducer.Produce(rate)];
 
         //Make room for new data.
         if(Data.Count >= Capacity) Data.RemoveLast();
 
         Data.AddFirst(programData);
+        return programData;
     }
 }

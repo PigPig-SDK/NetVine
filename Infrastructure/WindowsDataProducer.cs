@@ -26,7 +26,7 @@ public class MockProgramDataClass : IProgramData
     public float MemoryUsage { get => _memoryUsage; set => _memoryUsage = value; }
     public float Timespan { get => _timespan; set => _timespan = value; }
 }
-public class WindowsDataProducer : IProgramDataProducer, IDisposable
+public class WindowsDataProducer : IProgramDataProducer
 {
     /// <summary>
     /// The current system name, defaulting to "UnknownUser" if it cannot be determined.
@@ -63,7 +63,7 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
     {
         SystemName = Environment.UserName;
 
-        _ = Produce(0.0f);//Initialize deltas.
+        _ = Produce(TimeSpan.Zero);//Initialize deltas.
 
         //Setup network tracing
         if (Environment.IsPrivilegedProcess)
@@ -136,7 +136,7 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
     /// 
     /// </summary>
     /// <param name="rate"></param>
-    public ICollection<IProgramData> Produce(float rate)
+    public ICollection<IProgramData> Produce(TimeSpan rate)
     {
         Dictionary<string, IProgramData> programs = new();
         Dictionary<string, TimeSpan> freshCpuDelta = new();
@@ -173,7 +173,7 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
             {
                 float mem = process.WorkingSet64 / (1024f * 1024f);
                 float networkUsage = 
-                    (float)(networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate / 1_000_000.0f;//Bytes to MB
+                    (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB
                 float diskUsage = 0;
                 float cpuUsage = 0;
                 //Compute CPU delta.
@@ -187,7 +187,7 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
                     TimeSpan delta = cpuTime - oldCpuTime;
 
                     if (delta >= TimeSpan.Zero)
-                        cpuUsage = (float)(delta.TotalSeconds / rate / Environment.ProcessorCount * 100);//Convert to %
+                        cpuUsage = (float)(delta.TotalSeconds / rate.TotalSeconds / Environment.ProcessorCount * 100);//Convert to %
                     else
                         cpuUsage = 0f;//Process reset..
                 }
@@ -213,7 +213,7 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
                     CpuUsage = cpuUsage,
                     DiskUsage = diskUsage,
                     NetworkUsage = networkUsage,
-                    Timespan = rate
+                    Timespan = (float)rate.TotalSeconds
                 };
             }
             catch (Win32Exception ex)

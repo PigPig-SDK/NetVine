@@ -1,25 +1,19 @@
 ﻿
+using Core;
 using Infrastructure;
 
-WindowsDataProducer producer = new();
+SystemHistory history = new(new WindowsDataProducer(), 10, TimeSpan.FromSeconds(1));
 
-Console.WriteLine($"SYSNAME: {producer.SystemName}");
-Console.WriteLine("Data here:");
-
-while (true)
+history.OnSnapshotTaken = (data) =>
 {
-    Thread.Sleep(10000);//10 second
-    Console.WriteLine("10 seconds of data:");
-    foreach (var data in producer.Produce(10.0f))
+    Console.WriteLine($"Snapshot taken at {DateTime.Now}");
+    foreach (IProgramData item in data)
     {
-        if (data.NetworkUsage == 0) continue;
-        Console.WriteLine("----------------");
-        Console.WriteLine($"PROC:{data.ProcessName},Net: {data.NetworkUsage} MB/s,CPU%: {data.CpuUsage}%");
+        if(item.CpuUsage < 0.1f && item.DiskUsage < 0.1f && item.NetworkUsage < 0.1f)
+            continue;
+        Console.WriteLine($"{item.ProcessName} : CPU [{item.CpuUsage}%] NETWORK [{item.NetworkUsage} MB/S] RAM [{item.MemoryUsage}] Disc [{item.DiskUsage}]");
     }
-}
+};
 
 Console.WriteLine("Press Enter to exit...");
 Console.ReadLine();
-
-//Close reading...
-producer.Dispose();
