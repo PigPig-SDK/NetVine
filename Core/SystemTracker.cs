@@ -1,4 +1,7 @@
-﻿namespace Core;
+﻿using System.Data.Common;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace Core;
 
 /// <summary>
 /// This class is used to store immediate program data from a given producer
@@ -51,6 +54,48 @@ public class SystemTracker
         {
             return false;
         }
+    }
+    /// <summary>
+    /// Returns the average of the last N snapshots. Returns null if no data exists.
+    /// </summary>
+    /// <returns></returns>
+    public List<IProgramData>? GetAverage()
+    {
+        if (History.Count == 0) return null;
+
+        Dictionary<string, (IProgramData data, float sum)> programs = [];
+        //Place into buckets
+        foreach (List<IProgramData> snapshot in History)
+        {
+            foreach (IProgramData data in snapshot)
+            {
+                if (!programs.ContainsKey(data.ProcessName))
+                {
+                    programs[data.ProcessName] = (data, 1.0f);
+                }
+                else
+                {
+                    programs[data.ProcessName].data.CpuUsage += data.CpuUsage;
+                    programs[data.ProcessName].data.DiskUsage += data.DiskUsage;
+                    programs[data.ProcessName].data.MemoryUsage += data.MemoryUsage;
+                    programs[data.ProcessName].data.NetworkUsage += data.NetworkUsage;
+                    programs[data.ProcessName].data.Timespan += data.Timespan;
+                    programs[data.ProcessName] = (programs[data.ProcessName].data, programs[data.ProcessName].sum + 1.0f);
+                }
+            }
+        }
+
+        //Normalize
+        foreach ((IProgramData data, float sum) key in programs.Values)
+        {
+            key.data.CpuUsage /= key.sum;
+            key.data.DiskUsage /= key.sum;
+            key.data.MemoryUsage /= key.sum;
+            key.data.NetworkUsage /= key.sum;
+            key.data.Timespan /= key.sum;
+        }
+
+        return programs.Values.Select(e => e.data).ToList();
     }
     /// <summary>
     /// Takes a snapshot of the current ProgramDataProducer and reshuffles the history.

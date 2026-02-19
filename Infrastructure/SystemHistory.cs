@@ -58,6 +58,8 @@ public class SystemHistory : IDisposable
         }
     }
 
+    public List<IProgramData> GetAverages() => _tracker.MakeSnapshot(TimeSpan.Zero);
+
     public void Dispose()
     {
         _producer.Dispose();
