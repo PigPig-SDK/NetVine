@@ -10,38 +10,43 @@ using YamlDotNet.Serialization;
 namespace Infrastructure;
 
 /// <summary>
-/// TODO: implementation for settings: usage metrics to store, usage metrics to track immediately, Client/Host settings, Host Connection, system name?,  
+/// TODO: Fix filepath. Estimated time: 30 mins - 1 hr 
 /// </summary>
-public class Configuration
+public class ConfigManager
 {
     /// <summary>
     /// Singleton lazy instance - thread safe
     /// </summary>
-    private static readonly Lazy<Configuration> lazyInstance =
-        new Lazy<Configuration>(() => new Configuration());
+    private static readonly Lazy<ConfigManager> lazyInstance =
+        new Lazy<ConfigManager>(() => new ConfigManager());
 
 
     /// <summary>
     /// Initializes a new instance of the Configuration class.
     /// </summary>
-    private Configuration()
+    private ConfigManager()
     {
         ConfigSettings = new Settings();
 
+
+        filePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "NetVine",
+            "config.yaml"
+        );
+
         ReadFromFile();
-
-
 
     }
 
-    public const string filePath = "";
+    public readonly string filePath;
 
     /// <summary>
     /// Gets the singleton instance of the Configuration class, providing access to application configuration settings.
     /// </summary>
     /// <remarks>This property ensures that the Configuration instance is created only once and is
     /// thread-safe. Access this property to retrieve configuration settings throughout the application.</remarks>
-    public static Configuration Instance
+    public static ConfigManager Instance
     {
         get => lazyInstance.Value;
     }
@@ -86,6 +91,17 @@ public class Configuration
             Console.WriteLine($"Error: The file '{filePath}' was not found.");
             Console.WriteLine("Creating new YAML config file ... ");
             ConfigSettings = new Settings();
+
+            try
+            {
+                WriteToFile();
+            }
+            
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to create config file: {ex.Message}");
+            }
+
             return false;
         }
         catch (UnauthorizedAccessException)
