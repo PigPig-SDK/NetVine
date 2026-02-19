@@ -1,4 +1,7 @@
 ﻿using Core;
+using Microsoft.Diagnostics.Tracing.Parsers;
+using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
+using Microsoft.Diagnostics.Tracing.Session;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -31,6 +34,14 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
     public string SystemName { get => _systemName??"UnknownUser"; private set => _systemName = value; }
     private string? _systemName;
     /// <summary>
+    /// The network tracker
+    /// </summary>
+    private TraceEventSession _networkSession = new TraceEventSession("NetworkSession");
+    /// <summary>
+    /// The network thread for tracking network events.
+    /// </summary>
+    private Thread? _networkThread;
+    /// <summary>
     /// Tracks incoming usage per process. Updated by the network tracing events.
     /// Key : Process name
     /// Value : Total bytes received
@@ -57,6 +68,22 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
         //Setup network tracing
         if (Environment.IsPrivilegedProcess)
         {
+            _networkSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
+
+            _networkSession.Source.Kernel.TcpIpSend += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.TcpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.UdpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.UdpIpSend += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.TcpIpRecvIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.TcpIpSendIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkOutgoing);
+            _networkSession.Source.Kernel.UdpIpRecvIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.UdpIpSendIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkOutgoing);
+
+            _networkThread = new Thread(() => _networkSession.Source.Process())
+            {
+                IsBackground = true
+            };
+            _networkThread.Start();
         }
         else
         {
@@ -106,6 +133,10 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
                 _networkUsage[dataInfo][processid] = value;
         }
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="rate"></param>
     public ICollection<IProgramData> Produce(float rate)
     {
         Dictionary<string, IProgramData> programs = new();
@@ -214,6 +245,7 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
 
     public void Dispose()
     {
-
+        _networkSession.Dispose();
+        _networkThread?.Join();
     }
 }
