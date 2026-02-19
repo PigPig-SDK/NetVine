@@ -1,7 +1,4 @@
-﻿using System.Data.Common;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Core;
+﻿namespace Core;
 
 /// <summary>
 /// This class is used to store immediate program data from a given producer
