@@ -105,7 +105,7 @@ public class SystemTracker
         List<IProgramData> programData = [.. ProgramDataProducer.Produce(rate)];
 
         //Make room for new data.
-        if(Data.Count >= Capacity) Data.RemoveLast();
+        if (Data.Count >= Capacity) Data.RemoveLast();
 
         Data.AddFirst(programData);
         return programData;

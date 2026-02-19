@@ -1,12 +1,10 @@
 ﻿using Core;
 using Microsoft.Diagnostics.Tracing.Parsers;
-using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using Microsoft.Diagnostics.Tracing.Session;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
+
 
 
 namespace Infrastructure;
@@ -25,7 +23,9 @@ public class MockProgramDataClass : IProgramData
     public float NetworkUsage { get => _networkUsage; set => _networkUsage = value; }
     public float MemoryUsage { get => _memoryUsage; set => _memoryUsage = value; }
     public float Timespan { get => _timespan; set => _timespan = value; }
+    public int ProcessId { get; set; }
 }
+
 public class WindowsDataProducer : IProgramDataProducer
 {
     /// <summary>
@@ -166,11 +166,15 @@ public class WindowsDataProducer : IProgramDataProducer
         {
             IProgramData? data = null;
             IoCounters? ioCounters = null;
+            process.Refresh();
             if (TryGetProcessIoCounters(process, out IoCounters tempCounter))
                 ioCounters = tempCounter;
 
             try
             {
+                if (process.HasExited)
+                    continue;
+                process.Refresh();
                 float mem = process.WorkingSet64 / (1024f * 1024f);
                 float networkUsage = 
                     (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB
@@ -213,7 +217,8 @@ public class WindowsDataProducer : IProgramDataProducer
                     CpuUsage = cpuUsage,
                     DiskUsage = diskUsage,
                     NetworkUsage = networkUsage,
-                    Timespan = (float)rate.TotalSeconds
+                    Timespan = (float)rate.TotalSeconds,
+                    ProcessId = process.Id
                 };
             }
             catch (Win32Exception ex)
