@@ -69,7 +69,6 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
         if (Environment.IsPrivilegedProcess)
         {
             _networkSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
-
             _networkSession.Source.Kernel.TcpIpSend += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
             _networkSession.Source.Kernel.TcpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
             _networkSession.Source.Kernel.UdpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
@@ -174,7 +173,7 @@ public class WindowsDataProducer : IProgramDataProducer, IDisposable
             {
                 float mem = process.WorkingSet64 / (1024f * 1024f);
                 float networkUsage = 
-                    (float)(networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id))/rate/1000000.0f;//Bytes to MB
+                    (float)(networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate / 1_000_000.0f;//Bytes to MB
                 float diskUsage = 0;
                 float cpuUsage = 0;
                 //Compute CPU delta.
