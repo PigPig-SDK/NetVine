@@ -41,7 +41,6 @@ public class SystemHistory : IDisposable
         //Incase context switch or lag causes the timer to be delayed.
         TimeSpan elapsed = _stopwatch.Elapsed;
         _stopwatch.Restart();
-        Console.WriteLine($"Taking snapshot at {DateTime.Now} with elapsed time {elapsed.Seconds}");
 
         try
         {
