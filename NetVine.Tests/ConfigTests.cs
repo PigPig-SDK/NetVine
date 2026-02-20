@@ -10,31 +10,31 @@ namespace NetVine.Tests;
 public class ConfigTests
 {
 
-    void Setup(ConfigSettings settings)
-    {
-        settings.TrackCPUUsage = true;
-        settings.TrackMemoryUsage = true;
-        settings.TrackDiskUsage = true;
-        settings.TrackMemoryUsage = true;
-        settings.TickRate = 1000;
-    }
-
     [Fact]
-    public void ReadFromFile_CreatesDefaultSettings_WhenFileNotFound()
+    public void ReadWriteToFile_Test()
     {
-        var config = ConfigManager.Instance;
-        bool result = config.ReadFromFile();
+        ConfigManager.ResetConfFile();
+        ConfigManager.UpdateConfFileRead();
+        ConfigManager.UpdateConfFileWrite();
 
-        Setup(config.ConfigSettings);
+        Assert.Equivalent(1, ConfigManager.Instance.IntValues[Setting.TrackCPUUsage]);
+        Assert.Equivalent(1, ConfigManager.Instance.IntValues[Setting.TrackNetworkUsage]);
+        Assert.Equivalent(1, ConfigManager.Instance.IntValues[Setting.TrackDiskUsage]);
+        Assert.Equivalent(1, ConfigManager.Instance.IntValues[Setting.TrackMemoryUsage]);
 
-        Assert.True(result);
-        Assert.NotNull(config.ConfigSettings);
-        Assert.True(config.ConfigSettings.TrackCPUUsage);
+        Assert.True(ConfigManager.Instance.FloatValues[Setting.TickRate] == 1000.0f);
 
-        Assert.True(config.ConfigSettings.TrackCPUUsage == true);
-        Assert.True(config.ConfigSettings.TrackMemoryUsage == true);
-        Assert.True(config.ConfigSettings.TrackDiskUsage == true);
-        Assert.True(config.ConfigSettings.TrackMemoryUsage == true);
-        Assert.True(config.ConfigSettings.TickRate == 1000);
+        ConfigManager.Instance.IntValues[Setting.TrackCPUUsage] = 0;
+
+        ConfigManager.UpdateConfFileWrite();
+        ConfigManager.UpdateConfFileRead();
+
+
+
+        Assert.Equivalent(0, ConfigManager.Instance.IntValues[Setting.TrackCPUUsage]);
+
+
     }
+
+
 }
