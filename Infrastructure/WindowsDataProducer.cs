@@ -27,7 +27,7 @@ public class WindowsDataProducer : IProgramDataProducer
     /// Key : Process name
     /// Value : Total bytes received
     /// </summary>
-    private Dictionary<NetworkClassification, Dictionary<int, ulong>> _networkUsage 
+    private Dictionary<NetworkClassification, Dictionary<string, ulong>> _networkUsage 
         = new(){ {NetworkClassification.NetworkIncoming, new() }, { NetworkClassification.NetworkOutgoing, new()} };
     /// <summary>
     /// A lock for a tracked resource
@@ -50,14 +50,14 @@ public class WindowsDataProducer : IProgramDataProducer
         if (Environment.IsPrivilegedProcess)
         {
             _networkSession.EnableKernelProvider(KernelTraceEventParser.Keywords.NetworkTCPIP);
-            _networkSession.Source.Kernel.TcpIpSend += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
-            _networkSession.Source.Kernel.TcpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
-            _networkSession.Source.Kernel.UdpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
-            _networkSession.Source.Kernel.UdpIpSend += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
-            _networkSession.Source.Kernel.TcpIpRecvIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
-            _networkSession.Source.Kernel.TcpIpSendIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkOutgoing);
-            _networkSession.Source.Kernel.UdpIpRecvIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkIncoming);
-            _networkSession.Source.Kernel.UdpIpSendIPV6 += data => WriteNetworkDataToDictionary(data.ProcessID, data.size, NetworkClassification.NetworkOutgoing);
+            _networkSession.Source.Kernel.TcpIpSend += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.TcpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.UdpIpRecv += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.UdpIpSend += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.TcpIpRecvIPV6 += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.TcpIpSendIPV6 += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkOutgoing);
+            _networkSession.Source.Kernel.UdpIpRecvIPV6 += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkIncoming);
+            _networkSession.Source.Kernel.UdpIpSendIPV6 += data => WriteNetworkDataToDictionary(data.ProcessName, data.size, NetworkClassification.NetworkOutgoing);
 
             _networkThread = new Thread(() => _networkSession.Source.Process())
             {
@@ -101,10 +101,10 @@ public class WindowsDataProducer : IProgramDataProducer
     /// <param name="processid">The process we are appending usage to</param>
     /// <param name="size">The size of the data in bytes</param>
     /// <param name="dataInfo">The data classification</param>
-    private void WriteNetworkDataToDictionary(int processid, int size, NetworkClassification dataInfo)
+    private void WriteNetworkDataToDictionary(string processid, int size, NetworkClassification dataInfo)
     {
         ulong value = (size < 0) ? 0 : (ulong)size;
-
+        
         lock (_networkReadingLocks[dataInfo])
         {
             if (_networkUsage[dataInfo].ContainsKey(processid))
@@ -123,8 +123,8 @@ public class WindowsDataProducer : IProgramDataProducer
         Dictionary<string, TimeSpan> freshCpuDelta = new();
         Dictionary<string, IoCounters> freshDiskDelta = new();
         //Reset network usage for next iteration, clone is to avoid losing during transactions
-        Dictionary<int, ulong> networkOut;
-        Dictionary<int, ulong> networkIn;
+        Dictionary<string, ulong> networkOut;
+        Dictionary<string, ulong> networkIn;
         lock (_networkReadingLocks[NetworkClassification.NetworkOutgoing])
         {
             networkOut = _networkUsage[NetworkClassification.NetworkOutgoing];
@@ -143,11 +143,11 @@ public class WindowsDataProducer : IProgramDataProducer
                 _networkUsage[classification].Clear();
         }
 
+
         foreach (Process process in Process.GetProcesses())
         {
             IProgramData? data = null;
             IoCounters? ioCounters = null;
-            process.Refresh();
             if (TryGetProcessIoCounters(process, out IoCounters tempCounter))
                 ioCounters = tempCounter;
 
@@ -155,10 +155,9 @@ public class WindowsDataProducer : IProgramDataProducer
             {
                 if (process.HasExited)
                     continue;
-                process.Refresh();
                 float mem = process.PrivateMemorySize64 / (1024f * 1024f);
                 float networkUsage = 
-                    (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB
+                    (float)((networkOut.GetValueOrDefault(process.ProcessName)  + networkIn.GetValueOrDefault(process.ProcessName)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB
                 float diskUsage = 0;
                 float cpuUsage = 0;
                 //Compute CPU delta.
@@ -166,6 +165,7 @@ public class WindowsDataProducer : IProgramDataProducer
                     freshCpuDelta[process.ProcessName] += process.TotalProcessorTime;
                 else
                     freshCpuDelta.Add(process.ProcessName, process.TotalProcessorTime);
+
                 if (_cpuDelta.TryGetValue(process.ProcessName, out TimeSpan oldCpuTime))
                 {
                     TimeSpan cpuTime = process.TotalProcessorTime;

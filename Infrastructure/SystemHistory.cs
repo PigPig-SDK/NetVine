@@ -36,10 +36,16 @@ public class SystemHistory : IDisposable
         //Incase context switch or lag causes the timer to be delayed.
         TimeSpan elapsed = _stopwatch.Elapsed;
         _stopwatch.Restart();
+        
         try
         {
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
+        }
+        catch(Exception ex)
+        {
+            //Log exception, but continue to refire timer.
+            Console.WriteLine($"Exception in snapshot: {ex}");
         }
         finally
         {

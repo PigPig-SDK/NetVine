@@ -25,6 +25,7 @@ while (true)
     }
     else if(input == "exit")
     {
+        history.Dispose();
         break;
     }
     else if(input == "clear")
@@ -37,4 +38,6 @@ while (true)
         trackedProcesses.Add(input);
         Console.WriteLine($"Added {input} to tracked processes");
     }
+    
 }
+history.Dispose();
