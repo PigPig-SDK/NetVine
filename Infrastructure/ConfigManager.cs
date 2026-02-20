@@ -5,9 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using YamlDotNet.Core;
+using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
 namespace Infrastructure;
+
+public enum Setting
+{
+    TrackDiskUsage,
+    TrackCPUUsage,
+    TrackMemoryUsage,
+    TrackNetworkUsage,
+    TickRate
+}
 
 
 /// <summary>
@@ -15,142 +25,253 @@ namespace Infrastructure;
 /// </summary>
 public class ConfigManager
 {
+
     /// <summary>
-    /// Singleton lazy instance - thread safe
+    /// Singleton instance
     /// </summary>
-    private static readonly Lazy<ConfigManager> lazyInstance =
-        new Lazy<ConfigManager>(() => new ConfigManager());
+    [YamlIgnore]
+    private static ConfigManager? _Instance;
+    
+    public Dictionary<Setting, float> FloatValues { get; set; }
+    public Dictionary<Setting, string> StringValues { get; set; }
+    public Dictionary<Setting, int> IntValues { get; set; }
 
 
     /// <summary>
-    /// Initializes a new instance of the Configuration class, creating the filepath and ensuring a directory in appdata exists.
+    /// Constructor for The ConfigManager. Must remain public for deserialization when reading from the config file.
     /// </summary>
-    private ConfigManager()
+    public ConfigManager()
     {
-        ConfigSettings = new ConfigSettings();
+        FloatValues = new Dictionary<Setting, float>();
+        StringValues = new Dictionary<Setting, string>();
+        IntValues = new Dictionary<Setting, int>();
+    }
 
-        Directory.CreateDirectory(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Netvine")
-            );
 
-        filePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "NetVine",
-            "config.yaml"
-        );
+    /// <summary>
+    /// Gets the default configuration manager instance with predefined settings for certain error cases.
+    /// </summary>
+    /// <remarks>This property initializes the configuration manager with default integer and float values for
+    /// various system metrics. The default file path for configuration storage is also set during
+    /// initialization.</remarks>
+    [YamlIgnore]
+    private static ConfigManager DefaultState
+    {
+        get
+        {
+            var manager = new ConfigManager();
+            manager.IntValues = new Dictionary<Setting, int>()
+            {
+                [Setting.TrackDiskUsage] = 1,
+                [Setting.TrackNetworkUsage] = 1,
+                [Setting.TrackMemoryUsage] = 1,
+                [Setting.TrackCPUUsage] = 1,
+            };
 
-        ReadFromFile();
+            manager.FloatValues = new Dictionary<Setting, float>()
+            {
+                [Setting.TickRate] = 1000.0f
+            };
+
+            FilePath = GetDefaultFilePath();
+
+            return manager;
+        }
 
     }
 
-    public readonly string filePath;
+    /// <summary>
+    /// Config file path. 
+    /// </summary>
+    [YamlIgnore]
+    private static string? _FilePath;
+
+    [YamlIgnore]
+    public static string FilePath
+    {
+        get
+        {
+            _FilePath ??= GetDefaultFilePath(); 
+            return _FilePath;
+        }
+        set => _FilePath = value;
+    }
 
     /// <summary>
-    /// Gets the singleton instance of the Configuration class, providing access to application configuration settings.
+    /// Gets the singleton instance of the configuration manager, initializing it to the default state if it has not
+    /// already been created.
     /// </summary>
-    /// <remarks>This property ensures that the Configuration instance is created only once and is
-    /// thread-safe. Access this property to retrieve configuration settings throughout the application.</remarks>
+    /// <remarks>This property provides a global access point to the application's configuration manager. The
+    /// instance is lazily initialized on first access. This property is thread-safe only if the underlying
+    /// initialization logic is thread-safe. Use this property to retrieve or modify configuration settings throughout
+    /// the application lifecycle.</remarks>
+    [YamlIgnore]
     public static ConfigManager Instance
     {
-        get => lazyInstance.Value;
+        get
+        {
+            if (_Instance == null) _Instance = DefaultState;
+            return _Instance;
+        }
+        private set => _Instance = value;
     }
 
-    public ConfigSettings ConfigSettings { get; private set; }
+    /// <summary>
+    /// Resets the configuration file to its default state.
+    /// </summary>
+    /// <remarks>This method restores the configuration settings to their initial values and updates the
+    /// configuration file accordingly. It is useful for reverting any changes made to the configuration during
+    /// runtime.</remarks>
+    public static void ResetConfFile()
+    {
+        Instance = DefaultState;
+        UpdateConfFileWrite();
+    }
 
+    /// <summary>
+    /// Gets the full path to the application's default configuration file within the user's application data directory.
+    /// </summary>
+    /// <remarks>If the NetVine directory does not exist, it is created automatically. This ensures a
+    /// consistent and writable location for storing user-specific configuration data across different
+    /// environments.</remarks>
+    /// <returns>A string containing the full path to the configuration file, located in the NetVine subdirectory of the user's
+    /// application data folder.</returns>
+    private static string GetDefaultFilePath()
+    {
+        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");
 
+        Directory.CreateDirectory(folder);
+
+        return Path.Combine(folder, "config.yaml");
+    }
 
 
     /// <summary>
-    /// Reads data from a file and processes it according to the application's requirements.
+    /// Deserializes a YAML configuration file into a new instance of the ConfigManager class.
     /// </summary>
-    /// <remarks>This method does not take any parameters and does not return a value. Ensure that the file to
-    /// be read is accessible and in the expected format to avoid runtime errors.</remarks>
-    /// <returns> Returns true if the yaml file is read or created correctly </returns>
-    public bool ReadFromFile() 
+    /// <remarks>The method reads the entire content of the specified file and uses a YAML deserializer to
+    /// convert it into a ConfigManager object. Ensure that the file exists and is accessible to avoid
+    /// exceptions.</remarks>
+    /// <param name="path">The path to the YAML file that contains the configuration data. This parameter must not be null or empty.</param>
+    /// <returns>A ConfigManager instance populated with the data from the specified YAML file.</returns>
+    private static ConfigManager GetFromFile(string path)
     {
+        var yamlFile = File.ReadAllText(path);
+        var deserializer = new DeserializerBuilder()
+            .WithTypeConverter(new YamlStringEnumConverter())
+            .WithNodeDeserializer(new EnumKeyDictionaryDeserializer(), s => s.InsteadOf<YamlDotNet.Serialization.NodeDeserializers.DictionaryNodeDeserializer>())
+            .Build();
+        return deserializer.Deserialize<ConfigManager>(yamlFile);
+    }
+
+
+    /// <summary>
+    /// Serializes the specified configuration object to YAML format and writes the result to the specified file path.
+    /// </summary>
+    /// <remarks>If the specified file already exists, it will be overwritten. Ensure that the application has
+    /// write permissions to the specified path.</remarks>
+    /// <param name="path">The file path where the serialized YAML content will be saved. Cannot be null or empty.</param>
+    /// <param name="config">The configuration object to serialize. This object contains the settings to be converted to YAML format.</param>
+    private static void SendToFile(string path, ConfigManager config)
+    {
+        var serializer = new SerializerBuilder()
+            .WithTypeConverter(new YamlStringEnumConverter())
+            .Build();
+        var yamlOutput = serializer.Serialize(config);
+        File.WriteAllText(path, yamlOutput);
+    }
+
+    /// <summary>
+    /// Attempts to update the configuration file, reading it in from the file path. 
+    /// If a yaml error, or a filenotfound error occurs, a new config file is created, and the exception messages are printed.
+    /// </summary>
+    /// <returns></returns>
+    public static bool UpdateConfFileRead() 
+    {
+        Console.WriteLine($"pulling from {FilePath}");
         try
         {
-            var yamlFile = File.ReadAllText(filePath);
-            var deserializer = new DeserializerBuilder().Build();
-            ConfigSettings = deserializer.Deserialize<ConfigSettings>(yamlFile);
+            Instance = GetFromFile(FilePath);
         }
-        catch (FileNotFoundException)
+        catch (Exception ex) when (ex is YamlException || ex is FileNotFoundException)
         {
-            Console.WriteLine($"Error: The file '{filePath}' was not found.");
-            Console.WriteLine("Creating new YAML config file ... ");
-            ConfigSettings = new ConfigSettings();
+            Console.WriteLine($"Exception type: {ex.GetType().Name}");
+            Console.WriteLine($"Message: {ex.Message}");
+            Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
+            Console.WriteLine($"Inner exception type: {ex.InnerException?.GetType().Name}");
 
-            try
-            {
-                WriteToFile();
-            }
+            Instance = DefaultState;
+
+            UpdateConfFileWrite();
             
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to create config file: {ex.Message}");
-                return false;
-            }
-
-            return true;
         }
-        catch (UnauthorizedAccessException)
-        {
-            Console.WriteLine($"Error: Access denied when reading '{filePath}'. Check file permissions.");
-            return false;
-        }
-        catch (IOException ex)
-        {
-            Console.WriteLine($"Error reading the file: {ex.Message}");
-            return false;
-        }
-        catch (YamlException ex)
-        {
-            Console.WriteLine($"Error: Failed to parse YAML in '{filePath}': {ex.Message}");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An unexpected error occurred: {ex.Message}");
-            return false;
-        }
-
         return true;
 
     }
 
     /// <summary>
-    /// Writes the current data to a file at a predefined location.
+    /// Writes updaed settings to the config file.
     /// </summary>
-    /// <remarks>This method does not take any parameters and writes to a predefined file location. Ensure
-    /// that the application has the necessary permissions to write to the specified location. The file may be
-    /// overwritten if it already exists.</remarks>
-    /// <exception cref="InvalidOperationException">Thrown if YAML file has invalid operations</exception>
-    /// <exception cref="InvalidOperationException">Thrown if unauthorized access</exception>
-    /// <exception cref="InvalidOperationException">Thrown if the file in the directory isn't found</exception>
-    /// <exception cref="InvalidOperationException">Thrown if an I/O error occurs</exception>
-    public void WriteToFile()
+    public static void UpdateConfFileWrite()
     {
-        try
+        Console.WriteLine($"writing to {FilePath}");
+
+        SendToFile(FilePath, Instance);
+
+    }
+
+    /// <summary>
+    /// Makes it read the name of the Enum in the Yaml file instead of the enum's number value
+    /// </summary>
+    private class YamlStringEnumConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type) => type.IsEnum;
+
+        public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
-            var serializer = new SerializerBuilder().Build();
-            var yamlOutput = serializer.Serialize(ConfigSettings);
-            File.WriteAllText(filePath, yamlOutput);
+            var scalar = parser.Consume<Scalar>();
+            return Enum.Parse(type, scalar.Value);
         }
-        catch (YamlException ex)
+
+        public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
         {
-            throw new InvalidOperationException($"Failed to serialize configuration settings to YAML.", ex);
+            emitter.Emit(new Scalar(value!.ToString()!));
         }
-        catch (UnauthorizedAccessException ex)
+    }
+
+    /// <summary>
+    /// Provides deserialization support for dictionaries with enum keys from a parser input.
+    /// </summary>
+    private class EnumKeyDictionaryDeserializer : INodeDeserializer
+    {
+
+        public bool Deserialize(IParser reader, Type expectedType, Func<IParser, Type, object?> nestedObjectDeserializer, out object? value, ObjectDeserializer rootDeserializer)
         {
-            throw new InvalidOperationException($"Access denied when writing to file: {filePath}", ex);
-        }
-        catch (DirectoryNotFoundException ex)
-        {
-            throw new InvalidOperationException($"Directory not found for file path: {filePath}", ex);
-        }
-        catch (IOException ex)
-        {
-            throw new InvalidOperationException($"An I/O error occurred while writing to file: {filePath}", ex);
+
+            if (expectedType.IsGenericType &&
+               expectedType.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
+               expectedType.GetGenericArguments()[0].IsEnum)
+            {
+                var enumType = expectedType.GetGenericArguments()[0];
+                var valueType = expectedType.GetGenericArguments()[1];
+                var dict = (System.Collections.IDictionary)Activator.CreateInstance(expectedType)!;
+
+                reader.Consume<MappingStart>();
+                while (!reader.TryConsume<MappingEnd>(out _))
+                {
+                    var key = Enum.Parse(enumType, reader.Consume<Scalar>().Value);
+                    var val = nestedObjectDeserializer(reader, valueType);
+                    //Console.WriteLine($"key: {key}");
+                    //Console.WriteLine($"val: {val}");
+                    dict.Add(key, val);
+                }
+
+                value = dict;
+                return true;
+            }
+
+            value = null;
+            return false;
         }
     }
 
