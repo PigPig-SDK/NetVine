@@ -221,7 +221,7 @@ public class ConfigManager
     }
 
     /// <summary>
-    /// Makes it read the name of the Enum in the Yaml file instead of the enum's number value
+    /// Makes it write the name of the Enum in the Yaml file instead of the enum's number value
     /// </summary>
     private class YamlStringEnumConverter : IYamlTypeConverter
     {
