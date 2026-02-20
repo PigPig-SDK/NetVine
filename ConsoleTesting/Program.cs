@@ -1,6 +1,7 @@
 ﻿
 using Core;
 using Infrastructure;
+using System.Diagnostics;
 
 SystemHistory history = new(new WindowsDataProducer(), 10, TimeSpan.FromSeconds(1));
 HashSet<string> trackedProcesses = new();
@@ -16,7 +17,7 @@ history.OnSnapshotTaken = (data) =>
 
 while (true)
 {
-    Console.WriteLine("Enter a program you want to track");
+    Console.WriteLine("Enter a program you want to track\n'clear' to clear you selection\n'list' to list programs");
     string? input = Console.ReadLine();
     if(string.IsNullOrEmpty(input))
     {
@@ -32,6 +33,13 @@ while (true)
     {
         trackedProcesses.Clear();
         Console.WriteLine("Cleared tracked processes");
+    }
+    else if (input == "list")
+    {
+        foreach (Process process in Process.GetProcesses())
+        {
+            Console.WriteLine($"Name:'{process.ProcessName}' : ID:'{process.Id}'");
+        }
     }
     else
     {
