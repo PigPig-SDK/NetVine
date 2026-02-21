@@ -3,50 +3,6 @@ using YamlDotNet.Serialization;
 
 namespace NetVine.Tests;
 
-/// <summary>
-/// TODO: Make these safer to run - make it so that currentFolder needs to be set in every test 
-/// Delete once these are changed
-///// </summary>
-//public class ConfigTests
-//{
-//    private bool disposedValue;
-
-//    string _CurrentFolder = "";
-//    string _CurrentFilePath = "";
-
-//    [Fact]
-//    public void ReadWriteToFile_Test()
-//    {
-//        var i = ConfigManager.Instance;
-//        ConfigManager.TrySaveToFile();
-//        ConfigManager.TryLoadFromFile();
-
-//        ConfigManager.WriteSetting(SettingInt.TrackCPUUsage, 0);
-//        ConfigManager.WriteSetting(SettingInt.TrackNetworkUsage, 1);
-
-//        Assert.Equivalent(1, ConfigManager.ReadSetting(SettingInt.TrackNetworkUsage));
-//        Assert.Equivalent(0, ConfigManager.ReadSetting(SettingInt.TrackCPUUsage));
-//        Assert.Equivalent(1, ConfigManager.ReadSetting(SettingInt.TrackMemoryUsage));
-//        Assert.Equivalent(1, ConfigManager.ReadSetting(SettingInt.TrackDiskUsage));
-//        Assert.True(ConfigManager.ReadSetting(SettingFloat.TickRate) == 1000.0f);
-
-//        ConfigManager.WriteSetting(SettingInt.TrackCPUUsage, 1);
-
-
-//        ConfigManager.TrySaveToFile();
-//        ConfigManager.TryLoadFromFile();
-        
-//        Assert.Equivalent(1, ConfigManager.ReadSetting(SettingInt.TrackCPUUsage));
-
-//    }
-
-//    private void Cleanup()
-//    {
-//        if (Directory.Exists(_CurrentFolder))
-//            Directory.Delete(_CurrentFolder, recursive: true);
-//    }
-//}
-
 public class ConfigManagerTests : IDisposable
 {
     private readonly string _tempFile;
