@@ -47,45 +47,25 @@ public class ConfigManager
         {SettingInt.TrackMemoryUsage, 1},
         {SettingInt.TrackNetworkUsage,  1}
     };
+
+
     /// <summary>Dictionary containing default float setting values.</summary>
     private static readonly Dictionary<SettingFloat, float> _DefaultFloatValues = new()
     {
         {SettingFloat.TickRate, 1000.0f }
     };
 
+
     /// <summary>Dictionary containing default string setting values.</summary>
     private static readonly Dictionary<SettingString, string> _DefaultStringValues = new();
+    
     
     /// <summary></summary>
     public static string? CustomFilePath {  get; set; }
     
+    
     /// <summary>Custom Config file path. If null, the default value is used.</summary>
     public static string ResolvedFilePath => CustomFilePath ?? _DefaultFilePath;
-
-
-
-    /// <summary>
-    /// Initializes the internal dictionaries that store integer, float, and string settings with their respective
-    /// default values.
-    /// </summary>
-    /// <remarks>This method ensures that each defined setting is present as a key in the corresponding
-    /// dictionary. If a default value for a setting is not specified, a predefined fallback value is assigned. This
-    /// guarantees that all settings are initialized and available for subsequent operations.</remarks>
-    private void InitializeDictionaries()
-    {
-        int defInt = 0;
-        float defFloat = 0;
-        string defString = "";
-        //making sure each setting appears as a key before we finish initialization
-        foreach (var setting in Enum.GetValues<SettingInt>()) 
-            _IntSettings[setting] = _DefaultIntValues.ContainsKey(setting) ? _DefaultIntValues[setting] : defInt;
-
-        foreach (var setting in Enum.GetValues<SettingFloat>()) 
-            _FloatSettings[setting] = _DefaultFloatValues.ContainsKey(setting) ? _DefaultFloatValues[setting] : defFloat;
-
-        foreach (var setting in Enum.GetValues<SettingString>())
-            _StringSettings[setting] = _DefaultStringValues.ContainsKey(setting) ? _DefaultStringValues[setting] : defString;
-    }
 
 
     /// <summary>
@@ -116,6 +96,41 @@ public class ConfigManager
         _StringSettings = new Dictionary<SettingString, string>();
         InitializeDictionaries();
     }
+
+    /// <summary>
+    /// Initialization function. Called after CustomPath is set (or not set)
+    /// Loads the file from disk.
+    /// </summary>
+    public static void Initialize()
+    {
+        TryLoadFromFile();
+    }
+
+    /// <summary>
+    /// Initializes the internal dictionaries that store integer, float, and string settings with their respective
+    /// default values.
+    /// </summary>
+    /// <remarks>This method ensures that each defined setting is present as a key in the corresponding
+    /// dictionary. If a default value for a setting is not specified, a predefined fallback value is assigned. This
+    /// guarantees that all settings are initialized and available for subsequent operations.</remarks>
+    private void InitializeDictionaries()
+    {
+        int defInt = 0;
+        float defFloat = 0;
+        string defString = "";
+        //making sure each setting appears as a key before we finish initialization
+        foreach (var setting in Enum.GetValues<SettingInt>())
+            _IntSettings[setting] = _DefaultIntValues.ContainsKey(setting) ? _DefaultIntValues[setting] : defInt;
+
+        foreach (var setting in Enum.GetValues<SettingFloat>())
+            _FloatSettings[setting] = _DefaultFloatValues.ContainsKey(setting) ? _DefaultFloatValues[setting] : defFloat;
+
+        foreach (var setting in Enum.GetValues<SettingString>())
+            _StringSettings[setting] = _DefaultStringValues.ContainsKey(setting) ? _DefaultStringValues[setting] : defString;
+    }
+
+
+
 
 
     /// <summary>
