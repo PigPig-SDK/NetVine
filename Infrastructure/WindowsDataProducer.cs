@@ -39,8 +39,8 @@ public class WindowsDataProducer : IProgramDataProducer
     private Dictionary<NetworkClassification, Lock> _networkReadingLocks 
         = new(2) { { NetworkClassification.NetworkIncoming, new() }, { NetworkClassification.NetworkOutgoing, new() } };
 
-    private Dictionary<string, TimeSpan> _cpuDelta = new();
-    private Dictionary<string, IoCounters> _diskDelta = new();
+    private Dictionary<int, TimeSpan> _cpuDelta = new();
+    private Dictionary<int, IoCounters> _diskDelta = new();
 
     public WindowsDataProducer()
     {
@@ -129,12 +129,11 @@ public class WindowsDataProducer : IProgramDataProducer
     public ICollection<IProgramData> Produce(TimeSpan rate)
     {
         Dictionary<string, IProgramData> programs = new();
-        Dictionary<string, TimeSpan> freshCpuDelta = new();
-        Dictionary<string, IoCounters> freshDiskDelta = new();
+        Dictionary<int, TimeSpan> freshCpuDelta = new();
+        Dictionary<int, IoCounters> freshDiskDelta = new();
         //Reset network usage for next iteration, clone is to avoid losing during transactions
         Dictionary<int, ulong> networkOut;
         Dictionary<int, ulong> networkIn;
-        HashSet<int> allProcs = new();
 
         lock (_networkReadingLocks[NetworkClassification.NetworkOutgoing])
         {
@@ -150,14 +149,12 @@ public class WindowsDataProducer : IProgramDataProducer
 
         foreach (Process process in Process.GetProcesses())
         {
-            IProgramData? data = null;
             IoCounters? ioCounters = null;
             if (TryGetProcessIoCounters(process, out IoCounters tempCounter))
                 ioCounters = tempCounter;
 
             try
             {
-                allProcs.Add(process.Id);
                 float mem = process.PrivateMemorySize64 / (1024f * 1024f);
                 float networkUsage = 
                     (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB
@@ -165,46 +162,49 @@ public class WindowsDataProducer : IProgramDataProducer
                 float diskUsage = 0;
                 float cpuUsage = 0;
                 //Compute CPU delta.
-                if(freshCpuDelta.ContainsKey(process.ProcessName))
-                    freshCpuDelta[process.ProcessName] += process.TotalProcessorTime;
-                else
-                    freshCpuDelta.Add(process.ProcessName, process.TotalProcessorTime);
+                freshCpuDelta.TryAdd(process.Id, process.TotalProcessorTime);
 
-                if (_cpuDelta.TryGetValue(process.ProcessName, out TimeSpan oldCpuTime))
+                if (_cpuDelta.TryGetValue(process.Id, out TimeSpan oldCpuTime))
                 {
-                    TimeSpan cpuTime = process.TotalProcessorTime;
-                    TimeSpan delta = cpuTime - oldCpuTime;
+                    TimeSpan delta = process.TotalProcessorTime - oldCpuTime;
 
                     if (delta >= TimeSpan.Zero)
                         cpuUsage = (float)(delta.TotalSeconds / rate.TotalSeconds / Environment.ProcessorCount * 100);//Convert to %
                     else
                         cpuUsage = 0f;//Process reset..
                 }
+
                 //Compute disk delta.
                 if (ioCounters.HasValue)
                 {
-                    if(!freshDiskDelta.ContainsKey(process.ProcessName))
-                        freshDiskDelta.Add(process.ProcessName, ioCounters.Value);
+                    freshDiskDelta.TryAdd(process.Id, ioCounters.Value);
 
-                    if (_diskDelta.TryGetValue(process.ProcessName, out IoCounters oldIoCounter))
+                    if (_diskDelta.TryGetValue(process.Id, out IoCounters oldIoCounter))
                     {
-                        //Compute delta.
-                        diskUsage = ioCounters.Value.ReadTransferCount + ioCounters.Value.WriteTransferCount;
-                        diskUsage -= oldIoCounter.ReadTransferCount + oldIoCounter.WriteTransferCount;
+                        diskUsage = (ioCounters.Value.ReadTransferCount + ioCounters.Value.WriteTransferCount) - (oldIoCounter.ReadTransferCount + oldIoCounter.WriteTransferCount);
+                        if(diskUsage < 0)//Process reset..
+                            diskUsage = 0;
                     }
                 }
-                //Finalize
-                data = new MockProgramDataClass
+                //append data.
+                if (!programs.ContainsKey(process.ProcessName))
+                    programs.TryAdd(process.ProcessName, new MockProgramDataClass
+                    {
+                        SystemName = Environment.MachineName,
+                        ProcessName = process.ProcessName,
+                        MemoryUsage = mem,
+                        CpuUsage = cpuUsage,
+                        DiskUsage = diskUsage,
+                        NetworkUsage = networkUsage,
+                        Timespan = (float)rate.TotalSeconds,
+                    });
+                else
                 {
-                    SystemName = Environment.MachineName,
-                    ProcessName = process.ProcessName,
-                    MemoryUsage = mem,
-                    CpuUsage = cpuUsage,
-                    DiskUsage = diskUsage,
-                    NetworkUsage = networkUsage,
-                    Timespan = (float)rate.TotalSeconds,
-                    ProcessId = process.Id
-                };
+                    programs[process.ProcessName].CpuUsage += cpuUsage;
+                    programs[process.ProcessName].DiskUsage += diskUsage;
+                    programs[process.ProcessName].MemoryUsage += mem;
+                    programs[process.ProcessName].NetworkUsage += networkUsage;
+                }
             }
             catch (Win32Exception ex)
             {
@@ -213,18 +213,6 @@ public class WindowsDataProducer : IProgramDataProducer
             catch (InvalidOperationException ex)
             {
                 Debug.WriteLine($"Process {process.ProcessName} exited before reading: {ex.Message}");
-            }
-            if (data != null)
-            {
-                if (!programs.ContainsKey(process.ProcessName))
-                    programs.Add(process.ProcessName, data);
-                else
-                {
-                    programs[process.ProcessName].CpuUsage += data.CpuUsage;
-                    programs[process.ProcessName].DiskUsage += data.DiskUsage;
-                    programs[process.ProcessName].MemoryUsage += data.MemoryUsage;
-                    programs[process.ProcessName].NetworkUsage += data.NetworkUsage;
-                }
             }
         }
 
@@ -240,7 +228,7 @@ public class WindowsDataProducer : IProgramDataProducer
 
     public void Dispose()
     {
-        _networkSession.Dispose();
+        _networkSession?.Dispose();
         _networkThread?.Join();
     }
 }
