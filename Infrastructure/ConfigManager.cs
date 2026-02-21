@@ -5,8 +5,6 @@ using YamlDotNet.Serialization;
 namespace Infrastructure;
 
 
-
-
 public class ConfigManager
 {
     /// <summary>Dictionary containing default integer setting values.</summary>
