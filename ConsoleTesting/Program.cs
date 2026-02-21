@@ -10,8 +10,8 @@ history.OnSnapshotTaken = (data) =>
     foreach (IProgramData item in data)
     {
         if(item is MockProgramDataClass mpc)
-            if (trackedProcesses.Contains(item.ProcessName))
-                Console.WriteLine($"{item.ProcessName} {mpc.ProcessId} : CPU [{item.CpuUsage}%] NETWORK [{item.NetworkUsage} MB/S] RAM [{item.MemoryUsage} MB] Disc [{item.DiskUsage} bytes]");
+            if (trackedProcesses.Contains(item.ProcessName) || trackedProcesses.Contains("ALL"))
+                Console.WriteLine($"{item.ProcessName} {mpc.ProcessId} : CPU [{item.CpuUsage}%] NETWORK [{item.NetworkUsage} MB/S] RAM [{item.MemoryUsage} MB] Disc [{item.DiskUsage} MB/S]");
     }
 };
 
