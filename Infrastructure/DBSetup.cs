@@ -29,26 +29,22 @@ public class DBInteract : DbContext
         }
     }
 
-    public static List<IProgramData>? ListBetweenDates(IProgramData? entry1, IProgramData? entry2)
+    public static List<IProgramData>? ListBetweenDates(DateTime? start, DateTime? end)
     {
         using var db = new  DBInteract();
 
-        if (entry1 != null && entry2 != null)
+        var query = db.ProgramDataTable.AsQueryable();
+
+        if (end != null)
         {
-            return db.ProgramDataTable.Where(p => p.Date > entry1.Date && p.Date < entry2.Date).OrderBy(p => p.Date).ToList();    
+            query = query.Where(p => p.Date < end);
+        }
+        if (start != null)
+        {
+            query = query.Where(p => p.Date > start);
         }
 
-        if (entry1 == null && entry2 != null)
-        {
-            return db.ProgramDataTable.Where(p => p.Date < entry2.Date).OrderBy(p => p.Date).ToList();
-        }
-
-        if (entry2 == null && entry1 != null)
-        {
-            return db.ProgramDataTable.Where(p => p.Date > entry1.Date).OrderBy(p => p.Date).ToList();
-        }
-
-        return null;
+        return query.OrderBy(p => p.Date).ToList();
 
     }
 
