@@ -60,7 +60,7 @@ public class ConfigManager
     public static string? CustomFilePath {  get; set; }
     
     /// <summary>Custom Config file path. If null, the default value is used.</summary>
-    private static string ResolvedFilePath => CustomFilePath ?? _DefaultFilePath;
+    public static string ResolvedFilePath => CustomFilePath ?? _DefaultFilePath;
 
 
 
