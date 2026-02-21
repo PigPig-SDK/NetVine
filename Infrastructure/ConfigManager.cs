@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Core;
+﻿using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure;
 
@@ -94,18 +85,15 @@ public class ConfigManager
     /// guarantees that all settings are initialized and available for subsequent operations.</remarks>
     private void InitializeDictionaries()
     {
-        int defInt = 0;
-        float defFloat = 0;
-        string defString = "";
         //making sure each setting appears as a key before we finish initialization
         foreach (var setting in Enum.GetValues<SettingInt>())
-            _IntSettings[setting] = _DefaultIntValues.ContainsKey(setting) ? _DefaultIntValues[setting] : defInt;
+            _IntSettings[setting] = _DefaultIntValues.ContainsKey(setting) ? _DefaultIntValues[setting] : default;
 
         foreach (var setting in Enum.GetValues<SettingFloat>())
-            _FloatSettings[setting] = _DefaultFloatValues.ContainsKey(setting) ? _DefaultFloatValues[setting] : defFloat;
+            _FloatSettings[setting] = _DefaultFloatValues.ContainsKey(setting) ? _DefaultFloatValues[setting] : default;
 
         foreach (var setting in Enum.GetValues<SettingString>())
-            _StringSettings[setting] = _DefaultStringValues.ContainsKey(setting) ? _DefaultStringValues[setting] : defString;
+            _StringSettings[setting] = _DefaultStringValues.ContainsKey(setting) ? _DefaultStringValues[setting] : string.Empty;
     }
 
 
@@ -137,7 +125,6 @@ public class ConfigManager
     /// <summary></summary>
     private static ConfigManager? _Instance;
 
-    [YamlIgnore]
     public static ConfigManager Instance
     {
         get
@@ -287,44 +274,6 @@ public class ConfigManager
         }
     }
 
-    /// <summary>
-    /// Provides deserialization support for dictionaries with enum keys from a parser input.
-    /// TODO: Write some tests to see if this is needed, or if YamlStringEnumConverter is sufficient. If it's not needed, delete this code.
-    /// </summary>
-    private class EnumKeyDictionaryDeserializer : INodeDeserializer
-    {
-
-        public bool Deserialize(IParser reader, Type expectedType, Func<IParser
-            , Type, object?> nestedObjectDeserializer
-            , out object? value, ObjectDeserializer rootDeserializer)
-        {
-
-            if (expectedType.IsGenericType &&
-               expectedType.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
-               expectedType.GetGenericArguments()[0].IsEnum)
-            {
-                var enumType = expectedType.GetGenericArguments()[0];
-                var valueType = expectedType.GetGenericArguments()[1];
-                var dict = (System.Collections.IDictionary)Activator.CreateInstance(expectedType)!;
-
-                reader.Consume<MappingStart>();
-                while (!reader.TryConsume<MappingEnd>(out _))
-                {
-                    var key = Enum.Parse(enumType, reader.Consume<Scalar>().Value);
-                    var val = nestedObjectDeserializer(reader, valueType);
-                    //Console.WriteLine($"key: {key}");
-                    //Console.WriteLine($"val: {val}");
-                    dict.Add(key, val);
-                }
-
-                value = dict;
-                return true;
-            }
-
-            value = null;
-            return false;
-        }
-    }
 
 
 }
