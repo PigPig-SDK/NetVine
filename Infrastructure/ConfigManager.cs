@@ -13,27 +13,6 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure;
 
-/// <summary>Settings with integer values go here</summary>
-public enum SettingInt
-{
-    TrackDiskUsage,
-    TrackCPUUsage,
-    TrackMemoryUsage,
-    TrackNetworkUsage
-};
-
-/// <summary>Settings with float values go here</summary>
-public enum SettingFloat
-{
-    TickRate
-};
-
-/// <summary>Settings with string values go here</summary>
-public enum SettingString
-{
-
-};
-
 
 
 
