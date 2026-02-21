@@ -157,7 +157,7 @@ public class WindowsDataProducer : IProgramDataProducer
             {
                 float mem = process.PrivateMemorySize64 / (1024f * 1024f);
                 float networkUsage = 
-                    (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB
+                    (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB/s
 
                 float diskUsage = 0;
                 float cpuUsage = 0;
@@ -169,7 +169,7 @@ public class WindowsDataProducer : IProgramDataProducer
                     TimeSpan delta = process.TotalProcessorTime - oldCpuTime;
 
                     if (delta >= TimeSpan.Zero)
-                        cpuUsage = (float)(delta.TotalSeconds / rate.TotalSeconds / Environment.ProcessorCount * 100);//Convert to %
+                        cpuUsage = (float)(delta.TotalSeconds / rate.TotalSeconds / Environment.ProcessorCount * 100);//Convert to % per second
                     else
                         cpuUsage = 0f;//Process reset..
                 }
@@ -182,7 +182,8 @@ public class WindowsDataProducer : IProgramDataProducer
                     if (_diskDelta.TryGetValue(process.Id, out IoCounters oldIoCounter))
                     {
                         diskUsage = (ioCounters.Value.ReadTransferCount + ioCounters.Value.WriteTransferCount) - (oldIoCounter.ReadTransferCount + oldIoCounter.WriteTransferCount);
-                        if(diskUsage < 0)//Process reset..
+                        diskUsage = diskUsage / (float)rate.TotalSeconds / 1_000_000.0f;//Bytes to MB/s
+                        if (diskUsage < 0)//Process reset..
                             diskUsage = 0;
                     }
                 }
