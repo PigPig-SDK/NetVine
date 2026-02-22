@@ -11,6 +11,7 @@ public class SystemHistory : IDisposable
     private readonly Lock _timerLock = new Lock();
     public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
     private Stopwatch _stopwatch;
+    public uint TotalSnapshotCount { get; private set; }
 
     public SystemHistory(IProgramDataProducer producer, uint capacity, TimeSpan snapshotInterval)
     {
@@ -45,6 +46,7 @@ public class SystemHistory : IDisposable
         {
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
+            TotalSnapshotCount++;
         }
         finally
         {
