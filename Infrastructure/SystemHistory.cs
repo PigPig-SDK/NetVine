@@ -46,11 +46,6 @@ public class SystemHistory : IDisposable
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
         }
-        catch(Exception ex)
-        {
-            //Log exception, but continue to refire timer.
-            Console.WriteLine($"Exception in snapshot: {ex}");
-        }
         finally
         {
             //Refire timer.
