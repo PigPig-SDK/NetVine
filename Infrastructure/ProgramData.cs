@@ -1,4 +1,6 @@
-﻿public class ProgramData
+﻿using Core;
+
+public class ProgramData : IProgramData
 {
     private string _systemName, _processName;
     private float _cpuUsage, _diskUsage, _networkUsage, _memoryUsage, _timespan;

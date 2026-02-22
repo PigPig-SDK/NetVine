@@ -205,7 +205,7 @@ public class WindowsDataProducer : IProgramDataProducer
 
                 //append data.
                 if (!programs.ContainsKey(process.ProcessName))
-                    programs.TryAdd(process.ProcessName, new MockProgramDataClass
+                    programs.TryAdd(process.ProcessName, new ProgramData
                     {
                         SystemName = Environment.MachineName,
                         ProcessName = process.ProcessName,
