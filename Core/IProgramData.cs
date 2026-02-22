@@ -1,4 +1,5 @@
-﻿namespace Core;
+﻿
+namespace Core;
 
 public interface IProgramData
 {
@@ -30,4 +31,6 @@ public interface IProgramData
     /// The time step of the program data
     /// </summary>
     public float Timespan { get; set; }
+    
+    public DateTime Date { get; set; }
 }
