@@ -101,14 +101,6 @@ public class ConfigManagerTests : IDisposable
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void Instance_ReturnsSameObject()
-    {
-        var a = ConfigManager.Instance;
-        var b = ConfigManager.Instance;
-        Assert.Same(a, b);
-    }
-
-    [Fact]
     public void WriteSetting_ReflectedOnInstance()
     {
         ConfigManager.WriteSetting(SettingInt.TrackDiskUsage, 0);

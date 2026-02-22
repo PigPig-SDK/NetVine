@@ -10,16 +10,34 @@ public class ConfigManager
 
     private static ConfigManager? _Instance;
 
-    public static ConfigManager Instance
+    private static ConfigManager Instance
+    {
+        get => _Instance ??= _Default;
+        set => _Instance = value;
+    }
+
+    /// <summary>
+    /// Gets the default instance of the ConfigManager class, which provides access to configuration settings.
+    /// </summary>
+    /// <remarks>This property creates a new instance of ConfigManager each time it is accessed. It is
+    /// intended for scenarios where a single instance is not maintained, ensuring that configuration settings are
+    /// retrieved fresh with each call.</remarks>
+    private static ConfigManager _Default { get => new ConfigManager(); }
+
+    /// <summary>
+    /// Gets the default file path for the application's configuration file in the user's application data folder.
+    /// </summary>
+    /// <remarks>The path is constructed by combining the application data directory with a subdirectory named
+    /// 'NetVine' and the file name 'config.yaml'. The directory is created if it does not already exist.</remarks>
+    private static string _DefaultFilePath
     {
         get
         {
-            if (_Instance == null) _Instance = _Default;
-            return _Instance;
+            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");
+            Directory.CreateDirectory(folder);
+            return Path.Combine(folder, "config.yaml");
         }
-        private set => _Instance = value;
     }
-
     /// <summary>Dictionary containing default integer setting values.</summary>
     private static readonly Dictionary<SettingInt, int> _DefaultIntValues = new()
     {
@@ -55,11 +73,11 @@ public class ConfigManager
     /// <remarks>This dictionary is intended for internal use within the class to manage application settings
     /// that require integer values. It should not be accessed directly from outside the containing class.</remarks>
     [YamlMember]
-    public Dictionary<SettingInt, int> _IntSettings;
+    private Dictionary<SettingInt, int> _IntSettings { get; set; }
     [YamlMember]
-    public Dictionary<SettingFloat, float> _FloatSettings;
+    private Dictionary<SettingFloat, float> _FloatSettings { get; set; }
     [YamlMember]
-    public Dictionary<SettingString, string> _StringSettings;
+    private Dictionary<SettingString, string> _StringSettings { get; set; }
 
     /// <summary>
     /// Called when a setting is changed.
@@ -155,36 +173,6 @@ public class ConfigManager
     }
 
     /// <summary>
-    /// Gets the default instance of the ConfigManager class, which provides access to configuration settings.
-    /// </summary>
-    /// <remarks>This property creates a new instance of ConfigManager each time it is accessed. It is
-    /// intended for scenarios where a single instance is not maintained, ensuring that configuration settings are
-    /// retrieved fresh with each call.</remarks>
-    private static ConfigManager _Default
-    {
-        get
-        {
-            var manager = new ConfigManager();
-            return manager;
-        }
-    }
-
-    /// <summary>
-    /// Gets the default file path for the application's configuration file in the user's application data folder.
-    /// </summary>
-    /// <remarks>The path is constructed by combining the application data directory with a subdirectory named
-    /// 'NetVine' and the file name 'config.yaml'. The directory is created if it does not already exist.</remarks>
-    private static string _DefaultFilePath
-    {
-        get
-        {
-            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");
-            Directory.CreateDirectory(folder);
-            return Path.Combine(folder, "config.yaml");
-        }
-    }
-
-    /// <summary>
     /// Loads a configuration from a YAML file at the specified path.
     /// </summary>
     /// <remarks>Ensure that the file at the specified path is in a valid YAML format. This method will throw
@@ -196,6 +184,7 @@ public class ConfigManager
         var yamlFile = File.ReadAllText(path);
         var deserializer = new DeserializerBuilder()
             .WithTypeConverter(new YamlStringEnumConverter())
+            .IncludeNonPublicProperties()
             .Build();
         return deserializer.Deserialize<ConfigManager>(yamlFile);
     }
@@ -211,6 +200,7 @@ public class ConfigManager
     {
         var serializer = new SerializerBuilder()
             .WithTypeConverter(new YamlStringEnumConverter())
+            .IncludeNonPublicProperties()
             .Build();
         var yamlOutput = serializer.Serialize(config);
         File.WriteAllText(path, yamlOutput);
