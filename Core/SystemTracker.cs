@@ -61,22 +61,25 @@ public class SystemTracker
         if (History.Count == 0) return null;
 
         Dictionary<string, (IProgramData data, float sum)> programs = [];
-        //Place into buckets
+        
         foreach (List<IProgramData> snapshot in History)
         {
             foreach (IProgramData data in snapshot)
             {
                 if (!programs.ContainsKey(data.ProcessName))
                 {
+                    //Place initial program
                     programs[data.ProcessName] = (data, 1.0f);
                 }
                 else
                 {
+                    //Iterate for average
                     programs[data.ProcessName].data.CpuUsage += data.CpuUsage;
                     programs[data.ProcessName].data.DiskUsage += data.DiskUsage;
                     programs[data.ProcessName].data.MemoryUsage += data.MemoryUsage;
                     programs[data.ProcessName].data.NetworkUsage += data.NetworkUsage;
                     programs[data.ProcessName].data.Timespan += data.Timespan;
+                    //Because tuples are a value type, I have to reassign the whole tuple to update the sum.
                     programs[data.ProcessName] = (programs[data.ProcessName].data, programs[data.ProcessName].sum + 1.0f);
                 }
             }

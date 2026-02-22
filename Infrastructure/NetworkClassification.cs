@@ -2,6 +2,6 @@
 
 public enum NetworkClassification
 {
-    NetworkIncoming,
-    NetworkOutgoing,
+    Incoming,
+    Outgoing,
 }

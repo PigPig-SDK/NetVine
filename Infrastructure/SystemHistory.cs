@@ -21,6 +21,9 @@ public class SystemHistory : IDisposable
         _timer = new Timer(TakeSnapshot, null, snapshotInterval, Timeout.InfiniteTimeSpan);
     }
 
+    /// <summary>
+    /// Resets the current snapshot interval.
+    /// </summary>
     public void ChangeSnapshotInterval(TimeSpan newInterval)
     {
         lock (_timerLock)
@@ -30,6 +33,7 @@ public class SystemHistory : IDisposable
         }
     }
 
+    /// <param name="_">Discarded object</param>
     private void TakeSnapshot(object? _)
     {
         //Account for timer drift with stopwatch.
@@ -56,9 +60,14 @@ public class SystemHistory : IDisposable
             }
         }
     }
-
+    /// <summary>
+    /// Returns the averages of the last N snapshots. Returns null if no data exists.
+    /// </summary>
     public List<IProgramData>? GetAverages() => _tracker.GetAverage();
 
+    /// <summary>
+    /// IDisposable implementation to dispose
+    /// </summary>
     public void Dispose()
     {
         _producer.Dispose();
