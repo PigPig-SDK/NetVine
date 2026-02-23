@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Infrastructure;
+using System.Diagnostics;
 
 namespace Core;
 
@@ -20,12 +21,20 @@ public class SystemHistory : IDisposable
         _snapshotInterval = snapshotInterval;
         _stopwatch = Stopwatch.StartNew();
         _timer = new Timer(TakeSnapshot, null, snapshotInterval, Timeout.InfiniteTimeSpan);
+        ConfigManager.OnSettingChanged += OnSettingChanged;
     }
 
-    /// <summary>
-    /// Resets the current snapshot interval.
-    /// </summary>
-    public void ChangeSnapshotInterval(TimeSpan newInterval)
+    private void OnSettingChanged(Enum setting)
+    {
+        if (setting is not SettingFloat settingfloat) return;
+
+        ChangeSnapshotInterval(TimeSpan.FromSeconds(ConfigManager.ReadSetting(settingfloat)));
+    }
+
+/// <summary>
+/// Resets the current snapshot interval.
+/// </summary>
+public void ChangeSnapshotInterval(TimeSpan newInterval)
     {
         lock (_timerLock)
         {
@@ -62,11 +71,14 @@ public class SystemHistory : IDisposable
     /// </summary>
     public List<IProgramData>? GetAverages() => _tracker.GetAverage();
 
+    ~SystemHistory() => Dispose();
+
     /// <summary>
     /// IDisposable implementation to dispose
     /// </summary>
     public void Dispose()
     {
+        ConfigManager.OnSettingChanged -= OnSettingChanged;
         _producer.Dispose();
     }
 }
