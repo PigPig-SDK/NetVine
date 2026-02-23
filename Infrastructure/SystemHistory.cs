@@ -10,17 +10,19 @@ public class SystemHistory : IDisposable
     private TimeSpan _snapshotInterval;
     private Timer _timer;
     private readonly Lock _timerLock = new Lock();
-    public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
     private Stopwatch _stopwatch;
-    public uint TotalSnapshotCount { get; private set; }
 
-    public SystemHistory(IProgramDataProducer producer, uint capacity, TimeSpan snapshotInterval)
+    public uint TotalSnapshotCount { get; private set; }
+    public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
+
+    public SystemHistory(IProgramDataProducer producer, uint capacity, TimeSpan? snapshotInterval = null)
     {
         _producer = producer;
         _tracker = new SystemTracker(producer, capacity);
-        _snapshotInterval = snapshotInterval;
+        _snapshotInterval = snapshotInterval ?? TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate));
         _stopwatch = Stopwatch.StartNew();
-        _timer = new Timer(TakeSnapshot, null, snapshotInterval, Timeout.InfiniteTimeSpan);
+        _timer = new Timer(TakeSnapshot, null, _snapshotInterval, Timeout.InfiniteTimeSpan);
+        
         ConfigManager.OnSettingChanged += OnSettingChanged;
     }
 
@@ -31,10 +33,10 @@ public class SystemHistory : IDisposable
         ChangeSnapshotInterval(TimeSpan.FromSeconds(ConfigManager.ReadSetting(settingfloat)));
     }
 
-/// <summary>
-/// Resets the current snapshot interval.
-/// </summary>
-public void ChangeSnapshotInterval(TimeSpan newInterval)
+    /// <summary>
+    /// Resets the current snapshot interval.
+    /// </summary>
+    public void ChangeSnapshotInterval(TimeSpan newInterval)
     {
         lock (_timerLock)
         {
@@ -56,6 +58,11 @@ public void ChangeSnapshotInterval(TimeSpan newInterval)
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
             TotalSnapshotCount++;
+            if(TotalSnapshotCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
+            {
+                var average = _tracker.GetAverage();
+                if(average != null) DBInteract.Store(average);
+            }
         }
         finally
         {

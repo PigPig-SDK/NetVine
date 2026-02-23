@@ -136,5 +136,9 @@ public class DBInteract : DbContext
             return null;
         }
     }
-    
+
+    public static void Store(IEnumerable<IProgramData> info)
+    {
+        Console.WriteLine("TODO: STORE DATA!!");
+    }
 }
