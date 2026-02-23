@@ -7,6 +7,37 @@ namespace Infrastructure;
 
 public class ConfigManager
 {
+
+    private static ConfigManager? _Instance;
+
+    private static ConfigManager Instance
+    {
+        get => _Instance ??= _Default;
+        set => _Instance = value;
+    }
+
+    /// <summary>
+    /// Gets the default instance of the ConfigManager class, which provides access to configuration settings.
+    /// </summary>
+    /// <remarks>This property creates a new instance of ConfigManager each time it is accessed. It is
+    /// intended for scenarios where a single instance is not maintained, ensuring that configuration settings are
+    /// retrieved fresh with each call.</remarks>
+    private static ConfigManager _Default { get => new ConfigManager(); }
+
+    /// <summary>
+    /// Gets the default file path for the application's configuration file in the user's application data folder.
+    /// </summary>
+    /// <remarks>The path is constructed by combining the application data directory with a subdirectory named
+    /// 'NetVine' and the file name 'config.yaml'. The directory is created if it does not already exist.</remarks>
+    private static string _DefaultFilePath
+    {
+        get
+        {
+            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");
+            Directory.CreateDirectory(folder);
+            return Path.Combine(folder, "config.yaml");
+        }
+    }
     /// <summary>Dictionary containing default integer setting values.</summary>
     private static readonly Dictionary<SettingInt, int> _DefaultIntValues = new()
     {
@@ -42,13 +73,18 @@ public class ConfigManager
     /// <remarks>This dictionary is intended for internal use within the class to manage application settings
     /// that require integer values. It should not be accessed directly from outside the containing class.</remarks>
     [YamlMember]
-    public Dictionary<SettingInt, int> _IntSettings;
+    private Dictionary<SettingInt, int> _IntSettings { get; set; }
     [YamlMember]
-    public Dictionary<SettingFloat, float> _FloatSettings;
+    private Dictionary<SettingFloat, float> _FloatSettings { get; set; }
     [YamlMember]
-    public Dictionary<SettingString, string> _StringSettings;
+    private Dictionary<SettingString, string> _StringSettings { get; set; }
 
-
+    /// <summary>
+    /// Called when a setting is changed.
+    /// The parameter is the enum of the setting.
+    /// </summary>
+    /// <remarks>Expect Enum of : SettingInt, SettingFloat or SettingString</remarks>
+    public static Action<Enum>? OnSettingChanged { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the ConfigManager class with default configuration file path and empty settings
@@ -94,10 +130,6 @@ public class ConfigManager
             _StringSettings[setting] = _DefaultStringValues.ContainsKey(setting) ? _DefaultStringValues[setting] : string.Empty;
     }
 
-
-
-
-
     /// <summary>
     /// Retrieves the value associated with the specified application setting.
     /// </summary>
@@ -105,9 +137,9 @@ public class ConfigManager
     /// setting exists in the configuration before calling this method.</remarks>
     /// <param name="setting">The setting for which to retrieve the integer value. Must be a valid member of the SettingInt enumeration.</param>
     /// <returns>The integer value corresponding to the specified setting.</returns>
-    public static int ReadSetting(SettingInt setting) { return Instance._IntSettings[setting]; }
-    public static float ReadSetting(SettingFloat setting) { return Instance._FloatSettings[setting]; }
-    public static string ReadSetting(SettingString setting) { return Instance._StringSettings[setting]; }
+    public static int ReadSetting(SettingInt setting) => Instance._IntSettings[setting];
+    public static float ReadSetting(SettingFloat setting) => Instance._FloatSettings[setting];
+    public static string ReadSetting(SettingString setting) => Instance._StringSettings[setting];
 
     /// <summary>
     /// Assigns the specified integer value to the given integer setting.
@@ -116,55 +148,29 @@ public class ConfigManager
     /// setting is valid before calling this method.</remarks>
     /// <param name="setting">The integer setting to update. Must be a valid value of the SettingInt enumeration.</param>
     /// <param name="value">The integer value to assign to the specified setting.</param>
-    public static void WriteSetting(SettingInt setting, int value) {  Instance._IntSettings[setting] = value; }
-    public static void WriteSetting(SettingFloat setting, float value) {  Instance._FloatSettings[setting] = value; }
-    public static void WriteSetting(SettingString setting, string value) {  Instance._StringSettings[setting] = value; }
-
-    /// <summary></summary>
-    private static ConfigManager? _Instance;
-
-    public static ConfigManager Instance
+    public static void WriteSetting(SettingInt setting, int value) 
     {
-        get
-        {
-            if (_Instance == null) _Instance = _Default;
-            return _Instance;
-        }
-        private set => _Instance = value;
-    }
-
-
-
-    /// <summary>
-    /// Gets the default instance of the ConfigManager class, which provides access to configuration settings.
-    /// </summary>
-    /// <remarks>This property creates a new instance of ConfigManager each time it is accessed. It is
-    /// intended for scenarios where a single instance is not maintained, ensuring that configuration settings are
-    /// retrieved fresh with each call.</remarks>
-    private static ConfigManager _Default
-    {
-        get
-        {
-            var manager = new ConfigManager();
-            return manager;
-        }
+        Instance._IntSettings[setting] = value;
+        OnSettingChanged?.Invoke(setting);
     }
 
     /// <summary>
-    /// Gets the default file path for the application's configuration file in the user's application data folder.
+    /// Assigns the specified float value to the given float setting.
     /// </summary>
-    /// <remarks>The path is constructed by combining the application data directory with a subdirectory named
-    /// 'NetVine' and the file name 'config.yaml'. The directory is created if it does not already exist.</remarks>
-    private static string _DefaultFilePath
-    {
-        get
-        {
-            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");
-            Directory.CreateDirectory(folder);
-            return Path.Combine(folder, "config.yaml");
-        }
+    public static void WriteSetting(SettingFloat setting, float value) 
+    {  
+        Instance._FloatSettings[setting] = value;
+        OnSettingChanged?.Invoke(setting);
     }
 
+    /// <summary>
+    /// Assigns the specified string value to the given string setting.
+    /// </summary>
+    public static void WriteSetting(SettingString setting, string value) 
+    {  
+        Instance._StringSettings[setting] = value;
+        OnSettingChanged?.Invoke(setting);
+    }
 
     /// <summary>
     /// Loads a configuration from a YAML file at the specified path.
@@ -178,6 +184,7 @@ public class ConfigManager
         var yamlFile = File.ReadAllText(path);
         var deserializer = new DeserializerBuilder()
             .WithTypeConverter(new YamlStringEnumConverter())
+            .IncludeNonPublicProperties()
             .Build();
         return deserializer.Deserialize<ConfigManager>(yamlFile);
     }
@@ -193,6 +200,7 @@ public class ConfigManager
     {
         var serializer = new SerializerBuilder()
             .WithTypeConverter(new YamlStringEnumConverter())
+            .IncludeNonPublicProperties()
             .Build();
         var yamlOutput = serializer.Serialize(config);
         File.WriteAllText(path, yamlOutput);
@@ -271,7 +279,4 @@ public class ConfigManager
             emitter.Emit(new Scalar(value!.ToString()!));
         }
     }
-
-
-
 }
