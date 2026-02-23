@@ -1,15 +1,15 @@
 ﻿namespace Core;
 
-public interface IProgramDataProducer
+public interface IProgramDataProducer : IDisposable
 {
     /// <summary>
     /// The system name of our data.
     /// </summary>
-    public string SystemName { get; set; }
+    public string SystemName { get;}
     /// <summary>
     /// Calls to produce the instant program data
     /// </summary>
     /// <param name="rate">Metadata about how long the current collection timespan</param>
     /// <returns></returns>
-    public List<IProgramData> Produce(float rate);
+    public ICollection<IProgramData> Produce(TimeSpan rate);
 }
