@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Core;
+using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 
 namespace Infrastructure;
 public class DBInteract : DbContext
@@ -33,7 +34,7 @@ public class DBInteract : DbContext
     }
 
     /// <summary>
-    /// Lists all items in DB.
+    /// Returns a list of DB contents
     /// </summary>
     /// <returns></returns>
     public static List<ProgramData>? ListAll()
@@ -41,6 +42,29 @@ public class DBInteract : DbContext
         using (var db = new DBInteract())
         {
             return db.ProgramDataTable.ToList();
+        }
+    }
+    
+    /// <summary>
+    /// Lists all items in DB.
+    /// </summary>
+    /// <returns></returns>
+    public static void ListAllToString()
+    {
+        using (var db = new DBInteract())
+        {
+            if(!(db.ProgramDataTable.ToList().Count == 0))
+            {
+                foreach(var entry in db.ProgramDataTable.ToList()){;
+                    Console.WriteLine("System Name: " + entry.SystemName);
+                    Console.WriteLine("Date: " + entry.Date);
+                    Console.WriteLine("Process Name: " + entry.ProcessName);
+                }
+            }
+            else
+            {
+                Console.WriteLine("DB is empty\n");
+            }
         }
     }
 
@@ -69,26 +93,47 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
-
+    
+    /// <summary>
+    /// Wipes ProgramDataTable data
+    /// </summary>
+    public static void ClearAll()
+    {
+        using (var db = new DBInteract())
+        {
+            db.ProgramDataTable.RemoveRange(db.ProgramDataTable);
+            db.SaveChanges();
+        }
+    }
+    
     /// <summary>
     /// Submit an entry to the DB without an existing context.
     /// </summary>
-    /// <param name="entry"></param>
+    /// <param name="entry"></param> Submission
     public static void SubmitEntry(ProgramData entry)
     {
         using (var db = new DBInteract())
         {
+            if(EntryExists(entry))
+            {
+                return;
+            }
             db.ProgramDataTable.Add(entry);
-            db.SaveChanges();
+            db.SaveChanges();   
         }
     }
     
     /// <summary>
     /// Submit an entry to the DB with an existing context.
     /// </summary>
-    /// <param name="entry"></param>
+    /// <param name="entry"></param> Submission
+    /// <param name="db"></param> Context
     public static void SubmitEntry(ProgramData entry, DBInteract db)
     {
+        if(EntryExists(entry))
+        {
+            return;
+        }
         db.ProgramDataTable.Add(entry);
         db.SaveChanges();
     }
@@ -120,6 +165,22 @@ public class DBInteract : DbContext
         using (var db = new DBInteract())
         {
             return (db.ProgramDataTable.Find(entry.SystemName, entry.Date, entry.ProcessName) != null);
+        }
+    }
+
+    /// <summary>
+    /// Returns ProgramData from Primary key if it exists in DB, and null if it does nut
+    /// </summary>
+    /// <param name="SystemName"></param>
+    /// <param name="Date"></param>
+    /// <param name="ProcessName"></param>
+    /// <returns></returns>
+    public static ProgramData? RetrieveEntry(string SystemName, DateTime Date, string ProcessName)
+    {
+        using (var db = new DBInteract())
+        {
+            return db.ProgramDataTable.AsQueryable().FirstOrDefault(p => p.SystemName == SystemName && p.Date == Date
+                && p.ProcessName == ProcessName);
         }
     }
 
