@@ -44,7 +44,9 @@ public class ConfigManager
         {SettingInt.TrackDiskUsage, 1},
         {SettingInt.TrackCPUUsage, 1},
         {SettingInt.TrackMemoryUsage, 1},
-        {SettingInt.TrackNetworkUsage,  1}
+        {SettingInt.TrackNetworkUsage,  1},
+        {SettingInt.IsHosting, 0},
+        {SettingInt.HostPort, NetworkManager.DefaultPort}
     };
 
 
@@ -56,7 +58,10 @@ public class ConfigManager
 
 
     /// <summary>Dictionary containing default string setting values.</summary>
-    private static readonly Dictionary<SettingString, string> _DefaultStringValues = new();
+    private static readonly Dictionary<SettingString, string> _DefaultStringValues = new()
+    {
+        { SettingString.HostIP, NetworkManager.DefaultHost}
+    };
     
     
     /// <summary></summary>
@@ -78,6 +83,9 @@ public class ConfigManager
     private Dictionary<SettingFloat, float> _FloatSettings { get; set; }
     [YamlMember]
     private Dictionary<SettingString, string> _StringSettings { get; set; }
+    [YamlMember]
+    private List<(string connection, int port)> _ClientConnections { get; set; }
+    public static IReadOnlyList<(string connection, int port)> ClientConnections => Instance._ClientConnections;
 
     /// <summary>
     /// Called when a setting is changed.
@@ -85,6 +93,7 @@ public class ConfigManager
     /// </summary>
     /// <remarks>Expect Enum of : SettingInt, SettingFloat or SettingString</remarks>
     public static Action<Enum>? OnSettingChanged { get; set; }
+    public static Action<(string connection, int port)>? OnClientAdded { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the ConfigManager class with default configuration file path and empty settings
@@ -95,9 +104,10 @@ public class ConfigManager
     /// configuration files automatically.</remarks>
     public ConfigManager() 
     {
-        _IntSettings = new Dictionary<SettingInt, int>();
-        _FloatSettings = new Dictionary<SettingFloat, float>();
-        _StringSettings = new Dictionary<SettingString, string>();
+        _IntSettings = [];
+        _FloatSettings = [];
+        _StringSettings = [];
+        _ClientConnections = [];
         InitializeDictionaries();
     }
 
@@ -171,7 +181,15 @@ public class ConfigManager
         Instance._StringSettings[setting] = value;
         OnSettingChanged?.Invoke(setting);
     }
-
+    /// <summary>
+    /// Adds a ip to the list of connections
+    /// </summary>
+    /// <param name="connection"></param>
+    public static void AddClientConnection(string connection, int port)
+    {
+        Instance._ClientConnections.Add((connection,port));
+        OnClientAdded?.Invoke((connection, port));
+    }
     /// <summary>
     /// Loads a configuration from a YAML file at the specified path.
     /// </summary>

@@ -6,5 +6,7 @@ public enum SettingInt
     TrackDiskUsage,
     TrackCPUUsage,
     TrackMemoryUsage,
-    TrackNetworkUsage
+    TrackNetworkUsage,
+    HostPort,
+    IsHosting,
 };
