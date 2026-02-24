@@ -17,7 +17,8 @@ history.OnSnapshotTaken = (data) =>
 
 while (true)
 {
-    Console.WriteLine("Enter a program you want to track\n'clear' to clear you selection\n'list' to list programs");
+    Console.WriteLine("Enter a program you want to track\n'clear' to clear you selection\n'list' to list programs" +
+                      "\n'store and retrieve' to demo database");
     string? input = Console.ReadLine();
     if(string.IsNullOrEmpty(input))
     {
@@ -33,6 +34,26 @@ while (true)
     {
         trackedProcesses.Clear();
         Console.WriteLine("Cleared tracked processes");
+    }
+    else if (input == "store and retrieve")
+    {
+        ProgramData testData = new ProgramData();
+        testData.Date = DateTime.Now;
+        
+        Console.WriteLine("Enter system name");
+        testData.SystemName = Console.ReadLine(); 
+        
+        Console.WriteLine("Enter program name");
+        testData.ProcessName = Console.ReadLine();
+        
+        Console.WriteLine($"\nSubmitting...\n");
+        DBInteract.SubmitEntry(testData);
+        
+        Console.WriteLine($"\nRetrieving...\n");
+        Console.WriteLine("System Name: "  + DBInteract.ListAll()[0].SystemName +"\n" +
+                          "Program Name: " + DBInteract.ListAll()[0].ProcessName +"\n" +
+                          "Date: " + DBInteract.ListAll()[0].Date);
+        
     }
     else if (input == "list")
     {
