@@ -8,28 +8,27 @@
 		xmlns:views="clr-namespace:UI"
         Icon="/Assets/avalonia-logo.ico"
         Title="MainWindow">
+	<Grid ColumnDefinitions="*,150">
+		<TabControl Grid.Column="0">
+			<TabItem Header="Tab1">
+			<Grid ColumnDefinitions="150, *">
 
-	<TabControl>
-		<TabItem Header="Tab1">
-		<Grid ColumnDefinitions="150, *, 150">
+					<!-- Area 1 (Left Column) -->
+					<views:ComponentView Grid.Column="0" />
 
-		        <!-- Area 1 (Left Column) -->
-		        <views:ComponentView Grid.Column="0" />
-
-		        <!-- Canvas Area (Center Column) -->
-		        <views:Canvas Grid.Column="1" />
-
-		        <!-- Area 2 (Right Column) -->
-		        <views:FolderView Grid.Column="2" />
-
-	        </Grid>
-		</TabItem>
-		<TabItem Header="Tab2">
-			<Border Background="LightGray" Margin="10" CornerRadius="8">
-				<TextBlock Text="Content Goes Here"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
-			</Border>
-		</TabItem>
-	</TabControl>
+					<!-- Canvas Area (Center Column) -->
+					<views:Canvas Grid.Column="1" />
+				</Grid>
+			</TabItem>
+			<TabItem Header="Tab2">
+				<Border Background="LightGray" Margin="10" CornerRadius="8">
+					<TextBlock Text="Content Goes Here"
+							   HorizontalAlignment="Center"
+							   VerticalAlignment="Center" />
+				</Border>
+			</TabItem>
+		</TabControl>
+		<!-- Folder view (Right Column) -->
+		<views:FolderView Grid.Column="1" />
+	</Grid>
 </Window>
