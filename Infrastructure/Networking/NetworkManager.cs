@@ -1,7 +1,6 @@
-﻿
-using System.Net;
+﻿using System.Net;
 
-namespace Infrastructure;
+namespace Infrastructure.Networking;
 
 public class NetworkManager
 {
@@ -11,7 +10,7 @@ public class NetworkManager
     public const int DefaultPort = 12345;
     public const string DefaultHost = "127.0.0.1";
 
-    public List<DataClient> Clients { get; private set; } = [];
+    public List<Client> Clients { get; private set; } = [];
 
 
 
@@ -30,7 +29,7 @@ public class NetworkManager
                 Console.WriteLine($"Invalid IP address: {connectionContext.connection}");
                 continue;
             }
-            DataClient dc = new(ip, connectionContext.port);
+            Client dc = new(ip, connectionContext.port);
             dc.ConnectAsync();
         }
     }

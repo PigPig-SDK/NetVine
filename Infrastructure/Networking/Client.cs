@@ -1,13 +1,13 @@
 ﻿using NetCoreServer;
 using System.Net;
 
-namespace Infrastructure;
+namespace Infrastructure.Networking;
 
-public class DataClient : TcpClient
+public class Client : TcpClient
 {
     private bool _shutdown = false;
 
-    public DataClient(IPAddress address, int port) : base(address, port) { }
+    public Client(IPAddress address, int port) : base(address, port) { }
 
     protected override void OnConnected()
     {
