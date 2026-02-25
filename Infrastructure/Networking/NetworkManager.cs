@@ -10,16 +10,15 @@ public class NetworkManager
     public const int DefaultPort = 12345;
     public const string DefaultHost = "127.0.0.1";
 
-    public List<Client> Clients { get; private set; } = [];
-
+    public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
 
 
     NetworkManager()
     {
-        StartClientConnections();
+        RefreshClientConnections();
     }
 
-    private void StartClientConnections()
+    private void RefreshClientConnections()
     {
         foreach (var connectionContext in ConfigManager.ClientConnections)
         {
@@ -29,14 +28,28 @@ public class NetworkManager
                 Console.WriteLine($"Invalid IP address: {connectionContext.connection}");
                 continue;
             }
-            Client dc = new(ip, connectionContext.port);
-            dc.ConnectAsync();
+            var connectionIdentity = (ip, connectionContext.port);
+
+            if (EstablishedClientConnections.ContainsKey(connectionIdentity))//Connection has been atempted
+            {
+                Client client = EstablishedClientConnections[connectionIdentity];
+                if (!client.IsConnected && !client.IsConnecting)//Connection is dead
+                {
+                    client.ConnectAsync();//Retry
+                }
+            }
+            else//No Connection
+            {
+                Client client = new(ip, connectionContext.port);
+                client.ConnectAsync();
+                EstablishedClientConnections.Add(connectionIdentity, client);
+            }
         }
     }
 
     private void Shutdown()
     {
-        foreach (var client in Clients)
+        foreach (var client in EstablishedClientConnections.Values)
         {
             client.DisconnectShutdown();
         }
