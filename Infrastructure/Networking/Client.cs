@@ -1,4 +1,5 @@
-﻿using NetCoreServer;
+﻿using Infrastructure.Networking.Packets;
+using NetCoreServer;
 using System.Net;
 using System.Text;
 
@@ -22,7 +23,31 @@ public class Client : TcpClient
 
     override protected void OnReceived(byte[] buffer, long offset, long size)
     {
-        Console.WriteLine(Encoding.UTF8.GetString(buffer, (int)offset, (int)size));
+        if(Packet.TryFromBytes(buffer, out Packet? packet))//Successful packet
+        {
+            Task.Run(() => ManagePacket(packet!));
+        }
+        else
+        {
+            Console.WriteLine("Malformed packet!");
+        }
+    }
+
+    private void ManagePacket(Packet packet)
+    {
+        switch(packet.PacketType)
+        {
+            case PacketType.TextMessage:
+                {
+                    Console.WriteLine(packet.Deserialize<StringPayload>().Value);
+                    break;
+                }
+            default:
+                {
+                    Console.WriteLine("Packet is unreadable!");
+                    break;
+                }
+        }
     }
 
     protected override void OnError(System.Net.Sockets.SocketError error)

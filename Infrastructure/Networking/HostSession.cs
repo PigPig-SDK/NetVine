@@ -17,6 +17,6 @@ public class HostSession : TcpSession
     }
     protected override void OnReceived(byte[] buffer, long offset, long size)
     {
-        Console.WriteLine(Encoding.UTF8.GetString(buffer, (int)offset, (int)size));
+        Console.WriteLine("You got a message.");
     }
 }

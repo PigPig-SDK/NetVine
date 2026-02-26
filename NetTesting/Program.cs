@@ -3,6 +3,7 @@
 ///
 
 using Infrastructure.Networking;
+using Infrastructure.Networking.Packets;
 using System.Net;
 
 Client? client = null;
@@ -52,7 +53,7 @@ while (true)
             }
         case "connect":
             {
-                if (client != null) return;
+                if (client != null) return;  
 
                 if (split.Length != 3)
                 {
@@ -133,12 +134,14 @@ while (true)
                 Console.WriteLine($"Created package of {result} bytes");
                 if (host != null)
                 {
-                    host.Multicast(message);
+                    byte[] packet = Packet.CreatePacket(new StringPayload("Hey from client!")).ToBytes();
+                    host.Multicast(packet);
                     continue;
                 }
                 if(client != null)
                 {
-                    client.Send(message);
+                    byte[] packet = Packet.CreatePacket(new StringPayload("Hey from client!")).ToBytes();
+                    client.Send(packet);
                 }
 
                 if(client == null && host == null)
