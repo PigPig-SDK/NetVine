@@ -1,6 +1,7 @@
 ﻿namespace Infrastructure.Networking.Packets;
 
-public enum PacketType
+public enum PacketType : byte
 {
+    Unknown,
     TextMessage,
 }

@@ -22,7 +22,7 @@ public class Packet
     public static Packet CreatePacket<T>(T data) where T : IPacketPayload
     {
         using MemoryStream ms = new();
-        Serializer.Serialize(ms, data);
+        Serializer.SerializeWithLengthPrefix(ms, data, PrefixStyle.Fixed32);
         return new Packet(data.PacketType, ms.ToArray());
     }
     /// <summary>
@@ -33,7 +33,7 @@ public class Packet
     public T Deserialize<T>() where T : IPacketPayload
     {
         using MemoryStream ms = new(Data);
-        return Serializer.Deserialize<T>(ms);
+        return Serializer.DeserializeWithLengthPrefix<T>(ms, PrefixStyle.Fixed32);
     }
     /// <summary>
     /// Converts bytes to a packet
@@ -43,7 +43,7 @@ public class Packet
     public static Packet FromBytes(byte[] bytes)
     {
         using MemoryStream ms = new(bytes);
-        return Serializer.Deserialize<Packet>(ms);
+        return Serializer.DeserializeWithLengthPrefix<Packet>(ms, PrefixStyle.Fixed32);
     }
     /// <summary>
     /// Trys to generate a packet, catches if the packet is malformed.
@@ -72,7 +72,7 @@ public class Packet
     public byte[] ToBytes()
     {
         using MemoryStream ms = new();
-        Serializer.Serialize(ms, this);
+        Serializer.SerializeWithLengthPrefix(ms, this, PrefixStyle.Fixed32);
         return ms.ToArray();
     }
 }

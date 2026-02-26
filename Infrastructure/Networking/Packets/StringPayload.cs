@@ -12,6 +12,11 @@ public class StringPayload : IPacketPayload
     [ProtoMember(1)]
     public string Value { get; set; }
 
+    private StringPayload() 
+    {
+        Value = string.Empty;
+    }
+
     public StringPayload(string value)
     {
         Value = value;
