@@ -10,8 +10,6 @@ public class MessageBuffer
 {
     private readonly List<byte> _buffer = new();
 
-    private Lock _lock = new Lock();
-
     /// <summary>
     /// Append data to the buffer. Use TryReadPacket(...) for the managing the buffered data.
     /// </summary>
@@ -22,10 +20,7 @@ public class MessageBuffer
     public void Append(byte[] data, long offset, long size)
     {
         if (size <= 0) return;
-        lock (_lock)
-        {
-            _buffer.AddRange(new ArraySegment<byte>(data, (int)offset, (int)size));
-        }
+        _buffer.AddRange(new ArraySegment<byte>(data, (int)offset, (int)size));
     }
     /// <summary>
     /// Attempts to read a valid packet, If no packet is visualized, you will get nothing out.
@@ -35,21 +30,18 @@ public class MessageBuffer
     public bool TryReadPacket(out byte[]? packetBytes)
     {
         packetBytes = null;
-        lock (_lock)
-        {
-            if (_buffer.Count < 4)//4 bytes for reading message length
-                return false;
+        if (_buffer.Count < 4)//4 bytes for reading message length
+            return false;
 
-            int messageLength = BitConverter.ToInt32(new[] { _buffer[0], _buffer[1], _buffer[2], _buffer[3] }, 0);//Use first 4 bytes to get message length
+        int messageLength = BitConverter.ToInt32(new[] { _buffer[0], _buffer[1], _buffer[2], _buffer[3] }, 0);//Use first 4 bytes to get message length
 
-            if (_buffer.Count < 4 + messageLength)//The full message is there.
-                return false;
+        if (_buffer.Count < 4 + messageLength)//The full message is there.
+            return false;
 
-            //Pop the message bytes
-            packetBytes = _buffer.Take(4 + messageLength).ToArray();
-            _buffer.RemoveRange(0, 4 + messageLength);
-            return true;
-        }
+        //Pop the message bytes
+        packetBytes = _buffer.Take(4 + messageLength).ToArray();
+        _buffer.RemoveRange(0, 4 + messageLength);
+        return true;
     }
 
     public void Clear() => _buffer.Clear();
