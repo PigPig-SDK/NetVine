@@ -18,10 +18,7 @@ void PrintHelp()
     Console.WriteLine("Type 'clear' clear screen");
     Console.WriteLine("Type 'send <byte count>' to send garbage of that size");
 }
-
 PrintHelp();
-
-
 
 while (true)
 {
@@ -115,26 +112,9 @@ while (true)
             }
         case "send":
             {
-                if (split.Length != 2)
-                {
-                    Console.WriteLine("Please supply an ammount of bytes to send.");
-                    continue;
-                }
-                if(!int.TryParse(split[1], out int result))
-                {
-                    Console.WriteLine($"{split[1]} is not a valid number.");
-                    continue;
-                }
-
-                byte[] message = new byte[result];//Allocate a ton of useless shit.
-                for(int i = 0; i <  message.Length; i++)
-                {
-                    message[i] = (byte)(i % Byte.MaxValue);
-                }
-                Console.WriteLine($"Created package of {result} bytes");
                 if (host != null)
                 {
-                    byte[] packet = Packet.CreatePacket(new StringPayload("Hey from client!")).ToBytes();
+                    byte[] packet = Packet.CreatePacket(new StringPayload("Hello from host!")).ToBytes();
                     host.Multicast(packet);
                     continue;
                 }
