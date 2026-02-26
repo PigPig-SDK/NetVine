@@ -1,5 +1,4 @@
 ﻿using ProtoBuf;
-using System.Net;
 
 namespace Infrastructure.Networking.Packets;
 
@@ -11,7 +10,9 @@ public class Packet
     [ProtoMember(2)]
     public byte[] Data { get; set; }
 
-    private Packet() { }
+    private Packet() {
+        Data = new byte[0];
+    }
 
     private Packet(PacketType packetType, byte[] data)
     {
