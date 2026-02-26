@@ -1,6 +1,4 @@
 ﻿using ProtoBuf;
-using System.Runtime.CompilerServices;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure.Networking.Packets;
 
@@ -20,5 +18,10 @@ public class StringPayload : IPacketPayload
     public StringPayload(string value)
     {
         Value = value;
+    }
+
+    public void Execute()
+    {
+        Console.WriteLine(Value);
     }
 }

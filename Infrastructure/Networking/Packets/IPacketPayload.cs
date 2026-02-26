@@ -5,4 +5,5 @@
 public interface IPacketPayload 
 {
     PacketType PacketType { get; }
+    void Execute();
 }

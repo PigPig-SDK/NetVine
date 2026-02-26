@@ -24,7 +24,15 @@ public class PacketTests
         Packet packet = Packet.FromBytes(bytes);
         StringPayload data = packet.Deserialize<StringPayload>();
         
-        Assert.Equal(PacketType.TextMessage, packet.PacketType);
+        Assert.Equal(PacketType.TextMessage, packet.PacketInfo);
         Assert.Equal("Hello Testing!", data.Value);
+    }
+    [Fact]
+    public void StringPayload_ToObject_CorrectObject()
+    {
+        Packet packet = Packet.CreatePacket(new StringPayload("Hello Testing!"));
+
+        IPacketPayload packetPayload = packet.ToObject();
+        Assert.IsType<StringPayload>(packetPayload);
     }
 }

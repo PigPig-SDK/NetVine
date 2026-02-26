@@ -1,4 +1,5 @@
 ﻿using ProtoBuf;
+using System.Reflection;
 
 namespace Infrastructure.Networking.Packets;
 
@@ -6,9 +7,12 @@ namespace Infrastructure.Networking.Packets;
 public class Packet
 {
     [ProtoMember(1)]
-    public PacketType PacketType { get; set; }
+    public PacketType PacketInfo { get; set; }
     [ProtoMember(2)]
     public byte[] Data { get; set; }
+
+
+    private static readonly Dictionary<PacketType, Type> _deserializeMap = new() { { PacketType.TextMessage, typeof(StringPayload)} };
 
     private Packet() {
         Data = new byte[0];
@@ -16,7 +20,7 @@ public class Packet
 
     private Packet(PacketType packetType, byte[] data)
     {
-        PacketType = packetType;
+        PacketInfo = packetType;
         Data = data;
     }
 
@@ -35,6 +39,39 @@ public class Packet
     {
         using MemoryStream ms = new(Data);
         return Serializer.DeserializeWithLengthPrefix<T>(ms, PrefixStyle.Fixed32);
+    }
+    /// <summary>
+    /// Convert this packets payload to an IPacketPayload
+    /// </summary>
+    public IPacketPayload? ToObject()
+    {
+        if (!_deserializeMap.TryGetValue(PacketInfo, out Type? type))
+            throw new InvalidOperationException($"No deserializer registered for {PacketInfo}");
+
+        MethodInfo method = typeof(Packet)
+        .GetMethod(nameof(Deserialize))!
+        .MakeGenericMethod(type);
+
+        return (IPacketPayload?)method.Invoke(this, null);
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public bool TryExecute()
+    {
+        try
+        {
+            IPacketPayload? payload = ToObject();
+            if (payload is null) return false;
+            payload.Execute();
+            return true;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException || ex is TargetInvocationException || ex is InvalidOperationException)
+        {
+            Console.WriteLine(ex.ToString());
+            return false;
+        }
     }
     /// <summary>
     /// Converts bytes to a packet

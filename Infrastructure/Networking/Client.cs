@@ -30,29 +30,12 @@ public class Client : TcpClient
         {
             if (Packet.TryFromBytes(packetbytes!, out Packet? packet))
             {
-                Task.Run(() => ManagePacket(packet!));
+                Task.Run(() => packet!.TryExecute());
             }
             else
             {
                 Console.WriteLine("Malformed packet!");
             }
-        }
-    }
-
-    private void ManagePacket(Packet packet)
-    {
-        switch(packet.PacketType)
-        {
-            case PacketType.TextMessage:
-                {
-                    Console.WriteLine(packet.Deserialize<StringPayload>().Value);
-                    break;
-                }
-            default:
-                {
-                    Console.WriteLine("Packet is unreadable!");
-                    break;
-                }
         }
     }
 
