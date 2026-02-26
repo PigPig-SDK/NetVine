@@ -8,6 +8,7 @@ namespace Infrastructure.Networking;
 public class Client : TcpClient
 {
     private bool _shutdown = false;
+    private MessageBuffer _messageBuffer = new();
 
     public Client(IPAddress address, int port) : base(address, port) { }
 
@@ -23,13 +24,18 @@ public class Client : TcpClient
 
     override protected void OnReceived(byte[] buffer, long offset, long size)
     {
-        if(Packet.TryFromBytes(buffer, out Packet? packet))//Successful packet
+        _messageBuffer.Append(buffer, offset, size);
+
+        while (_messageBuffer.TryReadPacket(out var packetbytes))
         {
-            Task.Run(() => ManagePacket(packet!));
-        }
-        else
-        {
-            Console.WriteLine("Malformed packet!");
+            if (Packet.TryFromBytes(packetbytes!, out Packet? packet))
+            {
+                Task.Run(() => ManagePacket(packet!));
+            }
+            else
+            {
+                Console.WriteLine("Malformed packet!");
+            }
         }
     }
 

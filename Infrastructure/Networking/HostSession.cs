@@ -1,11 +1,13 @@
-﻿using NetCoreServer;
-using System.Text;
+﻿using Infrastructure.Networking.Packets;
+using NetCoreServer;
 
 namespace Infrastructure.Networking;
 
 public class HostSession : TcpSession
 {
     public HostSession(TcpServer server) : base(server) { }
+
+    private MessageBuffer _messageBuffer  = new();
 
     protected override void OnConnected()
     {
@@ -17,6 +19,35 @@ public class HostSession : TcpSession
     }
     protected override void OnReceived(byte[] buffer, long offset, long size)
     {
-        Console.WriteLine("You got a message.");
+        _messageBuffer.Append(buffer, offset, size);
+
+        while (_messageBuffer.TryReadPacket(out var packetbytes))
+        {
+            if(Packet.TryFromBytes(packetbytes!, out Packet? packet))
+            {
+                Task.Run(()=> ManagePacket(packet!));
+            }
+            else
+            {
+                Console.WriteLine("Malformed packet!");
+            }
+        }
+    }
+
+    private void ManagePacket(Packet packet)
+    {
+        switch (packet.PacketType)
+        {
+            case PacketType.TextMessage:
+                {
+                    Console.WriteLine(packet.Deserialize<StringPayload>().Value);
+                    break;
+                }
+            default:
+                {
+                    Console.WriteLine("Packet is unreadable!");
+                    break;
+                }
+        }
     }
 }
