@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Infrastructure;
+using System.Diagnostics;
 
 namespace Core;
 
@@ -9,17 +10,27 @@ public class SystemHistory : IDisposable
     private TimeSpan _snapshotInterval;
     private Timer _timer;
     private readonly Lock _timerLock = new Lock();
-    public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
     private Stopwatch _stopwatch;
-    public uint TotalSnapshotCount { get; private set; }
 
-    public SystemHistory(IProgramDataProducer producer, uint capacity, TimeSpan snapshotInterval)
+    public uint TotalSnapshotCount { get; private set; }
+    public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
+
+    public SystemHistory(IProgramDataProducer producer, uint capacity, TimeSpan? snapshotInterval = null)
     {
         _producer = producer;
         _tracker = new SystemTracker(producer, capacity);
-        _snapshotInterval = snapshotInterval;
+        _snapshotInterval = snapshotInterval ?? TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate));
         _stopwatch = Stopwatch.StartNew();
-        _timer = new Timer(TakeSnapshot, null, snapshotInterval, Timeout.InfiniteTimeSpan);
+        _timer = new Timer(TakeSnapshot, null, _snapshotInterval, Timeout.InfiniteTimeSpan);
+        
+        ConfigManager.OnSettingChanged += OnSettingChanged;
+    }
+
+    private void OnSettingChanged(Enum setting)
+    {
+        if (setting is not SettingFloat settingfloat) return;
+
+        ChangeSnapshotInterval(TimeSpan.FromSeconds(ConfigManager.ReadSetting(settingfloat)));
     }
 
     /// <summary>
@@ -47,6 +58,11 @@ public class SystemHistory : IDisposable
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
             TotalSnapshotCount++;
+            if(TotalSnapshotCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
+            {
+                var average = _tracker.GetAverage();
+                if(average != null) DBInteract.Store(average);
+            }
         }
         finally
         {
@@ -62,11 +78,14 @@ public class SystemHistory : IDisposable
     /// </summary>
     public List<IProgramData>? GetAverages() => _tracker.GetAverage();
 
+    ~SystemHistory() => Dispose();
+
     /// <summary>
     /// IDisposable implementation to dispose
     /// </summary>
     public void Dispose()
     {
+        ConfigManager.OnSettingChanged -= OnSettingChanged;
         _producer.Dispose();
     }
 }

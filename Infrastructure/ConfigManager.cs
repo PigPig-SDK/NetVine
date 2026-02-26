@@ -54,7 +54,8 @@ public class ConfigManager
     /// <summary>Dictionary containing default float setting values.</summary>
     private static readonly Dictionary<SettingFloat, float> _DefaultFloatValues = new()
     {
-        {SettingFloat.TickRate, 1000.0f }
+        {SettingFloat.TickRate, 1.0f },//1 second
+        {SettingFloat.DatabaseSaveInterval, 60.0f }//60 seconds
     };
 
 

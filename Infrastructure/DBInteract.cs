@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Core;
+using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 
 namespace Infrastructure;
 public class DBInteract : DbContext
 {
     
-    public DbSet<IProgramData> ProgramDataTable { get; set; } = null!;
+    public DbSet<ProgramData> ProgramDataTable { get; set; } = null!;
     
     /// <summary>
     ///Database interaction constructor. Each method creates and deletes the interaction object.
@@ -28,19 +29,42 @@ public class DBInteract : DbContext
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<IProgramData>()
+        modelBuilder.Entity<ProgramData>()
             .HasKey(u => new { u.SystemName, u.Date, u.ProcessName });
     }
 
     /// <summary>
-    /// Lists all items in DB.
+    /// Returns a list of DB contents
     /// </summary>
     /// <returns></returns>
-    public static List<IProgramData>? ListAll()
+    public static List<ProgramData>? ListAll()
     {
         using (var db = new DBInteract())
         {
             return db.ProgramDataTable.ToList();
+        }
+    }
+    
+    /// <summary>
+    /// Lists all items in DB.
+    /// </summary>
+    /// <returns></returns>
+    public static void ListAllToString()
+    {
+        using (var db = new DBInteract())
+        {
+            if(!(db.ProgramDataTable.ToList().Count == 0))
+            {
+                foreach(var entry in db.ProgramDataTable.ToList()){;
+                    Console.WriteLine("System Name: " + entry.SystemName);
+                    Console.WriteLine("Date: " + entry.Date);
+                    Console.WriteLine("Process Name: " + entry.ProcessName);
+                }
+            }
+            else
+            {
+                Console.WriteLine("DB is empty\n");
+            }
         }
     }
 
@@ -51,7 +75,7 @@ public class DBInteract : DbContext
     /// <param name="start"></param> Start date.
     /// <param name="end"></param> End date.
     /// <returns></returns>
-    public static List<IProgramData>? ListBetweenDates(DateTime? start, DateTime? end)
+    public static List<ProgramData>? ListBetweenDates(DateTime? start, DateTime? end)
     {
         using var db = new  DBInteract();
 
@@ -69,25 +93,56 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
-
+    
     /// <summary>
-    /// Submit an entry to the DB.
+    /// Wipes ProgramDataTable data
     /// </summary>
-    /// <param name="entry"></param>
-    public static void SubmitEntry(IProgramData entry)
+    public static void ClearAll()
     {
         using (var db = new DBInteract())
         {
-            db.ProgramDataTable.Add(entry);
+            db.ProgramDataTable.RemoveRange(db.ProgramDataTable);
             db.SaveChanges();
         }
+    }
+    
+    /// <summary>
+    /// Submit an entry to the DB without an existing context.
+    /// </summary>
+    /// <param name="entry"></param> Submission
+    public static void SubmitEntry(ProgramData entry)
+    {
+        using (var db = new DBInteract())
+        {
+            if(EntryExists(entry))
+            {
+                return;
+            }
+            db.ProgramDataTable.Add(entry);
+            db.SaveChanges();   
+        }
+    }
+    
+    /// <summary>
+    /// Submit an entry to the DB with an existing context.
+    /// </summary>
+    /// <param name="entry"></param> Submission
+    /// <param name="db"></param> Context
+    public static void SubmitEntry(ProgramData entry, DBInteract db)
+    {
+        if(EntryExists(entry))
+        {
+            return;
+        }
+        db.ProgramDataTable.Add(entry);
+        db.SaveChanges();
     }
    
     /// <summary>
     /// Delete an entry from the DB.
     /// </summary>
     /// <param name="entry"></param>
-    public static void DeleteEntry(IProgramData entry)
+    public static void DeleteEntry(ProgramData entry)
     {
         using (var db = new DBInteract())
         {
@@ -105,11 +160,27 @@ public class DBInteract : DbContext
     /// </summary>
     /// <param name="entry"></param>
     /// <returns></returns> Bool. True if exists, false if not.
-    public static bool EntryExists(IProgramData entry)
+    public static bool EntryExists(ProgramData entry)
     {
         using (var db = new DBInteract())
         {
             return (db.ProgramDataTable.Find(entry.SystemName, entry.Date, entry.ProcessName) != null);
+        }
+    }
+
+    /// <summary>
+    /// Returns ProgramData from Primary key if it exists in DB, and null if it does nut
+    /// </summary>
+    /// <param name="SystemName"></param>
+    /// <param name="Date"></param>
+    /// <param name="ProcessName"></param>
+    /// <returns></returns>
+    public static ProgramData? RetrieveEntry(string SystemName, DateTime Date, string ProcessName)
+    {
+        using (var db = new DBInteract())
+        {
+            return db.ProgramDataTable.AsQueryable().FirstOrDefault(p => p.SystemName == SystemName && p.Date == Date
+                && p.ProcessName == ProcessName);
         }
     }
 
@@ -120,7 +191,7 @@ public class DBInteract : DbContext
     /// <param name="entry1"></param>
     /// <param name="entry2"></param>
     /// <returns></returns> Older entry.
-    public static IProgramData? OlderEntry(IProgramData entry1, IProgramData entry2)
+    public static ProgramData? OlderEntry(ProgramData entry1, ProgramData entry2)
     {
         using (var db = new DBInteract())
         {
@@ -136,5 +207,18 @@ public class DBInteract : DbContext
             return null;
         }
     }
-    
+    /// <summary>
+    ///Store a list of IProgramData
+    /// </summary>
+    /// <param name="info"></param> List
+    public static void Store(IEnumerable<IProgramData> info)
+    {
+        using (var db = new DBInteract())
+        {
+            foreach (var data in info)
+            {
+                SubmitEntry((ProgramData)data, db);
+            }    
+        }
+    }
 }

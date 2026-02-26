@@ -17,7 +17,8 @@ history.OnSnapshotTaken = (data) =>
 
 while (true)
 {
-    Console.WriteLine("Enter a program you want to track\n'clear' to clear you selection\n'list' to list programs");
+    Console.WriteLine("Enter a program you want to track\n'clear' to clear you selection\n'list' to list programs" +
+                      "\n'demo DB functions' to demo database; CAUTION will wipe DB");
     string? input = Console.ReadLine();
     if(string.IsNullOrEmpty(input))
     {
@@ -33,6 +34,30 @@ while (true)
     {
         trackedProcesses.Clear();
         Console.WriteLine("Cleared tracked processes");
+    }
+    else if (input == "demo DB functions")
+    {
+        DBInteract.ClearAll();
+        ProgramData testData = new ProgramData();
+        testData.Date = DateTime.Now;
+        
+        Console.WriteLine("Enter system name");
+        testData.SystemName = Console.ReadLine(); 
+        
+        Console.WriteLine("Enter program name");
+        testData.ProcessName = Console.ReadLine();
+        
+        Console.WriteLine($"\nSubmitting...\n");
+        DBInteract.SubmitEntry(testData);
+        
+        Console.WriteLine($"\nRetrieving...\n");
+        DBInteract.ListAllToString();
+        
+        Console.WriteLine($"\nDeleting...\n");
+        DBInteract.DeleteEntry(testData);
+        
+        DBInteract.ListAllToString();
+        
     }
     else if (input == "list")
     {
