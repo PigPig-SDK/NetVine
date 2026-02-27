@@ -12,13 +12,16 @@ public class NetworkManager
 
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
 
-
-    NetworkManager()
+    public static void SetupInstance()
     {
-        RefreshClientConnections();
+        _instance = new NetworkManager();
+        Console.WriteLine("TODO: SETUP NETWORK MANAGER PROPERLY!");
+        return;
+        _instance.RefreshClientConnections();
+
     }
 
-    private void RefreshClientConnections()
+    public void RefreshClientConnections()
     {
         foreach (var connectionContext in ConfigManager.ClientConnections)
         {
