@@ -25,17 +25,11 @@ public class SystemTracker
     /// Maximum number of snapshots
     /// </summary>
     public uint Capacity { get; set; }
-    /// <summary>
-    /// How often snapshots are expected to be made
-    /// NOTE: This might not be the true rate given. It is up to the programmer to manage this value!
-    /// </summary>
-    public float Rate { get; set; }
 
-    public SystemTracker(IProgramDataProducer programDataProducer, uint capacity, float rate)
+    public SystemTracker(IProgramDataProducer programDataProducer, uint capacity)
     {
         ProgramDataProducer = programDataProducer;
         Capacity = capacity;
-        Rate = rate;
     }
     /// <summary>
     /// Gives a snapshot of the
@@ -59,15 +53,61 @@ public class SystemTracker
         }
     }
     /// <summary>
+    /// Returns the average of the last N snapshots. Returns null if no data exists.
+    /// </summary>
+    /// <returns></returns>
+    public List<IProgramData>? GetAverage()
+    {
+        if (History.Count == 0) return null;
+
+        Dictionary<string, (IProgramData data, float sum)> programs = [];
+        
+        foreach (List<IProgramData> snapshot in History)
+        {
+            foreach (IProgramData data in snapshot)
+            {
+                if (!programs.ContainsKey(data.ProcessName))
+                {
+                    //Place initial program
+                    programs[data.ProcessName] = (data, 1.0f);
+                }
+                else
+                {
+                    //Iterate for average
+                    programs[data.ProcessName].data.CpuUsage += data.CpuUsage;
+                    programs[data.ProcessName].data.DiskUsage += data.DiskUsage;
+                    programs[data.ProcessName].data.MemoryUsage += data.MemoryUsage;
+                    programs[data.ProcessName].data.NetworkUsage += data.NetworkUsage;
+                    programs[data.ProcessName].data.Timespan += data.Timespan;
+                    //Because tuples are a value type, I have to reassign the whole tuple to update the sum.
+                    programs[data.ProcessName] = (programs[data.ProcessName].data, programs[data.ProcessName].sum + 1.0f);
+                }
+            }
+        }
+
+        //Normalize
+        foreach ((IProgramData data, float sum) key in programs.Values)
+        {
+            key.data.CpuUsage /= key.sum;
+            key.data.DiskUsage /= key.sum;
+            key.data.MemoryUsage /= key.sum;
+            key.data.NetworkUsage /= key.sum;
+            key.data.Timespan /= key.sum;
+        }
+
+        return programs.Values.Select(e => e.data).ToList();
+    }
+    /// <summary>
     /// Takes a snapshot of the current ProgramDataProducer and reshuffles the history.
     /// </summary>
-    public void MakeSnapshot()
+    public List<IProgramData> MakeSnapshot(TimeSpan rate)
     {
-        List<IProgramData> programData = ProgramDataProducer.Produce(Rate);
+        List<IProgramData> programData = [.. ProgramDataProducer.Produce(rate)];
 
         //Make room for new data.
-        if(Data.Count >= Capacity) Data.RemoveLast();
+        if (Data.Count >= Capacity) Data.RemoveLast();
 
         Data.AddFirst(programData);
+        return programData;
     }
 }

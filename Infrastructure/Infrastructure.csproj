@@ -7,7 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NetCoreServer" Version="8.0.7" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.29" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+    <PackageReference Include="protobuf-net" Version="3.2.56" />
   </ItemGroup>
 
 </Project>
