@@ -15,7 +15,10 @@ using static UI.ViewModels.TableViewModel;
 
 namespace UI.ViewModels
 {
-
+    //Future improvements:
+    //TODO: UpdateData -- listerner for a data update from the infrastructure.
+    //TODO: Simplify filtering -- better syntax, dropdown menu instead?
+    //TODO: Add more columns, like current usage. Be sure these are toggleable in the context menu.
 
     internal class TableViewModel : ViewModelBase
     {
@@ -27,7 +30,8 @@ namespace UI.ViewModels
             ToggleRamCommand = new RelayCommand(ToggleRam);
             ToggleNetCommand = new RelayCommand(ToggleNet);
         }
-        //We can change this or replace it with something else
+        
+
         public class TableRow
         {
             public string SystemName { get; set; }
@@ -84,15 +88,12 @@ namespace UI.ViewModels
             }
         }       
 
+        //TODO: Maybe add filter class which we can test
         public IEnumerable<TableRow> FilteredRows => FilterRows(SearchText);
-
-        //Change this to something better? Better format
         IEnumerable<TableRow> FilterRows(string searchIn)
         {   
             if (searchIn == "" || searchIn == null) return TableRows;
 
-
-            //AI Generated LINQ for regex stuff:
             var result = Regex.Matches(searchIn, @"\(([^)]+)\)|(\w+)(?!\s*[,\w]*\))")
                 .Cast<Match>()
                 .Select(m =>
@@ -102,20 +103,20 @@ namespace UI.ViewModels
                 })
                 .ToList();
 
-            //if a search term is alone, its returned. If its in parentheses, it must be grouped with another term.
-            // (ThisApp, ThisPC) vice versa or (ThisApp) or (ThisPC) or ThisApp or ThisPC
             return result.SelectMany(row => TableRows.Where(tableRow => row.Count == 2
-                                ? (row.Contains(tableRow.AppName) && row.Contains(tableRow.SystemName))
-                                    || (row.Contains(tableRow.SystemName) && row.Contains(tableRow.AppName))
-                                    : row.Count == 1
-                                    ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName)
-                                    : false));
-
+                  ? (row.Contains(tableRow.AppName) && row.Contains(tableRow.SystemName))
+                        || (row.Contains(tableRow.SystemName) && row.Contains(tableRow.AppName))
+                   : 
+                        row.Count == 1
+                             ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName)
+                        : 
+                            false));
+            //return Regex.Matches(searchIn, @"\(([^)]+)\)|(\w+)(?!\s*[,\w]*\))").Cast<Match>().Select(m => { var content = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value; return content.Split(',').Select(s => s.Trim()).ToList(); }).ToList().SelectMany(row => TableRows.Where(tableRow => row.Count == 2 ? (row.Contains(tableRow.AppName) && row.Contains(tableRow.SystemName)) || (row.Contains(tableRow.SystemName) && row.Contains(tableRow.AppName)) : row.Count == 1 ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName) : false));
         }
 
         private void OnSnapshot(List<IProgramData> data)
         {
-            //when data comes in
+            //when data comes in -- maybe add a listener for this
         }
 
         private void PopulateTableWithDummyData()
