@@ -1,27 +1,31 @@
-﻿using Core;
+﻿using CommunityToolkit.Mvvm.Input;
+using Core;
 using Microsoft.Diagnostics.Tracing.Parsers;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using static UI.ViewModels.TableViewModel;
 
 namespace UI.ViewModels
 {
 
-    /// <summary>
-    /// 
-    ///     Dummy View-Model for the table view. 
-    ///     
-    /// </summary>
+
     internal class TableViewModel : ViewModelBase
     {
         public TableViewModel()
         {
             PopulateTableWithDummyData();
+            ToggleCpuCommand = new RelayCommand(ToggleCpu);
+            ToggleDiskCommand = new RelayCommand(ToggleDisk);
+            ToggleRamCommand = new RelayCommand(ToggleRam);
+            ToggleNetCommand = new RelayCommand(ToggleNet);
         }
         //We can change this or replace it with something else
         public class TableRow
@@ -36,9 +40,37 @@ namespace UI.ViewModels
             public float DiskMax { get; set; }
             public float NetworkAvg { get; set; }
             public float NetworkMax { get; set; }
-
         }
 
+        //Context Menu
+        public bool DisplaySystemName { get; set; } = true;
+        public bool DisplayAppName { get; set; } = true;
+
+        private bool _displayCpuAvg = true, _displayCpuMax = true, _displayRamAvg = true, _displayRamTop = true, _displayDiskAvg = true, _displayDiskTop = true, _displayNetAvg = true, _displayNetTop = true;
+        public bool DisplayCpuAvg { get => _displayCpuAvg; set { _displayCpuAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextCpu));}}
+        public bool DisplayCpuTop { get => _displayCpuMax; set {_displayCpuMax = value; OnPropertyChanged();OnPropertyChanged(nameof(ContextMenuTextCpu)); }}
+        public bool DisplayRamAvg { get => _displayRamAvg; set { _displayRamAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextRam)); } }
+        public bool DisplayRamTop { get => _displayRamTop; set { _displayRamTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextRam)); } }
+        public bool DisplayDiskAvg { get => _displayDiskAvg ; set {_displayDiskAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextDisk)); } }
+        public bool DisplayDiskTop { get => _displayDiskTop ; set {_displayDiskTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextDisk)); } }
+        public bool DisplayNetworkAvg { get => _displayNetAvg ; set {_displayNetAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextNet)); } }
+        public bool DisplayNetworkTop { get => _displayNetTop; set { _displayNetTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextNet)); } }
+        private string _ContextMenuSearchText(bool shown, string word) => shown? $"Hide {word}" : $"Show {word}";
+        public string ContextMenuTextCpu => _ContextMenuSearchText(DisplayCpuAvg, "CPU Usage");
+        public string ContextMenuTextRam => _ContextMenuSearchText(DisplayRamAvg, "Ram Usage");
+        public string ContextMenuTextDisk => _ContextMenuSearchText(DisplayDiskAvg, "Disk Usage");
+        public string ContextMenuTextNet => _ContextMenuSearchText(DisplayNetworkAvg, "Network Usage");
+        public ICommand ToggleCpuCommand { get; set; }
+        public ICommand ToggleDiskCommand { get; set; }
+        public ICommand ToggleRamCommand { get; set; }
+        public ICommand ToggleNetCommand { get; set; }
+        private void ToggleCpu() => (DisplayCpuAvg, DisplayCpuTop) = (!DisplayCpuAvg, !DisplayCpuTop);
+        private void ToggleDisk() => (DisplayDiskAvg, DisplayDiskTop) = (!DisplayDiskAvg, !DisplayDiskTop);
+        private void ToggleRam() => (DisplayRamAvg, DisplayRamTop) = (!DisplayRamAvg, !DisplayRamTop);
+        private void ToggleNet() => (DisplayNetworkAvg, DisplayNetworkTop) = (!DisplayNetworkAvg, !DisplayNetworkTop);
+
+
+        //Main table data storage
         public ObservableCollection<TableRow> TableRows { get; set; } = [];
 
         private string? _searchText;
@@ -58,6 +90,8 @@ namespace UI.ViewModels
         IEnumerable<TableRow> FilterRows(string searchIn)
         {   
             if (searchIn == "" || searchIn == null) return TableRows;
+
+
             //AI Generated LINQ for regex stuff:
             var result = Regex.Matches(searchIn, @"\(([^)]+)\)|(\w+)(?!\s*[,\w]*\))")
                 .Cast<Match>()
@@ -73,8 +107,8 @@ namespace UI.ViewModels
             return result.SelectMany(row => TableRows.Where(tableRow => row.Count == 2
                                 ? (row.Contains(tableRow.AppName) && row.Contains(tableRow.SystemName))
                                     || (row.Contains(tableRow.SystemName) && row.Contains(tableRow.AppName))
-                                    : row.Count == 1 
-                                    ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName) 
+                                    : row.Count == 1
+                                    ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName)
                                     : false));
 
         }
