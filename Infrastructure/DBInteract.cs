@@ -37,7 +37,7 @@ public class DBInteract : DbContext
     /// Returns a list of DB contents
     /// </summary>
     /// <returns></returns>
-    public static List<ProgramData>? ListAll()
+    public static List<ProgramData> ListAll()
     {
         using (var db = new DBInteract())
         {
@@ -59,6 +59,11 @@ public class DBInteract : DbContext
                     Console.WriteLine("System Name: " + entry.SystemName);
                     Console.WriteLine("Date: " + entry.Date);
                     Console.WriteLine("Process Name: " + entry.ProcessName);
+                    Console.WriteLine("Cpu Usage: " + entry.CpuUsage);
+                    Console.WriteLine("Disk Usage: " + entry.DiskUsage);
+                    Console.WriteLine("Network Usage: " + entry.NetworkUsage);
+                    Console.WriteLine("Memory Usage: " + entry.MemoryUsage + "\n");
+                    
                 }
             }
             else
@@ -132,6 +137,7 @@ public class DBInteract : DbContext
     {
         if(EntryExists(entry))
         {
+            Console.WriteLine("Entry already exists!");
             return;
         }
         db.ProgramDataTable.Add(entry);
@@ -205,6 +211,37 @@ public class DBInteract : DbContext
                 return entry2;
             }
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Populates a database with dummy data. Database must be empty.
+    /// </summary>
+    public static void populateDummyData()
+    {
+        if (ListAll().Count == 0)
+        {
+            List<ProgramData> dummyList = new List<ProgramData>();
+            for (int i = 0; i < 10; i++)
+            {
+                dummyList.Add(new ProgramData()
+                {
+                    SystemName = Environment.MachineName,
+                    Date = DateTime.Now,
+                    ProcessName = "dummyProcess",
+                    MemoryUsage = i,
+                    CpuUsage = i,
+                    DiskUsage = i,
+                    NetworkUsage = i,
+                    Timespan = i,
+                });
+            }
+
+            Store(dummyList);    
+        }
+        else
+        {
+            Console.WriteLine("DB must be empty to populate dummy data;");
         }
     }
     /// <summary>
