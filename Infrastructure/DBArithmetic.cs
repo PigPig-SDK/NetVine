@@ -41,9 +41,9 @@ public static class DBArithmetic
     }
 
     /// <summary>
-    /// Find first instance of peak cpu usage of database.
+    /// Find first instance of peak cpu usage of database. Returns ProgramData in order to retrieve date of peak.
     /// </summary>
-    /// <returns></returns> Peak cpu usage.
+    /// <returns></returns> ProgramData of peak Cpu usage.
     public static ProgramData PeakCpuUsage()
     {
         var maxCpuUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
@@ -51,9 +51,9 @@ public static class DBArithmetic
     }
     
     /// <summary>
-    /// Find first instance of peak disk usage of database.
+    /// Find first instance of peak disk usage of database. Returns ProgramData in order to retrieve date of peak.
     /// </summary>
-    /// <returns></returns> Peak disk usage.
+    /// <returns></returns> ProgramData of peak disk usage.
     public static ProgramData PeakDisk()
     {
         var maxDiskUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
@@ -61,9 +61,9 @@ public static class DBArithmetic
     }
     
     /// <summary>
-    /// Find first instance of peak network usage of database.
+    /// Find first instance of peak network usage of database. Returns ProgramData in order to retrieve date of peak.
     /// </summary>
-    /// <returns></returns> Peak network usage.
+    /// <returns></returns> ProgramData of peak network usage.
     public static ProgramData PeakNetworkUsage()
     {
         var maxNetworkUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
@@ -71,9 +71,9 @@ public static class DBArithmetic
     }
     
     /// <summary>
-    /// Find first instance of peak memory usage of database.
+    /// Find first instance of peak memory usage of database. Returns ProgramData in order to retrieve date of peak.
     /// </summary>
-    /// <returns></returns> Peak memory usage.
+    /// <returns></returns> ProgramData of peak memory usage.
     public static ProgramData PeakMemoryUsage()
     {
         var maxMemoryUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
