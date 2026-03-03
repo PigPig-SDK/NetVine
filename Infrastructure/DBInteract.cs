@@ -217,7 +217,7 @@ public class DBInteract : DbContext
     /// <summary>
     /// Populates a database with dummy data. Database must be empty.
     /// </summary>
-    public static void populateDummyData()
+    public static void PopulateDummyData()
     {
         if (ListAll().Count == 0)
         {
