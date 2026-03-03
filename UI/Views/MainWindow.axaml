@@ -28,9 +28,7 @@
             
             <TabItem Header="Tab2">
                 <Border Background="LightGray" Margin="10" CornerRadius="8">
-                    <TextBlock Text="Content Goes Here"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
+                    <views:TableView />
                 </Border>
             </TabItem>
         </TabControl>
