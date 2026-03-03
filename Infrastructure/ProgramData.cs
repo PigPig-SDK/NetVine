@@ -14,4 +14,5 @@ public class ProgramData : IProgramData
     public float Timespan { get => _timespan; set => _timespan = value; }
     public DateTime Date { get => _date; set => _date = value; }
     public int ProcessId { get; set; }
+    
 }

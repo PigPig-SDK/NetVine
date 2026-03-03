@@ -18,7 +18,7 @@ history.OnSnapshotTaken = (data) =>
 while (true)
 {
     Console.WriteLine("Enter a program you want to track\n'clear' to clear you selection\n'list' to list programs" +
-                      "\n'demo DB functions' to demo database; CAUTION will wipe DB");
+                      "\n'demo DB' to demo database; CAUTION will wipe DB");
     string? input = Console.ReadLine();
     if(string.IsNullOrEmpty(input))
     {
@@ -35,7 +35,7 @@ while (true)
         trackedProcesses.Clear();
         Console.WriteLine("Cleared tracked processes");
     }
-    else if (input == "demo DB functions")
+    else if (input == "demo DB")
     {
         DBInteract.ClearAll();
         ProgramData testData = new ProgramData();
@@ -53,11 +53,18 @@ while (true)
         Console.WriteLine($"\nRetrieving...\n");
         DBInteract.ListAllToString();
         
-        Console.WriteLine($"\nDeleting...\n");
+        Console.WriteLine($"Deleting...\n");
         DBInteract.DeleteEntry(testData);
-        
         DBInteract.ListAllToString();
         
+        Console.WriteLine($"Populating Dummies...\n");
+        DBInteract.populateDummyData();
+        DBInteract.ListAllToString();
+        
+        Console.WriteLine("Average Network Usage: " + DBArithmetic.AverageNetworkUsage());
+        Console.WriteLine("Peak Network Usage: " + DBArithmetic.PeakNetworkUsage().NetworkUsage);
+        Console.WriteLine("Total Network Usage: " + DBArithmetic.TotalNetworkUsage() + "\n");
+
     }
     else if (input == "list")
     {
