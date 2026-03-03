@@ -83,7 +83,7 @@ public static class DBArithmetic
     /// <summary>
     /// Find the total amount of network that has been consumed across all entries.
     /// </summary>
-    /// <returns></returns> Total netork usage.
+    /// <returns>Total netork usage.</returns> 
     public static float TotalNetworkUsage()
     {
         return DBInteract.ListAll().Sum(x => x.NetworkUsage);
