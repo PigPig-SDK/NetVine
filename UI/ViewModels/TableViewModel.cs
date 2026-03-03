@@ -22,6 +22,14 @@ namespace UI.ViewModels
 
     internal class TableViewModel : ViewModelBase
     {
+
+        /// <summary>
+        /// Initializes a new instance of the TableViewModel class, setting up command properties for toggling CPU,
+        /// disk, RAM, and network states.
+        /// </summary>
+        /// <remarks>This constructor populates the table with initial dummy data and prepares command
+        /// properties that can be bound to UI elements, enabling user interaction with system resource
+        /// toggles.</remarks>
         public TableViewModel()
         {
             PopulateTableWithDummyData();
@@ -135,14 +143,26 @@ namespace UI.ViewModels
                              ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName)
                         : 
                             false));
-            //return Regex.Matches(searchIn, @"\(([^)]+)\)|(\w+)(?!\s*[,\w]*\))").Cast<Match>().Select(m => { var content = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value; return content.Split(',').Select(s => s.Trim()).ToList(); }).ToList().SelectMany(row => TableRows.Where(tableRow => row.Count == 2 ? (row.Contains(tableRow.AppName) && row.Contains(tableRow.SystemName)) || (row.Contains(tableRow.SystemName) && row.Contains(tableRow.AppName)) : row.Count == 1 ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName) : false));
         }
 
+
+        /// <summary>
+        /// Processes an incoming snapshot of program data, updating the current state accordingly.
+        /// </summary>
+        /// <param name="data">A list of program data objects representing the latest state of the program. Cannot be null.</param>
         private void OnSnapshot(List<IProgramData> data)
         {
             //when data comes in
         }
 
+
+        /// <summary>
+        /// Populates the table with sample data for testing or demonstration purposes.
+        /// </summary>
+        /// <remarks>This method generates 50 rows of dummy data, randomly assigning system and
+        /// application names, as well as random values for CPU, RAM, disk, and network metrics. Intended for use in
+        /// development scenarios where representative data is needed to visualize or test table
+        /// functionality.</remarks>
         private void PopulateTableWithDummyData()
         {
             string[] dummySysNames = { "MyComputer", "WorkPC", "GamingRig" };
