@@ -5,4 +5,5 @@ public enum SettingFloat
 {
     TickRate,
     DatabaseSaveInterval,
+    NetworkReconnectInterval
 };
