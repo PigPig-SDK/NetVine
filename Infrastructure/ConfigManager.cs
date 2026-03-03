@@ -55,7 +55,8 @@ public class ConfigManager
     private static readonly Dictionary<SettingFloat, float> _DefaultFloatValues = new()
     {
         {SettingFloat.TickRate, 1.0f },//1 second
-        {SettingFloat.DatabaseSaveInterval, 60.0f }//60 seconds
+        {SettingFloat.DatabaseSaveInterval, 60.0f },//60 seconds
+        {SettingFloat.NetworkReconnectInterval, 15.0f }//15 seconds!
     };
 
 
@@ -87,6 +88,7 @@ public class ConfigManager
     private Dictionary<SettingString, string> _StringSettings { get; set; }
     [YamlMember]
     private List<(string connection, int port)> _ClientConnections { get; set; }
+
     public static IReadOnlyList<(string connection, int port)> ClientConnections => Instance._ClientConnections;
 
     /// <summary>
@@ -95,7 +97,7 @@ public class ConfigManager
     /// </summary>
     /// <remarks>Expect Enum of : SettingInt, SettingFloat or SettingString</remarks>
     public static Action<Enum>? OnSettingChanged { get; set; }
-    public static Action<(string connection, int port)>? OnClientAdded { get; set; }
+    public static Action<string, int>? OnClientConnectionAdded { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the ConfigManager class with default configuration file path and empty settings
@@ -110,7 +112,7 @@ public class ConfigManager
         _FloatSettings = [];
         _StringSettings = [];
         _ClientConnections = [];
-        InitializeDictionaries();
+        InitializeDefaults();
     }
 
     /// <summary>
@@ -129,17 +131,16 @@ public class ConfigManager
     /// <remarks>This method ensures that each defined setting is present as a key in the corresponding
     /// dictionary. If a default value for a setting is not specified, a predefined fallback value is assigned. This
     /// guarantees that all settings are initialized and available for subsequent operations.</remarks>
-    private void InitializeDictionaries()
+    private void InitializeDefaults()
     {
-        //making sure each setting appears as a key before we finish initialization
         foreach (var setting in Enum.GetValues<SettingInt>())
-            _IntSettings[setting] = _DefaultIntValues.ContainsKey(setting) ? _DefaultIntValues[setting] : default;
+            _IntSettings.TryAdd(setting, _DefaultIntValues.GetValueOrDefault(setting));
 
         foreach (var setting in Enum.GetValues<SettingFloat>())
-            _FloatSettings[setting] = _DefaultFloatValues.ContainsKey(setting) ? _DefaultFloatValues[setting] : default;
+            _FloatSettings.TryAdd(setting, _DefaultFloatValues.GetValueOrDefault(setting));
 
         foreach (var setting in Enum.GetValues<SettingString>())
-            _StringSettings[setting] = _DefaultStringValues.ContainsKey(setting) ? _DefaultStringValues[setting] : string.Empty;
+            _StringSettings.TryAdd(setting, _DefaultStringValues.GetValueOrDefault(setting, string.Empty));
     }
 
     /// <summary>
@@ -190,7 +191,7 @@ public class ConfigManager
     public static void AddClientConnection(string connection, int port)
     {
         Instance._ClientConnections.Add((connection,port));
-        OnClientAdded?.Invoke((connection, port));
+        OnClientConnectionAdded?.Invoke(connection, port);
     }
     /// <summary>
     /// Loads a configuration from a YAML file at the specified path.
@@ -206,8 +207,12 @@ public class ConfigManager
             .WithTypeConverter(new YamlStringEnumConverter())
             .IncludeNonPublicProperties()
             .Build();
-        return deserializer.Deserialize<ConfigManager>(yamlFile);
+        var manager = deserializer.Deserialize<ConfigManager>(yamlFile);
+        manager.InitializeDefaults();
+
+        return manager;
     }
+
 
     /// <summary>
     /// Serializes the specified configuration object to YAML format and writes it to the given file path.
