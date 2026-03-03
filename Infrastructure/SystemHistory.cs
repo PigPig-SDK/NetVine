@@ -5,6 +5,9 @@ namespace Core;
 
 public class SystemHistory : IDisposable
 {
+    private static SystemHistory _instance;
+    public static SystemHistory Instance { get; private set; }
+
     private SystemTracker _tracker;
     private IProgramDataProducer _producer;
     private TimeSpan _snapshotInterval;
@@ -24,6 +27,20 @@ public class SystemHistory : IDisposable
         _timer = new Timer(TakeSnapshot, null, _snapshotInterval, Timeout.InfiniteTimeSpan);
         
         ConfigManager.OnSettingChanged += OnSettingChanged;
+    }
+
+    public static void SetupInstance()
+    {
+        IProgramDataProducer? producer = null;
+        if (OperatingSystem.IsWindows())
+        {
+            producer = new WindowsDataProducer();
+        }
+
+        if (producer == null)
+            throw new InvalidOperationException("No valid producer for your operating system exists!");
+
+        _instance = new(producer, 30, TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate)));
     }
 
     private void OnSettingChanged(Enum setting)

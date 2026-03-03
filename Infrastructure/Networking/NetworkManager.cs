@@ -1,24 +1,49 @@
-﻿using System.Net;
+﻿using Microsoft.Diagnostics.Tracing.Parsers.Clr;
+using System.Configuration;
+using System.Diagnostics;
+using System.Net;
 
 namespace Infrastructure.Networking;
 
 public class NetworkManager
 {
-    public static NetworkManager _instance = null!;
-    public static NetworkManager Instance => _instance ??= new NetworkManager();
+    private static NetworkManager _instance = null!;
+    public static NetworkManager Instance => _instance ?? throw new InvalidOperationException($"Call {nameof(SetupInstance)} before accessing instance!!");
 
-    public const int DefaultPort = 12345;
+    private Timer _timer;
+    public const int DefaultPort = 54236;
     public const string DefaultHost = "127.0.0.1";
 
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
+    public Host? Host { get; private set; }
 
-
-    NetworkManager()
+    public static void SetupInstance()
     {
-        RefreshClientConnections();
+        if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
+        _instance = new NetworkManager();
+        ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
     }
 
-    private void RefreshClientConnections()
+    private void OnAddClientConnection(string connection, int port) => RefreshClientConnections();//Lazy, but efficent.
+
+    private NetworkManager() 
+    {
+        _timer = new Timer(
+            (object? _) => RefreshClientConnections(), 
+            null, 
+            TimeSpan.Zero,  
+            TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+    }
+
+    public void StartHost()
+    {
+        if(Host != null) throw new InvalidOperationException($"Cannot host while host is already established!");
+
+        Host = new Host(IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
+        Host.Start();
+    }
+
+    public void RefreshClientConnections()
     {
         foreach (var connectionContext in ConfigManager.ClientConnections)
         {
@@ -29,7 +54,6 @@ public class NetworkManager
                 continue;
             }
             var connectionIdentity = (ip, connectionContext.port);
-
             if (EstablishedClientConnections.ContainsKey(connectionIdentity))//Connection has been atempted
             {
                 Client client = EstablishedClientConnections[connectionIdentity];
@@ -47,11 +71,20 @@ public class NetworkManager
         }
     }
 
-    private void Shutdown()
+    public void Disconnect()
     {
+        //Disconnect from others...
         foreach (var client in EstablishedClientConnections.Values)
         {
             client.DisconnectShutdown();
         }
+
+        Host?.DisconnectAll();
+    }
+
+    ~NetworkManager()
+    {
+        Disconnect();
+        ConfigManager.OnClientConnectionAdded -= _instance.OnAddClientConnection;
     }
 }

@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:UI.ViewModels"
+             xmlns:views="clr-namespace:UI"
+             xmlns:dg="using:Avalonia.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UI.TableView"
+             x:DataType="vm:TableViewModel">
+    
+    <UserControl.Styles>
+        <Style Selector="TextBox.SearchBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CaretBrush" Value="Black"/>
+        </Style>
+        <Style Selector="TextBox.SearchBox:pointerover /template/ Border">
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        <Style Selector="TextBox.SearchBox:focus /template/ Border">
+            <Setter Property="Background" Value="White"/>
+        </Style>
+        <Style Selector="TextBox.SearchBox:focus-within /template/ Border">
+            <Setter Property="Background" Value="White"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Design.DataContext>
+        <vm:TableViewModel />
+    </Design.DataContext>
+    <Grid RowDefinitions="Auto, *">
+        <TextBox Classes="SearchBox"
+                    Margin="0"
+                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                    Watermark="Search..." 
+                    Foreground="Black"
+                    Background="{DynamicResource TableBackground}"
+                    />
+        <DataGrid Grid.Row="1"
+                    ItemsSource="{Binding FilteredRows}"
+                    FontWeight="Medium"
+                    IsReadOnly="True"
+                    RowHeight="18"
+                    GridLinesVisibility="All"
+                    CanUserResizeColumns="True">
+            <DataGrid.Styles>
+
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="SeparatorBrush" Value="Gray"/>
+                </Style>
+                <Style Selector="DataGridRow">
+                    <Setter Property="Background" Value="LightGray"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="FontWeight" Value="Medium"/>
+                </Style>
+                <Style Selector="DataGrid">
+					<Setter Property="HorizontalGridLinesBrush" Value="DarkGray"/>
+					<Setter Property="VerticalGridLinesBrush" Value="Gray"/>
+                </Style>
+                <Style Selector="DataGridCell">
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis"/>               
+                </Style>
+            </DataGrid.Styles>
+            <DataGrid.ContextMenu>
+				<ContextMenu>
+                    <MenuItem Header="{Binding ContextMenuTextCpu}" Command="{Binding ToggleCpuCommand}"/>
+                    <MenuItem Header="{Binding ContextMenuTextRam}" Command="{Binding ToggleRamCommand}"/>
+                    <MenuItem Header="{Binding ContextMenuTextDisk}" Command="{Binding ToggleDiskCommand}"/>
+                    <MenuItem Header="{Binding ContextMenuTextNet}" Command="{Binding ToggleDiskCommand}"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+            
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="PC name"   Binding="{Binding SystemName}" IsVisible="True"/>
+                <DataGridTextColumn Header="Process"   Binding="{Binding AppName}" IsVisible="True"/>
+                <DataGridTextColumn Header="CPU % Avg" Binding="{Binding CpuAvg}" IsVisible="{Binding DisplayCpuAvg}"/>
+                <DataGridTextColumn Header="CPU % TOP" Binding="{Binding CpuMax}" IsVisible="{Binding DisplayCpuTop}"/>
+                <DataGridTextColumn Header="Ram Avg"   Binding="{Binding RamAvg}" IsVisible="{Binding DisplayRamAvg}"/>
+                <DataGridTextColumn Header="Ram TOP"   Binding="{Binding RamMax}" IsVisible="{Binding DisplayRamTop}"/>
+                <DataGridTextColumn Header="Disk Avg"  Binding="{Binding DiskAvg}" IsVisible="{Binding DisplayDiskAvg}"/>
+                <DataGridTextColumn Header="Disk TOP"  Binding="{Binding DiskMax}" IsVisible="{Binding DisplayDiskTop}"/>
+            </DataGrid.Columns>
+
+        </DataGrid>
+    </Grid>
+</UserControl>
