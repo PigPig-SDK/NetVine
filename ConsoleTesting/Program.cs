@@ -58,7 +58,7 @@ while (true)
         DBInteract.ListAllToString();
         
         Console.WriteLine($"Populating Dummies...\n");
-        DBInteract.populateDummyData();
+        DBInteract.PopulateDummyData();
         DBInteract.ListAllToString();
         
         Console.WriteLine("Average Network Usage: " + DBArithmetic.AverageNetworkUsage());
