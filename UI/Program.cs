@@ -15,10 +15,7 @@ namespace UI
         public static void Main(string[] args)
         {
             //Step 1: Load configuration
-            if(!ConfigManager.TryLoadFromFile())
-            {
-                Console.WriteLine("Could not load configuration!");
-            }
+            ConfigManager.Initialize();
 
             //Step 2: Emplace DB
             new DBInteract().Dispose();
