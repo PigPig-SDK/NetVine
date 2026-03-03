@@ -31,7 +31,12 @@ namespace UI.ViewModels
             ToggleNetCommand = new RelayCommand(ToggleNet);
         }
         
-
+        /// <summary>
+        /// Represents a row of performance metrics for a specific system application, including CPU, RAM, disk, and
+        /// network usage statistics. This is also sort of a placeholder class. Planning on adding some columns.
+        /// </summary>
+        /// <remarks>This class is designed to hold average and maximum resource usage values, which can
+        /// be useful for monitoring and analyzing application performance over time.</remarks>
         public class TableRow
         {
             public string SystemName { get; set; }
@@ -46,18 +51,27 @@ namespace UI.ViewModels
             public float NetworkMax { get; set; }
         }
 
-        //Context Menu
+        //Main table data storage
+        public ObservableCollection<TableRow> TableRows { get; set; } = [];
+
+        //Context Menu proprties and commands...
         public bool DisplaySystemName { get; set; } = true;
         public bool DisplayAppName { get; set; } = true;
-
-        private bool _displayCpuAvg = true, _displayCpuMax = true, _displayRamAvg = true, _displayRamTop = true, _displayDiskAvg = true, _displayDiskTop = true, _displayNetAvg = true, _displayNetTop = true;
+        private bool _displayCpuAvg = true;
         public bool DisplayCpuAvg { get => _displayCpuAvg; set { _displayCpuAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextCpu));}}
+        private bool _displayCpuMax = true;
         public bool DisplayCpuTop { get => _displayCpuMax; set {_displayCpuMax = value; OnPropertyChanged();OnPropertyChanged(nameof(ContextMenuTextCpu)); }}
+        private bool _displayRamAvg = true;
         public bool DisplayRamAvg { get => _displayRamAvg; set { _displayRamAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextRam)); } }
+        private bool _displayRamTop = true;
         public bool DisplayRamTop { get => _displayRamTop; set { _displayRamTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextRam)); } }
+        private bool _displayDiskAvg = true;
         public bool DisplayDiskAvg { get => _displayDiskAvg ; set {_displayDiskAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextDisk)); } }
+        private bool _displayDiskTop = true;
         public bool DisplayDiskTop { get => _displayDiskTop ; set {_displayDiskTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextDisk)); } }
+        private bool _displayNetAvg = true;
         public bool DisplayNetworkAvg { get => _displayNetAvg ; set {_displayNetAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextNet)); } }
+        private bool _displayNetTop = true;
         public bool DisplayNetworkTop { get => _displayNetTop; set { _displayNetTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextNet)); } }
         private string _ContextMenuSearchText(bool shown, string word) => shown? $"Hide {word}" : $"Show {word}";
         public string ContextMenuTextCpu => _ContextMenuSearchText(DisplayCpuAvg, "CPU Usage");
@@ -74,9 +88,12 @@ namespace UI.ViewModels
         private void ToggleNet() => (DisplayNetworkAvg, DisplayNetworkTop) = (!DisplayNetworkAvg, !DisplayNetworkTop);
 
 
-        //Main table data storage
-        public ObservableCollection<TableRow> TableRows { get; set; } = [];
 
+        /// <summary>
+        /// Property for the text in the search bar. When this is updated, 
+        /// it triggers a property change notification for the FilteredRows property, 
+        /// which causes the UI to update the displayed rows based on the new search text.
+        /// </summary>
         private string? _searchText;
         public string SearchText{
             get => _searchText ??= "";
@@ -89,6 +106,13 @@ namespace UI.ViewModels
         }       
 
         //TODO: Maybe add filter class which we can test
+        /// <summary>
+        /// Gets the collection of table rows that match the current search criteria.
+        /// Pretty redamentary and not very robust. Will be replaced with something better (like a testable class).
+        /// </summary>
+        /// <remarks>The returned rows are filtered based on the value of <see cref="SearchText"/>. This
+        /// property is useful for retrieving a dynamic subset of rows that satisfy the search condition, such as for
+        /// displaying search results in a user interface.</remarks>
         public IEnumerable<TableRow> FilteredRows => FilterRows(SearchText);
         IEnumerable<TableRow> FilterRows(string searchIn)
         {   
@@ -116,7 +140,7 @@ namespace UI.ViewModels
 
         private void OnSnapshot(List<IProgramData> data)
         {
-            //when data comes in -- maybe add a listener for this
+            //when data comes in
         }
 
         private void PopulateTableWithDummyData()
