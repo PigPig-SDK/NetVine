@@ -82,7 +82,10 @@ public class SystemHistory : IDisposable
             if(TotalSnapshotCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
             {
                 var average = _tracker.GetAverage();
+                if (average == null) return;
+
                 if(average != null) DBInteract.Store(average);
+                TotalSnapshotCount = 0;
             }
         }
         finally

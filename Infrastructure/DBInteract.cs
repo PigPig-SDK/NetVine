@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Core;
+﻿using Core;
 using Microsoft.Diagnostics.Tracing.Parsers.Clr;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Infrastructure;
 public class DBInteract : DbContext
@@ -257,5 +258,20 @@ public class DBInteract : DbContext
                 SubmitEntry((ProgramData)data, db);
             }    
         }
+    }
+
+    public static List<User> GetUsers()
+    {
+        List<User> users = [];
+        using (var db = new DBInteract())
+        {
+            var usernames = db.ProgramDataTable.Select(u => u.SystemName).ToList();
+            foreach (string? data in usernames)
+            {
+                if (string.IsNullOrEmpty(data)) continue;//Should not be possible...
+                users.Add(new User { Username = data });
+            }
+        }
+        return users;
     }
 }
