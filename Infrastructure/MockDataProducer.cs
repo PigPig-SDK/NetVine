@@ -34,6 +34,7 @@ public class MockDataProducer : IProgramDataProducer
                 result.Add(new ProgramData
                 {
                     SystemName = SystemName,
+                    Date = DateTime.Now,
                     ProcessName = processName,
                     CpuUsage = (random.Next() * 50),
                     DiskUsage = (random.Next() * 4080),
@@ -44,6 +45,7 @@ public class MockDataProducer : IProgramDataProducer
                 result.Add(new ProgramData
                 {
                     SystemName = SystemName,
+                    Date = DateTime.Now,
                     ProcessName = processName,
                     CpuUsage = (random.Next()),
                     DiskUsage = (random.Next() * 20),
