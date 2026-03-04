@@ -8,14 +8,27 @@ public partial class FolderUser : UserControl
 {
     public bool IsSelected = false;
     
-    SolidColorBrush SelectedColor = new SolidColorBrush(Colors.DarkGreen);
-    SolidColorBrush DeselectColor = new SolidColorBrush(Colors.Gray);
+    private readonly static SolidColorBrush _selectedColor = new(Colors.DarkGreen);
+    private readonly static SolidColorBrush _deselectColor = new SolidColorBrush(Colors.Gray);
+    private readonly static SolidColorBrush _onlineColor = new SolidColorBrush(Colors.Green);
+    private readonly static SolidColorBrush _offlineColor = new SolidColorBrush(Colors.Black);
 
     public FolderUser(Infrastructure.User user)
     {
         InitializeComponent();
         UpdateVisual();
         UsernameLabel.Content = user.Username;
+    }
+
+    private bool _isOnline = false;
+    public bool IsOnline { 
+        get { 
+            return _isOnline;
+        } 
+        set { 
+            _isOnline = value;
+            UpdateVisual();
+        }
     }
 
     private void OnClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -27,13 +40,9 @@ public partial class FolderUser : UserControl
 
     private void UpdateVisual()
     {
-        if(IsSelected)
-        {
-            SelectionButton.Background = SelectedColor;
-        }
-        else
-        {
-            SelectionButton.Background = DeselectColor;
-        }
+        if (SelectionButton is null || OnlineCircle is null) return;
+
+        SelectionButton.Background = IsSelected? _selectedColor : _deselectColor;
+        OnlineCircle.Stroke = IsOnline ? _onlineColor : _offlineColor;
     }
 }
