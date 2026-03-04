@@ -11,6 +11,8 @@ public class MockDataProducer : IProgramDataProducer
 
     public string SystemName => "Burger";
 
+    private static string OtherName = "CornDog";
+
     public string[] RandomProcessNames = { "FrySource", "KetcHub", "Tar-Tar United", "KebabConnect"};
 
     public MockDataProducer()
@@ -49,6 +51,32 @@ public class MockDataProducer : IProgramDataProducer
                     MemoryUsage = (random.Next() * 10.0f),
                 });
         }
+
+        foreach (string processName in RandomProcessNames)
+        {
+            //Ketchub is our heavy load.
+            if (processName == "KetcHub")
+                result.Add(new ProgramData
+                {
+                    SystemName = OtherName,
+                    ProcessName = processName,
+                    CpuUsage = (random.Next() * 50),
+                    DiskUsage = (random.Next() * 4080),
+                    NetworkUsage = (random.Next() * 0.5f),
+                    MemoryUsage = (random.Next() * 25.0f),
+                });
+            else
+                result.Add(new ProgramData
+                {
+                    SystemName = OtherName,
+                    ProcessName = processName,
+                    CpuUsage = (random.Next()),
+                    DiskUsage = (random.Next() * 20),
+                    NetworkUsage = (random.Next() * 0.1f),
+                    MemoryUsage = (random.Next() * 10.0f),
+                });
+        }
+
         return result;
     }
 }
