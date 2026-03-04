@@ -4,15 +4,12 @@ using Core;
 using Infrastructure;
 using System;
 using System.Collections.Generic;
+using UI.ViewModels;
 
 namespace UI;
 
 public partial class FolderView : UserControl
 {
-    private Dictionary<string, FolderUser> _userMapping = [];
-    public static Action<User>? OnUserAdded;
-    public static Action? OnSelectionUpdated;
-
     public FolderView()
     {
         InitializeComponent();
@@ -46,15 +43,15 @@ public partial class FolderView : UserControl
 
     private void AddUser(User user)
     {
-        OnUserAdded?.Invoke(user);
+        FolderViewData.OnUserAdded?.Invoke(user);
         FolderUser folderUser = new(user);
         ScrollView.Children.Add(folderUser);
-        _userMapping.Add(user.Username, folderUser);
+        FolderViewData.UserMapping.Add(user.Username, folderUser);
     }
 
     public void UpdateUsers()
     {
-        if (!_userMapping.ContainsKey(SystemHistory.Instance.SystemName))//Add ourselves!
+        if (!FolderViewData.UserMapping.ContainsKey(SystemHistory.Instance.SystemName))//Add ourselves!
         {
             User user = new User()
             {
@@ -67,9 +64,9 @@ public partial class FolderView : UserControl
         List<User> users = DBInteract.GetUsers();
         foreach (User user in users)
         {
-            if (_userMapping.ContainsKey(user.Username))
+            if (FolderViewData.UserMapping.ContainsKey(user.Username))
             {
-                _userMapping[user.Username].IsOnline = SystemHistory.Instance.SystemName.Equals(user.Username) ? true : user.IsOnline;
+                FolderViewData.UserMapping[user.Username].IsOnline = SystemHistory.Instance.SystemName.Equals(user.Username) ? true : user.IsOnline;
             }
             else
             {

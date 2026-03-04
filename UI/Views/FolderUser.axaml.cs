@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using System;
+using UI.ViewModels;
 
 namespace UI;
 
@@ -34,7 +35,7 @@ public partial class FolderUser : UserControl
     private void OnClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         IsSelected = !IsSelected;
-        FolderView.OnSelectionUpdated?.Invoke();
+        FolderViewData.OnSelectionUpdated?.Invoke();
         UpdateVisual();
     }
 
