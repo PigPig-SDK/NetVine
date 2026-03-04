@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,26 @@ public partial class FolderView : UserControl
     {
         InitializeComponent();
         UpdateUsers();
+        DBInteract.OnDataAdded += UpdateUsersLate;
+        DetachedFromLogicalTree += OnLeaveScope;
+    }
+
+    private void UpdateUsersLate() => Dispatcher.UIThread.Post(() => { UpdateUsers(); });
+
+    /// <summary>
+    /// Called when the item is removed from the view/simulation
+    /// </summary>
+    /// <param name="_">Discarded</param>
+    /// <param name="__">Discarded</param>
+    private void OnLeaveScope(object? _, Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs __)
+    {
+        DBInteract.OnDataAdded -= UpdateUsersLate;
+    }
+
+    ~FolderView()
+    {
+        //Just incase...
+        OnLeaveScope(null, null!);
     }
 
     public void UpdateUsers()

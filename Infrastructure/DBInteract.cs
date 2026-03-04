@@ -8,6 +8,8 @@ public class DBInteract : DbContext
 {
     
     public DbSet<ProgramData> ProgramDataTable { get; set; } = null!;
+
+    public static Action? OnDataAdded;
     
     /// <summary>
     ///Database interaction constructor. Each method creates and deletes the interaction object.
@@ -127,6 +129,7 @@ public class DBInteract : DbContext
             db.ProgramDataTable.Add(entry);
             db.SaveChanges();   
         }
+        OnDataAdded?.Invoke();
     }
     
     /// <summary>
@@ -258,6 +261,7 @@ public class DBInteract : DbContext
                 SubmitEntry((ProgramData)data, db);
             }    
         }
+        OnDataAdded?.Invoke();
     }
 
     public static List<User> GetUsers()
