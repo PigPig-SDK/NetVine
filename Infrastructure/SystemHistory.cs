@@ -32,7 +32,11 @@ public class SystemHistory : IDisposable
     public static void SetupInstance()
     {
         IProgramDataProducer? producer = null;
-        if (OperatingSystem.IsWindows())
+        if(Environment.GetCommandLineArgs().Contains(MockDataProducer.LaunchArgument))
+        {
+            producer = new MockDataProducer();
+        }
+        else if (OperatingSystem.IsWindows())
         {
             producer = new WindowsDataProducer();
         }
