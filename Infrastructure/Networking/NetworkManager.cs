@@ -33,11 +33,15 @@ public class NetworkManager
             null, 
             TimeSpan.Zero,  
             TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+        StartHost();
     }
 
     public void StartHost()
     {
         if(Host != null) throw new InvalidOperationException($"Cannot host while host is already established!");
+
+        //Don't host!
+        if(ConfigManager.ReadSetting(SettingInt.IsHosting) == 0) return;
 
         Host = new Host(IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
         Host.Start();
@@ -80,6 +84,7 @@ public class NetworkManager
         }
 
         Host?.DisconnectAll();
+        Host?.Dispose();
     }
 
     ~NetworkManager()

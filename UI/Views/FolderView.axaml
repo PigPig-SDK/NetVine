@@ -1,15 +1,26 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:UI"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.FolderView">
 	<Border Background="#808080"
             BorderBrush="Black"
-            BorderThickness="1"
+            BorderThickness="2"
             Padding="10">
-		<TextBlock Text="Folder Content"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center" />
+        <Grid RowDefinitions="auto,auto,*">
+            <Grid Grid.Row="0" ColumnDefinitions="*,auto">
+                <Label Grid.Column="0" HorizontalAlignment="Stretch" FontSize="20" VerticalAlignment="Center">Systems</Label>
+                <Button Grid.Column="1" MaxHeight="30" MaxWidth="40" Content="⚙️" 
+                        HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" 
+                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+            <GridSplitter Grid.Row="1"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
+                <StackPanel x:Name="ScrollView">
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
 	</Border>
 </UserControl>

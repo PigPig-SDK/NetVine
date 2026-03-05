@@ -1,12 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Core;
+﻿using Core;
 using Microsoft.Diagnostics.Tracing.Parsers.Clr;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Infrastructure;
 public class DBInteract : DbContext
 {
     
     public DbSet<ProgramData> ProgramDataTable { get; set; } = null!;
+
+    public static Action? OnDataAdded;
     
     /// <summary>
     ///Database interaction constructor. Each method creates and deletes the interaction object.
@@ -126,6 +129,7 @@ public class DBInteract : DbContext
             db.ProgramDataTable.Add(entry);
             db.SaveChanges();   
         }
+        OnDataAdded?.Invoke();
     }
     
     /// <summary>
@@ -257,5 +261,21 @@ public class DBInteract : DbContext
                 SubmitEntry((ProgramData)data, db);
             }    
         }
+        OnDataAdded?.Invoke();
+    }
+
+    public static List<User> GetUsers()
+    {
+        List<User> users = [];
+        using (var db = new DBInteract())
+        {
+            var usernames = db.ProgramDataTable.Select(u => u.SystemName).ToList();
+            foreach (string? data in usernames)
+            {
+                if (string.IsNullOrEmpty(data)) continue;//Should not be possible...
+                users.Add(new User { Username = data });
+            }
+        }
+        return users;
     }
 }

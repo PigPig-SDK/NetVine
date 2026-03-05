@@ -6,7 +6,7 @@ namespace Core;
 public class SystemHistory : IDisposable
 {
     private static SystemHistory _instance;
-    public static SystemHistory Instance { get; private set; }
+    public static SystemHistory Instance { get { return _instance; } private set { _instance = value; } }
 
     private SystemTracker _tracker;
     private IProgramDataProducer _producer;
@@ -17,6 +17,8 @@ public class SystemHistory : IDisposable
 
     public uint TotalSnapshotCount { get; private set; }
     public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
+
+    public string SystemName { get { return _producer.SystemName; } }
 
     public SystemHistory(IProgramDataProducer producer, uint capacity, TimeSpan? snapshotInterval = null)
     {
@@ -82,7 +84,10 @@ public class SystemHistory : IDisposable
             if(TotalSnapshotCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
             {
                 var average = _tracker.GetAverage();
+                if (average == null) return;
+
                 if(average != null) DBInteract.Store(average);
+                TotalSnapshotCount = 0;
             }
         }
         finally
