@@ -20,8 +20,8 @@ public class StringPayload : IPacketPayload
         Value = value;
     }
 
-    public void Execute()
+    public void Execute(bool isServer, Guid id)
     {
-        Console.WriteLine(Value);
+        Console.WriteLine($"{id} : {Value}");
     }
 }

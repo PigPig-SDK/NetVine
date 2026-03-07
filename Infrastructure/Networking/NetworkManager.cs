@@ -1,4 +1,5 @@
 ﻿using Microsoft.Diagnostics.Tracing.Parsers.Clr;
+using Microsoft.Win32.SafeHandles;
 using System.Configuration;
 using System.Diagnostics;
 using System.Net;
@@ -72,6 +73,17 @@ public class NetworkManager
                 client.ConnectAsync();
                 EstablishedClientConnections.Add(connectionIdentity, client);
             }
+        }
+    }
+
+    public void SendToId(Guid id, byte[] bytes)
+    {
+        var session = Host?.FindSession(id)?.Send(bytes);
+
+        foreach (var connectionContext in EstablishedClientConnections.Values)
+        {
+            if (connectionContext.Id == id)
+                connectionContext.Send(bytes);
         }
     }
 
