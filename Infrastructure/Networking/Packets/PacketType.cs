@@ -4,4 +4,6 @@ public enum PacketType : byte
 {
     Unknown,
     TextMessage,
+    DBUpdateRequest,
+    DBUpdateResponse,
 }

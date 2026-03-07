@@ -83,7 +83,7 @@ public class DBInteract : DbContext
     /// <param name="start"></param> Start date.
     /// <param name="end"></param> End date.
     /// <returns></returns>
-    public static List<ProgramData>? ListBetweenDates(DateTime? start, DateTime? end)
+    public static List<ProgramData> ListBetweenDates(DateTime? start, DateTime? end)
     {
         using var db = new  DBInteract();
 
@@ -101,6 +101,8 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
+    
+    
     
     /// <summary>
     /// Wipes ProgramDataTable data
