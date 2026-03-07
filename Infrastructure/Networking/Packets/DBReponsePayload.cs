@@ -8,11 +8,11 @@ public class DBResponsePayload : IPacketPayload
     public PacketType PacketType => PacketType.DBUpdateResponse;
 
     [ProtoMember(1)]
-    public List<ProgramData>? DBSection { get; set; }
+    public List<ProgramData> DBSection { get; set; }
 
     private DBResponsePayload()
     {
-        DBSection = null;
+        DBSection = [];
     }
 
     public DBResponsePayload(List<ProgramData> dbsection)
@@ -22,6 +22,6 @@ public class DBResponsePayload : IPacketPayload
 
     public void Execute()
     {
-        Console.WriteLine(DBSection);
+        DBInteract.Store(DBSection);
     }
 }
