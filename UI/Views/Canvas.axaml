@@ -1,4 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,6 +15,11 @@
 		            <TextBlock Text="Canvas Content"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center" />
+
+             
 	        </Border>
+                        <ScottPlot:AvaPlot Name="LineGraph">
+                
+                </ScottPlot:AvaPlot>
 	</TabControl>
 </UserControl>
