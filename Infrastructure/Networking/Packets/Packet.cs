@@ -58,13 +58,13 @@ public class Packet
     /// 
     /// </summary>
     /// <returns></returns>
-    public bool TryExecute()
+    public bool TryExecute(bool isServer, Guid id)
     {
         try
         {
             IPacketPayload? payload = ToObject();
             if (payload is null) return false;
-            payload.Execute();
+            payload.Execute(isServer, id);
             return true;
         }
         catch (Exception ex) when (ex is InvalidOperationException || ex is TargetInvocationException || ex is InvalidOperationException)

@@ -5,5 +5,5 @@
 public interface IPacketPayload 
 {
     PacketType PacketType { get; }
-    void Execute();
+    void Execute(bool isServer, Guid id);
 }
