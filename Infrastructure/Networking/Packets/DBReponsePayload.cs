@@ -6,6 +6,7 @@ namespace Infrastructure.Networking.Packets;
 public class DBResponsePayload : IPacketPayload
 {
     public PacketType PacketType => PacketType.DBUpdateResponse;
+    
 
     [ProtoMember(1)]
     public List<ProgramData> DBSection { get; set; }
@@ -19,9 +20,10 @@ public class DBResponsePayload : IPacketPayload
     {
         DBSection = dbsection;
     }
-
-    public void Execute()
+    
+    public void Execute(bool isServer, Guid id)
     {
         DBInteract.Store(DBSection);
     }
+    
 }

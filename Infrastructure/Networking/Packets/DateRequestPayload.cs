@@ -6,6 +6,7 @@ namespace Infrastructure.Networking.Packets;
 public class DateRequestPayload : IPacketPayload
 {
     public PacketType PacketType => PacketType.DBUpdateRequest;
+    
 
     [ProtoMember(1)]
     public DateTime? Date1 { get; set; }
@@ -24,9 +25,10 @@ public class DateRequestPayload : IPacketPayload
         Date1 = date1;
         Date2 = date2;
     }
-
-    public void Execute()
+    
+    public void Execute(bool isServer, Guid id)
     {
-        //Send(Packet.CreatePacket(new DBResponsePayload(DBInteract.ListBetweenDates(Date1, Date2))).ToBytes());
+        NetworkManager.Instance.SendToId(id,
+            Packet.CreatePacket(new DBResponsePayload(DBInteract.ListBetweenDates(Date1, Date2))).ToBytes());
     }
 }
