@@ -77,12 +77,16 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="PC name"   Binding="{Binding SystemName}" IsVisible="True"/>
                 <DataGridTextColumn Header="Process"   Binding="{Binding AppName}" IsVisible="True"/>
-                <DataGridTextColumn Header="CPU % Avg" Binding="{Binding CpuAvg}" IsVisible="{Binding DisplayCpuAvg}"/>
-                <DataGridTextColumn Header="CPU % TOP" Binding="{Binding CpuMax}" IsVisible="{Binding DisplayCpuTop}"/>
-                <DataGridTextColumn Header="Ram Avg"   Binding="{Binding RamAvg}" IsVisible="{Binding DisplayRamAvg}"/>
-                <DataGridTextColumn Header="Ram TOP"   Binding="{Binding RamMax}" IsVisible="{Binding DisplayRamTop}"/>
-                <DataGridTextColumn Header="Disk Avg"  Binding="{Binding DiskAvg}" IsVisible="{Binding DisplayDiskAvg}"/>
-                <DataGridTextColumn Header="Disk TOP"  Binding="{Binding DiskMax}" IsVisible="{Binding DisplayDiskTop}"/>
+                <DataGridTextColumn Header="CPU"       Binding="{Binding LiveData.CpuUsage, StringFormat={}{0:F2}%}" />
+                <DataGridTextColumn Header="Memory"    Binding="{Binding LiveData.MemoryUsage, StringFormat={}{0:F2}}" />
+                <DataGridTextColumn Header="Disk"      Binding="{Binding LiveData.DiskUsage, StringFormat={}{0:F2}}" />
+                <DataGridTextColumn Header="Network"   Binding="{Binding LiveData.NetworkUsage, StringFormat={}{0:F2}}" />
+                <DataGridTextColumn Header="CPU % Avg" Binding="{Binding CpuAvg, StringFormat={}{0:F2}%}" IsVisible="{Binding DisplayCpuAvg}"/>
+                <DataGridTextColumn Header="CPU % TOP" Binding="{Binding CpuMax, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayCpuTop}"/>
+                <DataGridTextColumn Header="Ram Avg"   Binding="{Binding RamAvg, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayRamAvg}"/>
+                <DataGridTextColumn Header="Ram TOP"   Binding="{Binding RamMax, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayRamTop}"/>
+                <DataGridTextColumn Header="Disk Avg"  Binding="{Binding DiskAvg, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayDiskAvg}"/>
+                <DataGridTextColumn Header="Disk TOP"  Binding="{Binding DiskMax, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayDiskTop}"/>
             </DataGrid.Columns>
 
         </DataGrid>

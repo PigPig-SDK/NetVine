@@ -1,12 +1,15 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Core;
 using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,28 +19,21 @@ using static UI.ViewModels.TableViewModel;
 namespace UI.ViewModels
 {
     //Future improvements:
-    //TODO: UpdateData -- listerner for a data update from the infrastructure.
     //TODO: Simplify filtering -- better syntax, dropdown menu instead?
-    //TODO: Add more columns, like current usage. Be sure these are toggleable in the context menu.
-
-    internal class TableViewModel : ViewModelBase
+    public class TableViewModel : ViewModelBase
     {
-
-        /// <summary>
-        /// Initializes a new instance of the TableViewModel class, setting up command properties for toggling CPU,
-        /// disk, RAM, and network states.
-        /// </summary>
-        /// <remarks>This constructor populates the table with initial dummy data and prepares command
-        /// properties that can be bound to UI elements, enabling user interaction with system resource
-        /// toggles.</remarks>
         public TableViewModel()
         {
-            PopulateTableWithDummyData();
+            _RowLookup = [];
+            SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+            //PopulateTableWithDummyData();
             ToggleCpuCommand = new RelayCommand(ToggleCpu);
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
             ToggleRamCommand = new RelayCommand(ToggleRam);
             ToggleNetCommand = new RelayCommand(ToggleNet);
         }
+
+        
         
         /// <summary>
         /// Represents a row of performance metrics for a specific system application, including CPU, RAM, disk, and
@@ -45,19 +41,48 @@ namespace UI.ViewModels
         /// </summary>
         /// <remarks>This class is designed to hold average and maximum resource usage values, which can
         /// be useful for monitoring and analyzing application performance over time.</remarks>
-        public class TableRow
+        public class TableRow : ObservableObject
         {
             public string SystemName { get; set; }
             public string AppName { get; set; }
-            public float CpuAvg { get; set; }
-            public float CpuMax { get; set; }
-            public float RamAvg { get; set; }
-            public float RamMax { get; set; }
-            public float DiskAvg { get; set; }
-            public float DiskMax { get; set; }
-            public float NetworkAvg { get; set; }
-            public float NetworkMax { get; set; }
+
+            private IProgramData? _liveData;
+            public IProgramData? LiveData
+            {
+                get => _liveData;
+                set { _liveData = value; OnPropertyChanged(); }
+            }
+
+            private float _cpuAvg;
+            public float CpuAvg { 
+                get => _cpuAvg; 
+                set { _cpuAvg = value; OnPropertyChanged(); } 
+            }
+
+            private float _cpuMax;
+            public float CpuMax { get => _cpuMax; set { _cpuMax = value; OnPropertyChanged(); } }
+
+            private float _ramAvg;
+            public float RamAvg { get => _ramAvg; set { _ramAvg = value; OnPropertyChanged(); } }
+
+            private float _ramMax;
+            public float RamMax { get => _ramMax; set { _ramMax = value; OnPropertyChanged(); } }
+
+            private float _diskAvg;
+            public float DiskAvg { get => _diskAvg; set { _diskAvg = value; OnPropertyChanged(); } }
+
+            private float _diskMax;
+            public float DiskMax { get => _diskMax; set { _diskMax = value; OnPropertyChanged(); } }
+
+            private float _networkAvg;
+            public float NetworkAvg { get => _networkAvg; set { _networkAvg = value; OnPropertyChanged(); } }
+
+            private float _networkMax;
+            public float NetworkMax { get => _networkMax; set { _networkMax = value; OnPropertyChanged(); } }
+
         }
+
+        private Dictionary<(string, string), TableRow> _RowLookup;
 
         //Main table data storage
         public ObservableCollection<TableRow> TableRows { get; set; } = [];
@@ -95,7 +120,7 @@ namespace UI.ViewModels
         private void ToggleRam() => (DisplayRamAvg, DisplayRamTop) = (!DisplayRamAvg, !DisplayRamTop);
         private void ToggleNet() => (DisplayNetworkAvg, DisplayNetworkTop) = (!DisplayNetworkAvg, !DisplayNetworkTop);
 
-
+        
 
         /// <summary>
         /// Property for the text in the search bar. When this is updated, 
@@ -145,14 +170,51 @@ namespace UI.ViewModels
                             false));
         }
 
+        /// <summary>
+        /// helper method to find the 
+        /// </summary>
+        /// <param name="sysName"></param>
+        /// <param name="appName"></param>
+        /// <returns></returns>
+        private TableRow FindOrCreate(string sysName, string appName)
+        {
+            var key = (sysName, appName);
+            if (_RowLookup.TryGetValue(key, out var row))
+                return row;
+
+            var newRow = new TableRow
+            {
+                SystemName = sysName,
+                AppName = appName,
+            };
+            _RowLookup[key] = newRow;
+            TableRows.Add(newRow);
+            return newRow;
+        }
 
         /// <summary>
         /// Processes an incoming snapshot of program data, updating the current state accordingly.
         /// </summary>
         /// <param name="data">A list of program data objects representing the latest state of the program. Cannot be null.</param>
-        private void OnSnapshot(List<IProgramData> data)
+        private void OnSnapshotLive(List<IProgramData> data)
         {
-            //when data comes in
+            var seen = new HashSet<(string, string)>();
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                foreach (var incoming in data)
+                {
+                    var row = FindOrCreate(incoming.SystemName, incoming.ProcessName); // safe, on UI thread
+                    row.LiveData = incoming;
+                    seen.Add((incoming.SystemName, incoming.ProcessName));
+                }
+
+                foreach (var row in TableRows)
+                {
+                    if (!seen.Contains((row.SystemName, row.AppName)))
+                        row.LiveData = null;
+                }
+            });
         }
 
 

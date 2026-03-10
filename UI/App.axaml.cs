@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using System.Linq;
 using UI.ViewModels;
 using UI.Views;
+using Infrastructure;
 
 namespace UI
 {

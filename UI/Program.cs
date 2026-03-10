@@ -8,6 +8,7 @@ namespace UI
 {
     internal sealed class Program
     {
+
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
@@ -22,6 +23,7 @@ namespace UI
 
             //Step 3: Setup history tracker.
             SystemHistory.SetupInstance();
+
 
             //Step 4: Setup network manager
             NetworkManager.SetupInstance();
