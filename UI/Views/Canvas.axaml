@@ -6,20 +6,11 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.Canvas">
 
-	<TabControl>
-	        
-		    <Border Background="#808080"
-                    BorderBrush="Black"
-                    BorderThickness="1"
-                    Padding="10">
-		            <TextBlock Text="Canvas Content"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center" />
+	       
 
-             
-	        </Border>
-                        <ScottPlot:AvaPlot Name="LineGraph">
+
+           <ScottPlot:AvaPlot Name="LineGraph">
                 
-                </ScottPlot:AvaPlot>
-	</TabControl>
+           </ScottPlot:AvaPlot>
+
 </UserControl>
