@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Networking.Packets;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using NetCoreServer;
 
 namespace Infrastructure.Networking;
@@ -12,6 +13,7 @@ public class HostSession : TcpSession
     protected override void OnConnected()
     {
         Console.WriteLine($"Host session connected: {Id}");
+        Send(Packet.CreatePacket(new DateRequestPayload(DateTime.Now, DateTime.Now.AddSeconds(1))).ToBytes());
     }
     protected override void OnDisconnected()
     {

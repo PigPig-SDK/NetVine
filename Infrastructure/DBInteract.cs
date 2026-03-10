@@ -83,7 +83,7 @@ public class DBInteract : DbContext
     /// <param name="start"></param> Start date.
     /// <param name="end"></param> End date.
     /// <returns></returns>
-    public static List<ProgramData>? ListBetweenDates(DateTime? start, DateTime? end)
+    public static List<ProgramData> ListBetweenDates(DateTime? start, DateTime? end)
     {
         using var db = new  DBInteract();
 
@@ -101,6 +101,8 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
+    
+    
     
     /// <summary>
     /// Wipes ProgramDataTable data
@@ -269,7 +271,7 @@ public class DBInteract : DbContext
         List<User> users = [];
         using (var db = new DBInteract())
         {
-            var usernames = db.ProgramDataTable.Select(u => u.SystemName).ToList();
+            var usernames = db.ProgramDataTable.Select(u => u.SystemName).Distinct().ToList();
             foreach (string? data in usernames)
             {
                 if (string.IsNullOrEmpty(data)) continue;//Should not be possible...
