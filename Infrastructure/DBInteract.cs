@@ -24,7 +24,15 @@ public class DBInteract : DbContext
     /// </summary>
     /// <param name="options"></param> Database name.
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite("Data Source=AppMetrics.db");
+    {
+        var dbLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine", "AppMetics.db");
+        Directory.CreateDirectory(Path.GetDirectoryName(dbLocation)!);
+        
+        options.UseSqlite($"Data Source={dbLocation}");
+    }
+    
+    
+    
     
     /// <summary>
     /// Sets the primary key.
