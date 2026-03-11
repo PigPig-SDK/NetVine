@@ -22,7 +22,7 @@
 
         <Grid RowDefinitions="auto,auto,*,auto">
             <Grid Grid.Row="0" ColumnDefinitions="*,auto">
-                <Label Grid.Column="0" HorizontalAlignment="Stretch" FontSize="20" VerticalAlignment="Center">Systems</Label>
+                <Label Grid.Column="0" HorizontalAlignment="Center" FontSize="20" VerticalAlignment="Center">Systems</Label>
                 <Button Grid.Column="1" MaxHeight="30" MaxWidth="40" Content="⚙️" 
                         HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" 
                         HorizontalAlignment="Center" VerticalAlignment="Center"/>

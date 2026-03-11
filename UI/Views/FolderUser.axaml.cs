@@ -45,5 +45,6 @@ public partial class FolderUser : UserControl
 
         SelectionButton.Background = IsSelected? _selectedColor : _deselectColor;
         OnlineCircle.Fill = IsOnline ? _onlineColor : _offlineColor;
+        Subscript.Content = $"{(IsOnline ? "Online" : "Offline")}";//TODO: Put info here.
     }
 }
