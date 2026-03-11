@@ -5,5 +5,10 @@
 public interface IPacketPayload 
 {
     PacketType PacketType { get; }
-    void Execute();
+    /// <summary>
+    /// The execution of a payload packet
+    /// </summary>
+    /// <param name="isServer">If the payload is executed on the server</param>
+    /// <param name="id">The ID of the packet sender</param>
+    void Execute(bool isServer, Guid id);
 }

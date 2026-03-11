@@ -3,6 +3,9 @@
     "UI": {
       "commandName": "Project",
       "commandLineArgs": "-mock"
+    },
+    "Profile 1": {
+      "commandName": "Project"
     }
   }
 }

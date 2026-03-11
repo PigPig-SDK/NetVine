@@ -24,7 +24,15 @@ public class DBInteract : DbContext
     /// </summary>
     /// <param name="options"></param> Database name.
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite("Data Source=AppMetrics.db");
+    {
+        var dbLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine", "AppMetics.db");
+        Directory.CreateDirectory(Path.GetDirectoryName(dbLocation)!);
+        
+        options.UseSqlite($"Data Source={dbLocation}");
+    }
+    
+    
+    
     
     /// <summary>
     /// Sets the primary key.
@@ -83,7 +91,7 @@ public class DBInteract : DbContext
     /// <param name="start"></param> Start date.
     /// <param name="end"></param> End date.
     /// <returns></returns>
-    public static List<ProgramData>? ListBetweenDates(DateTime? start, DateTime? end)
+    public static List<ProgramData> ListBetweenDates(DateTime? start, DateTime? end)
     {
         using var db = new  DBInteract();
 
@@ -101,6 +109,8 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
+    
+    
     
     /// <summary>
     /// Wipes ProgramDataTable data
@@ -269,7 +279,7 @@ public class DBInteract : DbContext
         List<User> users = [];
         using (var db = new DBInteract())
         {
-            var usernames = db.ProgramDataTable.Select(u => u.SystemName).ToList();
+            var usernames = db.ProgramDataTable.Select(u => u.SystemName).Distinct().ToList();
             foreach (string? data in usernames)
             {
                 if (string.IsNullOrEmpty(data)) continue;//Should not be possible...

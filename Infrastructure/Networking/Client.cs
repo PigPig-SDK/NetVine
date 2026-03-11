@@ -1,4 +1,5 @@
-﻿using Infrastructure.Networking.Packets;
+﻿using Core;
+using Infrastructure.Networking.Packets;
 using NetCoreServer;
 using System.Net;
 using System.Text;
@@ -15,11 +16,13 @@ public class Client : TcpClient
     protected override void OnConnected()
     {
         Console.WriteLine($"Client connected: {Id}");
+        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName)).ToBytes());
     }
 
     override protected void OnDisconnected()
     {
-        Console.WriteLine($"Client disconnected: {Id}");
+        ConnectedUserInfo.RemoveUserData(Id, out string? username);
+        Console.WriteLine($"Client disconnected: {Id} {username}");
     }
 
     override protected void OnReceived(byte[] buffer, long offset, long size)
@@ -30,7 +33,7 @@ public class Client : TcpClient
         {
             if (Packet.TryFromBytes(packetbytes!, out Packet? packet))
             {
-                Task.Run(() => packet!.TryExecute());
+                Task.Run(() => packet!.TryExecute(false, Id));
             }
             else
             {

@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using Core;
 using Infrastructure;
+using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using UI.ViewModels;
@@ -21,6 +22,12 @@ public partial class FolderView : UserControl
     {
         UpdateUsersLate();
         DBInteract.OnDataAdded += UpdateUsersLate;
+        ConnectedUserInfo.OnUserConnectionModified += OnUserModified;
+    }
+
+    public void OnUserModified(string username, bool isAdded)
+    {
+        UpdateUsersLate();
     }
 
     private void UpdateUsersLate() => Dispatcher.UIThread.Post(() => { UpdateUsers(); });
@@ -33,6 +40,7 @@ public partial class FolderView : UserControl
     private void OnLeaveScope(object? _, Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs __)
     {
         DBInteract.OnDataAdded -= UpdateUsersLate;
+        ConnectedUserInfo.OnUserConnectionModified -= OnUserModified;
     }
 
     ~FolderView()
@@ -47,6 +55,8 @@ public partial class FolderView : UserControl
         FolderUser folderUser = new(user);
         ScrollView.Children.Add(folderUser);
         FolderViewData.UserMapping.Add(user.Username, folderUser);
+        folderUser.IsOnline = user.IsOnline;
+        Console.WriteLine(user.IsOnline);
     }
 
     public void UpdateUsers()
@@ -56,7 +66,6 @@ public partial class FolderView : UserControl
             User user = new User()
             {
                 Username = SystemHistory.Instance.SystemName,
-                IsOnline = true
             };
             AddUser(user);
         }
@@ -66,12 +75,22 @@ public partial class FolderView : UserControl
         {
             if (FolderViewData.UserMapping.ContainsKey(user.Username))
             {
-                FolderViewData.UserMapping[user.Username].IsOnline = SystemHistory.Instance.SystemName.Equals(user.Username) ? true : user.IsOnline;
+                FolderViewData.UserMapping[user.Username].IsOnline = user.IsOnline;
             }
             else
             {
                 AddUser(user);
             }
         }
+    }
+
+    private void LiveViewChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        LiveViewModel.IsLive = true;
+    }
+
+    private void LiveViewUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        LiveViewModel.IsLive = false;
     }
 }
