@@ -10,5 +10,15 @@ namespace UI.Views
             Width = 700;
             Height = 700;
         }
+
+        private void OnGraphClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            CanvasTabControl.SelectedIndex = 0;
+        }
+
+        private void OnTableClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            CanvasTabControl.SelectedIndex = 1;
+        }
     }
 }
