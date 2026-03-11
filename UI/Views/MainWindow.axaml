@@ -10,7 +10,7 @@
         Background="#662D2D30"
         xmlns:views="clr-namespace:UI"
         Icon="/Assets/netvine.ico"
-        Title="MainWindow">
+        Title="Net-Vine">
     
     <Grid ColumnDefinitions="*, 1, 150">
         
