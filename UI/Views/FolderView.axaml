@@ -5,8 +5,21 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.FolderView">
-	<Border Background="#99000000"
-            Padding="10">
+	<Border Padding="10">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#99282838" Offset="0"/>
+                <GradientStop Color="#99222228" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect Color="Black" 
+                              BlurRadius="50" 
+                              OffsetX="0" 
+                              OffsetY="4" 
+                              Opacity="0.5"/>
+        </Border.Effect>
+
         <Grid RowDefinitions="auto,auto,*,auto">
             <Grid Grid.Row="0" ColumnDefinitions="*,auto">
                 <Label Grid.Column="0" HorizontalAlignment="Stretch" FontSize="20" VerticalAlignment="Center">Systems</Label>
@@ -58,4 +71,5 @@
             </Grid>
         </Grid>
 	</Border>
+
 </UserControl>

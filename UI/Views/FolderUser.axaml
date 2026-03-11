@@ -4,10 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="30"
              x:Class="UI.FolderUser">
-  <Button HorizontalAlignment="Stretch" x:Name="SelectionButton" Height="45" Click="OnClicked">
-      <Grid ColumnDefinitions="auto,*">
-          <Ellipse Width="10" Height="10" Fill="LightGreen" x:Name="OnlineCircle" Grid.Column="0"/>
-          <Label Grid.Column="1" HorizontalAlignment="Stretch" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="20">Username</Label>
-      </Grid>
-  </Button>
+    <Border Padding="10" Background="Transparent">
+        <Button HorizontalAlignment="Stretch" x:Name="SelectionButton" Height="45" Click="OnClicked">
+            <Button.Effect>
+                <DropShadowEffect Color="Black" 
+                                      BlurRadius="25" 
+                                      OffsetX="0" 
+                                      OffsetY="5" 
+                                      Opacity="0.75"/>
+            </Button.Effect>
+            <Grid ColumnDefinitions="auto,*">
+                <Ellipse Width="10" Height="10" Fill="LightGreen" x:Name="OnlineCircle" Grid.Column="0"/>
+                <Label Grid.Column="1" HorizontalAlignment="Stretch" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="20">Username</Label>
+            </Grid>
+        </Button>
+    </Border>
 </UserControl>

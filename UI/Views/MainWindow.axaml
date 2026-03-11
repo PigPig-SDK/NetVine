@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UI.Views.MainWindow"
         TransparencyLevelHint="AcrylicBlur"
-        Background="#66000000"
+        Background="#662D2D30"
         xmlns:views="clr-namespace:UI"
         Icon="/Assets/netvine.ico"
         Title="MainWindow">
