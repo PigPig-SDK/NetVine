@@ -18,8 +18,12 @@
                 <Grid ColumnDefinitions="auto,*">
                     <Ellipse Width="10" Height="10" Fill="LightGreen" x:Name="OnlineCircle" Grid.Column="0"/>
                     <Grid RowDefinitions="auto,auto" Grid.Column="1">
-                        <Label Grid.Row="0" HorizontalAlignment="Stretch" Padding="0" Margin="0" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="20">Username</Label>
-                        <Label Grid.Row="1" Foreground="Black" HorizontalAlignment="Stretch" Padding="0" Margin="0" x:Name="Subscript" VerticalAlignment="Top" FontSize="10">TODO: put IP address here.</Label>
+                        <Label Grid.Row="0" HorizontalAlignment="Stretch"
+                               FontFamily="avares://NetVine/Assets#Bebas Neue"
+                               Padding="0" Margin="0" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="20">Username</Label>
+                        <Label Grid.Row="1" Foreground="Black" HorizontalAlignment="Stretch"
+                               FontFamily="avares://NetVine/Assets#Bebas Neue"
+                               Padding="0" Margin="0" x:Name="Subscript" VerticalAlignment="Top" FontSize="10">TODO: put IP address here.</Label>
                     </Grid>
                 </Grid>
             </Button>

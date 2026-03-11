@@ -22,7 +22,9 @@
 
         <Grid RowDefinitions="auto,auto,*,auto">
             <Grid Grid.Row="0" ColumnDefinitions="*,auto">
-                <Label Grid.Column="0" HorizontalAlignment="Center" FontSize="20" VerticalAlignment="Center">Systems</Label>
+                <Label Grid.Column="0" HorizontalAlignment="Center" FontSize="30" 
+                       FontFamily="avares://NetVine/Assets#Bebas Neue"
+                       VerticalAlignment="Center">Systems</Label>
                 <Button Grid.Column="1" MaxHeight="30" MaxWidth="40" Content="⚙️" 
                         HorizontalContentAlignment="Center"  VerticalContentAlignment="Center" 
                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -62,7 +64,9 @@
                                            RenderOptions.BitmapInterpolationMode="HighQuality"/>
                                 </Panel>
                                 <!-- Label -->
-                                <Label Grid.Column="1" HorizontalAlignment="Stretch" FontSize="25"  VerticalAlignment="Bottom" Margin="8,0,0,0">LIVE</Label>
+                                <Label Grid.Column="1" HorizontalAlignment="Stretch" FontSize="25"  VerticalAlignment="Bottom" 
+                                       FontFamily="avares://NetVine/Assets#Bebas Neue"
+                                       Margin="8,0,0,0">LIVE</Label>
                             </Grid>
                         </Border>
                     </ControlTemplate>
