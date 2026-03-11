@@ -6,4 +6,5 @@ public enum PacketType : byte
     TextMessage,
     DBUpdateRequest,
     DBUpdateResponse,
+    UserInfo,
 }

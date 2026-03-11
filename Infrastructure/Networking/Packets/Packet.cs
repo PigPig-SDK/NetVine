@@ -12,7 +12,11 @@ public class Packet
     public byte[] Data { get; set; }
 
 
-    private static readonly Dictionary<PacketType, Type> _deserializeMap = new() { { PacketType.TextMessage, typeof(StringPayload)}, { PacketType.DBUpdateRequest, typeof(DateRequestPayload)} };
+    private static readonly Dictionary<PacketType, Type> _deserializeMap = 
+        new() { 
+            { PacketType.TextMessage, typeof(StringPayload)}, 
+            { PacketType.DBUpdateRequest, typeof(DateRequestPayload)},
+            { PacketType.UserInfo, typeof(UserInfoPayload)}};
 
     private Packet() {
         Data = new byte[0];

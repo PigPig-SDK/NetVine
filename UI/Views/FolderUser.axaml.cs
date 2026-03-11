@@ -44,6 +44,6 @@ public partial class FolderUser : UserControl
         if (SelectionButton is null || OnlineCircle is null) return;
 
         SelectionButton.Background = IsSelected? _selectedColor : _deselectColor;
-        OnlineCircle.Stroke = IsOnline ? _onlineColor : _offlineColor;
+        OnlineCircle.Fill = IsOnline ? _onlineColor : _offlineColor;
     }
 }
