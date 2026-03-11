@@ -93,7 +93,12 @@
                 IsVisible="{OnPlatform Default=False, Windows=True}" />
         </Grid>
         <!--The program body starts here... Ohh lala.-->
-        <Grid ColumnDefinitions="*, 1, 150" Grid.Row="1" >
+        <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="10"/>
+                    <ColumnDefinition Width="1"/>
+                    <ColumnDefinition Width="150" MinWidth="150"/>
+                </Grid.ColumnDefinitions>
             <Grid>
                 <Grid.Background>
                     <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
@@ -120,7 +125,7 @@
                 </TabItem>
             </TabControl>
 
-            <GridSplitter Grid.Column="1" Background="Transparent" Width="6" />
+            <GridSplitter Grid.Column="1" Background="Transparent" Width="6"/>
 
             <views:FolderView Grid.Column="2" />
         </Grid>
