@@ -5,9 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.FolderView">
-	<Border Background="#808080"
-            BorderBrush="Black"
-            BorderThickness="2"
+	<Border Background="#99000000"
             Padding="10">
         <Grid RowDefinitions="auto,auto,*,auto">
             <Grid Grid.Row="0" ColumnDefinitions="*,auto">
