@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UI.Views.MainWindow"
         xmlns:views="clr-namespace:UI"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/netvine.ico"
         Title="MainWindow">
     
     <Grid ColumnDefinitions="*, 1, 150">

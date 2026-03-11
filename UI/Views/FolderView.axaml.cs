@@ -83,4 +83,14 @@ public partial class FolderView : UserControl
             }
         }
     }
+
+    private void LiveViewChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        LiveViewModel.IsLive = true;
+    }
+
+    private void LiveViewUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        LiveViewModel.IsLive = false;
+    }
 }
