@@ -10,4 +10,6 @@ public enum SettingInt
     HostPort,
     IsHosting,
     LastActivePage,
+    WindowWidth,
+    WindowHeight,
 };

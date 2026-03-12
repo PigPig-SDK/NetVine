@@ -50,6 +50,8 @@ public class ConfigManager
         {SettingInt.TrackNetworkUsage,  1},
         {SettingInt.IsHosting, 0},
         {SettingInt.LastActivePage, 0 },
+        {SettingInt.WindowWidth, 700 },
+        {SettingInt.WindowHeight, 500 },
         {SettingInt.HostPort, NetworkManager.DefaultPort}
     };
 

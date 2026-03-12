@@ -15,19 +15,29 @@ public partial class MainWindow : Window
     public const int GraphView = 0;
     public const int TableView = 1;
 
-
     public MainWindow()
     {
         InitializeComponent();
 
         _tabBarMapping = new Dictionary<int, Button>() { { GraphView,  GraphButton}, {TableView,TableButton } };
 
-        Width = 700;
-        Height = 700;
+        Width = ConfigManager.ReadSetting(SettingInt.WindowWidth);
+        Height = ConfigManager.ReadSetting(SettingInt.WindowHeight);
+
+        this.SizeChanged += OnSizeChanged; 
 
         //Start with graph selected.
         CanvasTabControl.SelectedIndex = Math.Clamp(ConfigManager.ReadSetting(SettingInt.LastActivePage),0,1);//Only allow valid pages.
         SetTabSelected(CanvasTabControl.SelectedIndex);
+    }
+
+    private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        var width = e.NewSize.Width;
+        var height = e.NewSize.Height;
+
+        ConfigManager.WriteSetting(SettingInt.WindowWidth, (int)width);
+        ConfigManager.WriteSetting(SettingInt.WindowHeight, (int)height);
     }
 
     private void OnGraphClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
