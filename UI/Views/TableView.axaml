@@ -30,7 +30,8 @@
                     Foreground="Black"
                     Background="{DynamicResource TableBackground}"
                     />
-        <DataGrid Grid.Row="1"                    
+        <DataGrid Grid.Row="1"
+                    x:Name="MyDataGrid"
                     ItemsSource="{Binding FilteredRows}"
                     Sorting="DataGrid_Sorting"
                     FontWeight="Medium"
