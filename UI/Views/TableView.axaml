@@ -14,14 +14,8 @@
             <Setter Property="Background" Value="White"/>
             <Setter Property="CaretBrush" Value="Black"/>
         </Style>
-        <Style Selector="TextBox.SearchBox:pointerover /template/ Border">
-            <Setter Property="Background" Value="White"/>
-        </Style>
-        <Style Selector="TextBox.SearchBox:focus /template/ Border">
-            <Setter Property="Background" Value="White"/>
-        </Style>
         <Style Selector="TextBox.SearchBox:focus-within /template/ Border">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="DarkGreen"/>
         </Style>
     </UserControl.Styles>
 
@@ -36,20 +30,31 @@
                     Foreground="Black"
                     Background="{DynamicResource TableBackground}"
                     />
-        <DataGrid Grid.Row="1"
+        <DataGrid Grid.Row="1"                    
                     ItemsSource="{Binding FilteredRows}"
+                    Sorting="DataGrid_Sorting"
                     FontWeight="Medium"
                     IsReadOnly="True"
                     RowHeight="18"
                     GridLinesVisibility="All"
-                    CanUserResizeColumns="True">
+                    CanUserResizeColumns="True"
+                    ColumnHeaderHeight="25">
             <DataGrid.Styles>
-
                 <Style Selector="DataGridColumnHeader">
+                    <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis"/>   
+                    <Setter Property="SeparatorBrush" Value="Gray"/>
+                    <Setter Property="AreSeparatorsVisible" Value="False"/>
                     <Setter Property="Background" Value="White"/>
                     <Setter Property="Foreground" Value="Black"/>
                     <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="SeparatorBrush" Value="Gray"/>
+                    <Setter Property="ContentTemplate">
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" 
+                                        TextWrapping="Wrap"
+                                        TextAlignment="Center" 
+                                        VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </Setter>
                 </Style>
                 <Style Selector="DataGridRow">
                     <Setter Property="Background" Value="LightGray"/>
@@ -57,7 +62,6 @@
                     <Setter Property="FontWeight" Value="Medium"/>
                 </Style>
                 <Style Selector="DataGrid">
-					<Setter Property="HorizontalGridLinesBrush" Value="DarkGray"/>
 					<Setter Property="VerticalGridLinesBrush" Value="Gray"/>
                 </Style>
                 <Style Selector="DataGridCell">
@@ -65,6 +69,8 @@
                     <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis"/>               
                 </Style>
             </DataGrid.Styles>
+           
+            <!--
             <DataGrid.ContextMenu>
 				<ContextMenu>
                     <MenuItem Header="{Binding ContextMenuTextCpu}" Command="{Binding ToggleCpuCommand}"/>
@@ -73,20 +79,23 @@
                     <MenuItem Header="{Binding ContextMenuTextNet}" Command="{Binding ToggleDiskCommand}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
-            
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="PC name"   Binding="{Binding SystemName}" IsVisible="True"/>
-                <DataGridTextColumn Header="Process"   Binding="{Binding AppName}" IsVisible="True"/>
-                <DataGridTextColumn Header="CPU"       Binding="{Binding LiveData.CpuUsage, StringFormat={}{0:F2}%}" />
-                <DataGridTextColumn Header="Memory"    Binding="{Binding LiveData.MemoryUsage, StringFormat={}{0:F2}}" />
-                <DataGridTextColumn Header="Disk"      Binding="{Binding LiveData.DiskUsage, StringFormat={}{0:F2}}" />
-                <DataGridTextColumn Header="Network"   Binding="{Binding LiveData.NetworkUsage, StringFormat={}{0:F2}}" />
-                <DataGridTextColumn Header="CPU % Avg" Binding="{Binding CpuAvg, StringFormat={}{0:F2}%}" IsVisible="{Binding DisplayCpuAvg}"/>
-                <DataGridTextColumn Header="CPU % TOP" Binding="{Binding CpuMax, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayCpuTop}"/>
-                <DataGridTextColumn Header="Ram Avg"   Binding="{Binding RamAvg, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayRamAvg}"/>
-                <DataGridTextColumn Header="Ram TOP"   Binding="{Binding RamMax, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayRamTop}"/>
-                <DataGridTextColumn Header="Disk Avg"  Binding="{Binding DiskAvg, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayDiskAvg}"/>
-                <DataGridTextColumn Header="Disk TOP"  Binding="{Binding DiskMax, StringFormat={}{0:F2}}" IsVisible="{Binding DisplayDiskTop}"/>
+              -->          
+           <DataGrid.Columns>
+                <DataGridTextColumn Header="PC Name"   Width="2*" MinWidth="70" Binding="{Binding SystemName}"                                    IsVisible="{Binding IsVisible_PcName   }"/>
+                <DataGridTextColumn Header="Process"   Width="2*" MinWidth="70" Binding="{Binding AppName}"                                       IsVisible="{Binding IsVisible_Process  }"/>
+                <DataGridTextColumn Header="CPU"       Width="*"  MinWidth="70" Binding="{Binding LiveData.CpuUsage,     StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_Cpu      }"/>
+                <DataGridTextColumn Header="Memory"    Width="*"  MinWidth="70" Binding="{Binding LiveData.MemoryUsage,  StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Memory   }"/>
+                <DataGridTextColumn Header="Disk"      Width="*"  MinWidth="70" Binding="{Binding LiveData.DiskUsage,    StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Disk     }"/>
+                <DataGridTextColumn Header="Network"   Width="*"  MinWidth="70" Binding="{Binding LiveData.NetworkUsage, StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Network  }"/>
+                <DataGridTextColumn Header="CPU Avg"   Width="*"  MinWidth="70" Binding="{Binding CpuAvg,                StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuAvg   }"/>
+                <DataGridTextColumn Header="CPU Max"   Width="*"  MinWidth="70" Binding="{Binding CpuMax,                StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuTop   }"/>
+                <DataGridTextColumn Header="CPU Total" Width="*"  MinWidth="70" Binding="{Binding CpuMax}"                                        IsVisible="{Binding IsVisible_CpuTop   }"/>
+                <DataGridTextColumn Header="Ram Avg"   Width="*"  MinWidth="70" Binding="{Binding RamAvg,                StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryAvg}"/>
+                <DataGridTextColumn Header="Ram Max"   Width="*"  MinWidth="70" Binding="{Binding RamMax,                StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryTop}"/>
+                <DataGridTextColumn Header="Ram Total" Width="*"  MinWidth="70" Binding="{Binding RamMax}"                                        IsVisible="{Binding IsVisible_MemoryTop}"/>
+                <DataGridTextColumn Header="Disk Avg"  Width="*"  MinWidth="70" Binding="{Binding DiskAvg,               StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskAvg  }"/>
+                <DataGridTextColumn Header="Disk Max"  Width="*"  MinWidth="70" Binding="{Binding DiskMax,               StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskTop  }"/>
+                <DataGridTextColumn Header="Disk Total" Width="*" MinWidth="70" Binding="{Binding DiskMax}"                                       IsVisible="{Binding IsVisible_DiskTop  }"/>
             </DataGrid.Columns>
 
         </DataGrid>

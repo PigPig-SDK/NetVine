@@ -1,8 +1,7 @@
 {
   "profiles": {
     "UI": {
-      "commandName": "Project",
-      "commandLineArgs": "-mock"
+      "commandName": "Project"
     },
     "Profile 1": {
       "commandName": "Project"
