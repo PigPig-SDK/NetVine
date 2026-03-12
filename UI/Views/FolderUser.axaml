@@ -6,8 +6,8 @@
              x:Class="UI.FolderUser">
     <Panel>
 
-        <Border Padding="0,25" Margin="0,-25,10,0" Background="Transparent">
-            <Button HorizontalAlignment="Stretch" Padding="0" CornerRadius="0,8,8,0" x:Name="SelectionButton" Height="45" Click="OnClicked">
+        <Border Padding="0,25" Margin="10,-25,0,0" Background="Transparent">
+            <Button HorizontalAlignment="Stretch" Padding="0" CornerRadius="8,0,0,8" x:Name="SelectionButton" Height="45" Click="OnClicked">
                 <Button.Effect>
                     <DropShadowEffect Color="Black" 
                                           BlurRadius="25" 
