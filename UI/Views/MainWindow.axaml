@@ -120,7 +120,7 @@
                     </LinearGradientBrush>
                 </Grid.Background>
             </Grid>
-            <TabControl Grid.Column="2" x:Name="CanvasTabControl" SelectionChanged="OnTabChanged">
+            <TabControl Grid.Column="2" x:Name="CanvasTabControl" SelectionChanged="OnTabChanged" Padding="0">
                 <TabItem Header="GraphView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
                     <Grid ColumnDefinitions="150, 1, *">
                         <views:ComponentView Grid.Column="0" />
@@ -134,10 +134,6 @@
                     </Border>
                 </TabItem>
             </TabControl>
-
-            
-
-            
         </Grid>
     </Grid>
 </Window>
