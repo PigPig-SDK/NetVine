@@ -18,15 +18,8 @@
     <!-- Styles -->
     <Window.Styles>
 
-        <Style Selector="Button.selected TextBlock">
-            <Setter Property="TextDecorations" Value="Underline"/>
-        </Style>
         <Style Selector="Button.selected">
             <Setter Property="Background" Value="#A5C882"/>
-        </Style>
-
-        <Style Selector="Button.deselected TextBlock">
-            <Setter Property="TextDecorations" Value="{x:Null}"/>
         </Style>
         <Style Selector="Button.deselected">
             <Setter Property="Background" Value="#33000000"/>
@@ -80,8 +73,8 @@
             <!--  Remove or set Visibility="Collapsed" if you don't want to display an icon  -->
             <Image x:Name="icon"
                 Grid.Column="0"
-                Width="30"
-                Height="30"
+                Width="36"
+                Height="36"
                 Margin="0,0,0,0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"

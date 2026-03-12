@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Infrastructure;
 using System;
 using System.Collections.Generic;
 using YamlDotNet.Core.Events;
@@ -23,8 +24,9 @@ public partial class MainWindow : Window
 
         Width = 700;
         Height = 700;
+
         //Start with graph selected.
-        CanvasTabControl.SelectedIndex = GraphView;
+        CanvasTabControl.SelectedIndex = Math.Clamp(ConfigManager.ReadSetting(SettingInt.LastActivePage),0,1);//Only allow valid pages.
         SetTabSelected(CanvasTabControl.SelectedIndex);
     }
 
@@ -40,8 +42,8 @@ public partial class MainWindow : Window
 
     private void SetTabSelected(int tab)
     {
-        Console.WriteLine("Tab : " + tab);
-        foreach(var tabButton in _tabBarMapping)
+        ConfigManager.WriteSetting(SettingInt.LastActivePage, tab);
+        foreach (var tabButton in _tabBarMapping)
         {
             if(tabButton.Key == tab)
             {

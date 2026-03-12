@@ -9,4 +9,5 @@ public enum SettingInt
     TrackNetworkUsage,
     HostPort,
     IsHosting,
+    LastActivePage,
 };
