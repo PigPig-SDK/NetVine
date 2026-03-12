@@ -14,7 +14,23 @@
         ExtendClientAreaToDecorationsHint="{OnPlatform Default=False, Windows=True}"
         Title="Net-Vine">
 
+
+    <!-- Styles -->
     <Window.Styles>
+
+        <Style Selector="Button.selected TextBlock">
+            <Setter Property="TextDecorations" Value="Underline"/>
+        </Style>
+        <Style Selector="Button.selected">
+            <Setter Property="Background" Value="#A5C882"/>
+        </Style>
+
+        <Style Selector="Button.deselected TextBlock">
+            <Setter Property="TextDecorations" Value="{x:Null}"/>
+        </Style>
+        <Style Selector="Button.deselected">
+            <Setter Property="Background" Value="#33000000"/>
+        </Style>
         <!--
             This style is based on the default Fluent theme
             (https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/Menu.xaml),
@@ -74,15 +90,17 @@
                 Source="/Assets/netvine.png"/>
             <Button Grid.Column="1" Click="OnGraphClicked" 
                     FontSize="24" CornerRadius="8,8,0,0" 
-                    Padding="24,0" Margin="5,0" 
+                    Padding="24,0" Margin="5,10,0,0"  
+                    x:Name="GraphButton"
                     FontFamily="avares://NetVine/Assets#Bebas Neue">
-                Graph
+                <TextBlock Text="Graph"/>
             </Button>
             <Button Grid.Column="2" Click="OnTableClicked" 
                     FontSize="24" CornerRadius="8,8,0,0" 
-                    Padding="24,0" Margin="5,0" 
+                    Padding="24,0" Margin="5,10,0,0" 
+                    x:Name="TableButton"
                     FontFamily="avares://NetVine/Assets#Bebas Neue">
-                Table
+                <TextBlock Text="Table"/>
             </Button>
             <DockPanel Grid.Column="1" HorizontalAlignment="Left">
                 <NativeMenuBar VerticalAlignment="Center" DockPanel.Dock="Left" />
@@ -92,7 +110,7 @@
                 MinWidth="188"
                 IsVisible="{OnPlatform Default=False, Windows=True}" />
         </Grid>
-        <!--The program body starts here... Ohh lala.-->
+        <!--The program body starts here...-->
         <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" MinWidth="10"/>
@@ -107,14 +125,11 @@
                     </LinearGradientBrush>
                 </Grid.Background>
             </Grid>
-            <TabControl Grid.Column="0" x:Name="CanvasTabControl">
+            <TabControl Grid.Column="0" x:Name="CanvasTabControl" SelectionChanged="OnTabChanged">
                 <TabItem Header="GraphView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
                     <Grid ColumnDefinitions="150, 1, *">
-                    
                         <views:ComponentView Grid.Column="0" />
-
                         <GridSplitter Grid.Column="1" Background="Transparent" Width="6" />
-
                         <views:Canvas Grid.Column="2" />
                     </Grid>
                 </TabItem>
