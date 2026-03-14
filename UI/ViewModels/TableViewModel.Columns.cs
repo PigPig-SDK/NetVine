@@ -132,7 +132,7 @@ namespace UI.ViewModels
 
             Console.WriteLine($"Sorting by {_sortColumn} ascending={_sortAscending}");
 
-            OnPropertyChanged(nameof(FilteredRows));
+            OnPropertyChanged(nameof(TableRows));
         }
 
         private void NotifyColumnVisibility()
