@@ -10,7 +10,7 @@ public static class DBArithmetic
     /// <returns></returns> Average cpu usage.
     public static float AverageCpuUsage()
     {
-        return DBInteract.ListAll().Average(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.CpuUsage);
     }
    
     /// <summary>
@@ -19,7 +19,7 @@ public static class DBArithmetic
     /// <returns></returns> Average disk usage.
     public static float AverageDiskUsage()
     {
-        return DBInteract.ListAll().Average(x => x.DiskUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.DiskUsage);
     }
     
     /// <summary>
@@ -28,7 +28,7 @@ public static class DBArithmetic
     /// <returns></returns> Average network usage.
     public static float AverageNetworkUsage()
     {
-        return DBInteract.ListAll().Average(x => x.NetworkUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.NetworkUsage);
     }
     
     /// <summary>
@@ -37,7 +37,7 @@ public static class DBArithmetic
     /// <returns></returns> Average memory usage.
     public static float AverageMemoryUsage()
     {
-        return DBInteract.ListAll().Average(x => x.MemoryUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.MemoryUsage);
     }
 
     /// <summary>
@@ -46,8 +46,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak Cpu usage.
     public static ProgramData PeakCpuUsage()
     {
-        var maxCpuUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
-        return DBInteract.ListAll().First(x => x.CpuUsage >= maxCpuUsage);
+        var maxCpuUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().First(x => x.CpuUsage >= maxCpuUsage);
     }
     
     /// <summary>
@@ -56,8 +56,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak disk usage.
     public static ProgramData PeakDisk()
     {
-        var maxDiskUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
-        return DBInteract.ListAll().First(x => x.CpuUsage >= maxDiskUsage);
+        var maxDiskUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().First(x => x.CpuUsage >= maxDiskUsage);
     }
     
     /// <summary>
@@ -66,8 +66,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak network usage.
     public static ProgramData PeakNetworkUsage()
     {
-        var maxNetworkUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
-        return DBInteract.ListAll().First(x => x.CpuUsage >= maxNetworkUsage);
+        var maxNetworkUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().First(x => x.CpuUsage >= maxNetworkUsage);
     }
     
     /// <summary>
@@ -76,8 +76,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak memory usage.
     public static ProgramData PeakMemoryUsage()
     {
-        var maxMemoryUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
-        return DBInteract.ListAll().First(x => x.CpuUsage >= maxMemoryUsage);
+        var maxMemoryUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().First(x => x.CpuUsage >= maxMemoryUsage);
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public static class DBArithmetic
     /// <returns>Total netork usage.</returns> 
     public static float TotalNetworkUsage()
     {
-        return DBInteract.ListAll().Sum(x => x.NetworkUsage);
+        return DBInteract.ListAllProgramData().Sum(x => x.NetworkUsage);
     }
     
 }
