@@ -46,6 +46,7 @@ public static class DBArithmetic
                 .GroupBy(x => new {x.ProcessName})
                 .Select(y => new ProgramDataHistorical
                 {
+                    SystemName = "Combination",
                     ProcessName = y.Key.ProcessName,
             
                     CpuUsageAvg = y.Average(z => z.CpuUsage),
