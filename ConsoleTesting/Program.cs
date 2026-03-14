@@ -61,10 +61,6 @@ while (true)
         DBInteract.PopulateDummyData();
         DBInteract.ListAllToString();
         
-        Console.WriteLine("Average Network Usage: " + DBArithmetic.AverageNetworkUsage());
-        Console.WriteLine("Peak Network Usage: " + DBArithmetic.PeakNetworkUsage().NetworkUsage);
-        Console.WriteLine("Total Network Usage: " + DBArithmetic.TotalNetworkUsage() + "\n");
-
     }
     else if (input == "list")
     {
