@@ -48,7 +48,7 @@ public partial class TableView : UserControl
         if (DataContext is TableViewModel vm)
             vm.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(TableViewModel.TableRows))
+                if (e.PropertyName == nameof(TableViewModel.FilteredRows))
                     Avalonia.Threading.Dispatcher.UIThread.Post(RestoreScrollPosition,
                         Avalonia.Threading.DispatcherPriority.Loaded);
             };

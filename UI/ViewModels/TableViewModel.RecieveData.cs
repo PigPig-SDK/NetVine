@@ -43,6 +43,21 @@ namespace UI.ViewModels
             return newRow;
         }
 
+        public ObservableCollection<TableRow> FilteredRows { get; } = [];
+
+        public void RefreshFilteredRows()
+        {
+            var newRows = ApplySort(FilterRows(SearchText)).ToList();
+
+            // only add/remove rows if the set of rows has changed
+            foreach (var row in newRows)
+                if (!FilteredRows.Contains(row))
+                    FilteredRows.Add(row);
+
+            for (int i = FilteredRows.Count - 1; i >= 0; i--)
+                if (!newRows.Contains(FilteredRows[i]))
+                    FilteredRows.RemoveAt(i);
+        }
 
         /// <summary>
         /// Processes an incoming snapshot of program data, updating the current state accordingly.
@@ -67,7 +82,14 @@ namespace UI.ViewModels
                         row.LiveData = null;
                 }
 
-                OnPropertyChanged(nameof(TableRows));
+                var newRows = ApplySort(FilterRows(SearchText)).ToList();
+
+                for(int i = 0; i < TableRows.Count; i++)
+                {
+                    TableRows.ElementAt(i).LiveData = newRows.ElementAt(i).LiveData;
+                }
+
+                RefreshFilteredRows();
             });
         }
 

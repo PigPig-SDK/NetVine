@@ -20,7 +20,7 @@ namespace UI.ViewModels
             {
                 _searchText = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(TableRows));
+                OnPropertyChanged(nameof(FilteredRows));
             }
         }
 

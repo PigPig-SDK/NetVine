@@ -32,7 +32,8 @@
                     />
         <DataGrid Grid.Row="1"
                     x:Name="MyDataGrid"
-                    ItemsSource="{Binding TableRows}"
+                
+                    ItemsSource="{Binding FilteredRows}"
                     Sorting="DataGrid_Sorting"
                     FontWeight="Medium"
                     IsReadOnly="True"
