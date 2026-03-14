@@ -43,10 +43,9 @@ public static class DBArithmetic
         using (var db = new DBInteract())
         {
             return db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName))
-                .GroupBy(x => new {x.SystemName, x.ProcessName})
+                .GroupBy(x => new {x.ProcessName})
                 .Select(y => new ProgramDataHistorical
                 {
-                    SystemName = y.Key.SystemName,
                     ProcessName = y.Key.ProcessName,
             
                     CpuUsageAvg = y.Average(z => z.CpuUsage),
