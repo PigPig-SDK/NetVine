@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
 
 namespace UI.ViewModels
 {
@@ -26,6 +24,7 @@ namespace UI.ViewModels
             }
         }
 
+
         //TODO: Maybe add filter class which we can test
         /// <summary>
         /// Gets the collection of table rows that match the current search criteria.
@@ -34,7 +33,7 @@ namespace UI.ViewModels
         /// <remarks>The returned rows are filtered based on the value of <see cref="SearchText"/>. This
         /// property is useful for retrieving a dynamic subset of rows that satisfy the search condition, such as for
         /// displaying search results in a user interface.</remarks>
-        public IEnumerable<TableRow> FilteredRows => ApplySort(FilterRows(SearchText));
+        //public IEnumerable<TableRow> FilteredRows => ApplySort(FilterRows(SearchText));
         IEnumerable<TableRow> FilterRows(string searchIn)
         {
             if (searchIn == "" || searchIn == null) return TableRows;

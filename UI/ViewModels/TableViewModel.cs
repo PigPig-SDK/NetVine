@@ -1,20 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core;
-using Microsoft.Diagnostics.Tracing.Parsers;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Data;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using static UI.ViewModels.TableViewModel;
+
 
 namespace UI.ViewModels
 {
@@ -36,16 +24,6 @@ namespace UI.ViewModels
 
         }
 
-        
-        //Main table data storage
-        public ObservableCollection<TableRow> TableRows { get; set; } = [];
-
-
-
-
-
- 
-
-
+     
     }
 }

@@ -1,10 +1,7 @@
-﻿using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UI.ViewModels
 {
@@ -123,6 +120,8 @@ namespace UI.ViewModels
         {
             var newColumn = Columns.FirstOrDefault(c => c.Value.Header == header).Key;
 
+            Console.WriteLine($"SetSort: header='{header}' mapped to={newColumn}");
+
             if (newColumn == _sortColumn)
                 _sortAscending = !_sortAscending;
             else
@@ -130,6 +129,8 @@ namespace UI.ViewModels
                 _sortColumn = newColumn;
                 _sortAscending = true;
             }
+
+            Console.WriteLine($"Sorting by {_sortColumn} ascending={_sortAscending}");
 
             OnPropertyChanged(nameof(FilteredRows));
         }

@@ -5,6 +5,8 @@ using Avalonia.Markup.Xaml;
 using UI.ViewModels;
 using Avalonia.VisualTree;
 using System.Linq;
+using Avalonia.Interactivity;
+using System;
 
 namespace UI;
 
@@ -18,6 +20,7 @@ public partial class TableView : UserControl
 
     private void DataGrid_Sorting(object? sender, DataGridColumnEventArgs e)
     {
+        Console.WriteLine($"Header type: {e.Column.Header?.GetType()}, value: {e.Column.Header}");
         if (DataContext is TableViewModel vm)
         {
             vm.SetSort(e.Column.Header?.ToString());
@@ -31,27 +34,51 @@ public partial class TableView : UserControl
 
     private Vector _savedOffset;
 
-    // to temporarily save and restore the scrollbar position upon update
-    // (needs to somehow be connected to the sort method in the view model. Maybe we can move that logic here) 
+    private ScrollViewer? _scrollViewer;
+
+    private void DataGrid_Loaded(object? sender, RoutedEventArgs e)
+    {
+        _scrollViewer = MyDataGrid.GetVisualDescendants()
+                                  .OfType<ScrollViewer>()
+                                  .FirstOrDefault();
+
+        if (_scrollViewer != null)
+            _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+
+        if (DataContext is TableViewModel vm)
+            vm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(TableViewModel.FilteredRows))
+                    Avalonia.Threading.Dispatcher.UIThread.Post(RestoreScrollPosition,
+                        Avalonia.Threading.DispatcherPriority.Loaded);
+            };
+    }
+
     private void SaveScrollPosition()
     {
-        var scrollViewer = MyDataGrid.GetVisualDescendants()
-                                     .OfType<ScrollViewer>()
-                                     .FirstOrDefault();
-        if (scrollViewer != null)
-        {
-            _savedOffset = scrollViewer.Offset;
-        }
+        if (_scrollViewer != null)
+            _savedOffset = _scrollViewer.Offset;
     }
+
+    private bool _isRestoring = false;
 
     private void RestoreScrollPosition()
     {
-        var scrollViewer = MyDataGrid.GetVisualDescendants()
-                                     .OfType<ScrollViewer>()
-                                     .FirstOrDefault();
-        if (scrollViewer != null)
+        if (_scrollViewer != null)
         {
-            scrollViewer.Offset = _savedOffset;
+            _isRestoring = true;
+            _scrollViewer.Offset = _savedOffset;
+            // don't set _isRestoring = false here, let ScrollViewer_ScrollChanged reset it
         }
+    }
+
+    private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        if (_isRestoring)
+        {
+            _isRestoring = false; // reset flag after the restore scroll event fires
+            return;
+        }
+        SaveScrollPosition();
     }
 }
