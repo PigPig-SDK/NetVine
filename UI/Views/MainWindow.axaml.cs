@@ -7,6 +7,8 @@ namespace UI.Views
         public MainWindow()
         {
             InitializeComponent();
+            Width = 700;
+            Height = 700;
         }
     }
 }

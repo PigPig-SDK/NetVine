@@ -10,7 +10,7 @@ public static class DBArithmetic
     /// <returns></returns> Average cpu usage.
     public static float AverageCpuUsage()
     {
-        return DBInteract.ListAll().Average(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.CpuUsage);
     }
     /// <summary>
     /// Find average cpu usage between 2 dates.
@@ -29,7 +29,7 @@ public static class DBArithmetic
     /// <returns></returns> Average disk usage.
     public static float AverageDiskUsage()
     {
-        return DBInteract.ListAll().Average(x => x.DiskUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.DiskUsage);
     }
     
     /// <summary>
@@ -47,7 +47,7 @@ public static class DBArithmetic
     /// <returns></returns> Average network usage.
     public static float AverageNetworkUsage()
     {
-        return DBInteract.ListAll().Average(x => x.NetworkUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.NetworkUsage);
     }
     
     /// <summary>
@@ -65,7 +65,7 @@ public static class DBArithmetic
     /// <returns></returns> Average memory usage.
     public static float AverageMemoryUsage()
     {
-        return DBInteract.ListAll().Average(x => x.MemoryUsage);
+        return DBInteract.ListAllProgramData().Average(x => x.MemoryUsage);
     }
 
     /// <summary>
@@ -83,8 +83,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak Cpu usage.
     public static ProgramData PeakCpuUsage()
     {
-        var maxCpuUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
-        return DBInteract.ListAll().First(x => x.CpuUsage >= maxCpuUsage);
+        var maxCpuUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().First(x => x.CpuUsage >= maxCpuUsage);
     }
     
     /// <summary>
@@ -163,7 +163,7 @@ public static class DBArithmetic
     /// <returns>Total network usage.</returns> 
     public static float TotalNetworkUsage()
     {
-        return DBInteract.ListAll().Sum(x => x.NetworkUsage);
+        return DBInteract.ListAllProgramData().Sum(x => x.NetworkUsage);
     }
     
     /// <summary>
