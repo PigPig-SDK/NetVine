@@ -93,7 +93,7 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak Cpu usage.
     public static ProgramData PeakCpuUsage(DateTime date1, DateTime date2)
     {
-        var maxCpuUsage = DBInteract.ListAll().Max(x => x.CpuUsage);
+        var maxCpuUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
         return DBInteract.ListBetweenDates(date1, date2).First(x => x.CpuUsage >= maxCpuUsage);
     }
     
@@ -103,8 +103,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak disk usage.
     public static ProgramData PeakDiskUsage()
     {
-        var maxDiskUsage = DBInteract.ListAll().Max(x => x.DiskUsage);
-        return DBInteract.ListAll().First(x => x.DiskUsage >= maxDiskUsage);
+        var maxDiskUsage = DBInteract.ListAllProgramData().Max(x => x.DiskUsage);
+        return DBInteract.ListAllProgramData().First(x => x.DiskUsage >= maxDiskUsage);
     }
     
     /// <summary>
@@ -113,7 +113,7 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak disk usage.
     public static ProgramData PeakDiskUsage(DateTime date1, DateTime date2)
     {
-        var maxDiskUsage = DBInteract.ListAll().Max(x => x.DiskUsage);
+        var maxDiskUsage = DBInteract.ListAllProgramData().Max(x => x.DiskUsage);
         return DBInteract.ListBetweenDates(date1, date2).First(x => x.DiskUsage >= maxDiskUsage);
     }
     
@@ -123,8 +123,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak network usage.
     public static ProgramData PeakNetworkUsage()
     {
-        var maxNetworkUsage = DBInteract.ListAll().Max(x => x.NetworkUsage);
-        return DBInteract.ListAll().First(x => x.NetworkUsage >= maxNetworkUsage);
+        var maxNetworkUsage = DBInteract.ListAllProgramData().Max(x => x.NetworkUsage);
+        return DBInteract.ListAllProgramData().First(x => x.NetworkUsage >= maxNetworkUsage);
     }
     
     /// <summary>
@@ -133,7 +133,7 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak network usage.
     public static ProgramData PeakNetworkUsage(DateTime date1, DateTime date2)
     {
-        var maxNetworkUsage = DBInteract.ListAll().Max(x => x.NetworkUsage);
+        var maxNetworkUsage = DBInteract.ListAllProgramData().Max(x => x.NetworkUsage);
         return DBInteract.ListBetweenDates(date1, date2).First(x => x.NetworkUsage >= maxNetworkUsage);
     }
     
@@ -143,8 +143,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak memory usage.
     public static ProgramData PeakMemoryUsage()
     {
-        var maxMemoryUsage = DBInteract.ListAll().Max(x => x.MemoryUsage);
-        return DBInteract.ListAll().First(x => x.MemoryUsage >= maxMemoryUsage);
+        var maxMemoryUsage = DBInteract.ListAllProgramData().Max(x => x.MemoryUsage);
+        return DBInteract.ListAllProgramData().First(x => x.MemoryUsage >= maxMemoryUsage);
     }
     
     /// <summary>
@@ -153,8 +153,8 @@ public static class DBArithmetic
     /// <returns></returns> ProgramData of peak memory usage.
     public static ProgramData PeakMemoryUsage(DateTime date1, DateTime date2)
     {
-        var maxMemoryUsage = DBInteract.ListAll().Max(x => x.MemoryUsage);
-        return DBInteract.ListBetweenDates(date1, date2).First(x => x.CpuUsage >= maxMemoryUsage);
+        var maxMemoryUsage = DBInteract.ListAllProgramData().Max(x => x.MemoryUsage);
+        return DBInteract.ListBetweenDates(date1, date2).First(x => x.MemoryUsage >= maxMemoryUsage);
     }
 
     /// <summary>
