@@ -9,11 +9,13 @@ public static class DBArithmetic
     /// Find historical data of database processes. Grouped by Systems and Processes.
     /// </summary>
     /// <returns>Historical Data</returns>
-    public static List<ProgramDataHistorical> HistoricalDataProducer()
+    public static List<ProgramDataHistorical> HistoricalDataProducer(DateTime? date1, DateTime? date2)
     {
         using (var db = new DBInteract())
         {
-            return db.ProgramDataTable.GroupBy(x => new { x.SystemName, x.ProcessName })
+            return db.ProgramDataTable.Where(x => (!date1.HasValue || x.Date >= date1.Value)
+                    && (!date2.HasValue   || x.Date <= date2.Value))
+                .GroupBy(x => new { x.SystemName, x.ProcessName })
                 .Select(y => new ProgramDataHistorical
                 {
                     SystemName = y.Key.SystemName,
@@ -38,11 +40,13 @@ public static class DBArithmetic
     /// Find historical data of database processes. Grouped by Processes, and combines passed in Systems.
     /// </summary>
     /// <returns>Historical Data</returns>
-    public static List<ProgramDataHistorical> HistoricalDataProducer(List<String> systemList)
+    public static List<ProgramDataHistorical> HistoricalDataProducer(List<String> systemList, DateTime? date1, DateTime? date2)
     {
         using (var db = new DBInteract())
         {
-            return db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName))
+            return db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) && 
+                    (!date1.HasValue || x.Date >= date1)
+                    && (!date2.HasValue   || x.Date <= date2))
                 .GroupBy(x => new {x.ProcessName})
                 .Select(y => new ProgramDataHistorical
                 {
