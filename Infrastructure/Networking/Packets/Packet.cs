@@ -12,7 +12,11 @@ public class Packet
     public byte[] Data { get; set; }
 
 
-    private static readonly Dictionary<PacketType, Type> _deserializeMap = new() { { PacketType.TextMessage, typeof(StringPayload)} };
+    private static readonly Dictionary<PacketType, Type> _deserializeMap = 
+        new() { 
+            { PacketType.TextMessage, typeof(StringPayload)}, 
+            { PacketType.DBUpdateRequest, typeof(DateRequestPayload)},
+            { PacketType.UserInfo, typeof(UserInfoPayload)}};
 
     private Packet() {
         Data = new byte[0];
@@ -58,13 +62,13 @@ public class Packet
     /// 
     /// </summary>
     /// <returns></returns>
-    public bool TryExecute()
+    public bool TryExecute(bool isServer, Guid id)
     {
         try
         {
             IPacketPayload? payload = ToObject();
             if (payload is null) return false;
-            payload.Execute();
+            payload.Execute(isServer, id);
             return true;
         }
         catch (Exception ex) when (ex is InvalidOperationException || ex is TargetInvocationException || ex is InvalidOperationException)

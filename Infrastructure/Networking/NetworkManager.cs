@@ -1,7 +1,4 @@
-﻿using Microsoft.Diagnostics.Tracing.Parsers.Clr;
-using System.Configuration;
-using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 
 namespace Infrastructure.Networking;
 
@@ -45,19 +42,21 @@ public class NetworkManager
 
         Host = new Host(IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
         Host.Start();
+
+        Console.WriteLine($"Accepting : {Host.IsAccepting}");
     }
 
     public void RefreshClientConnections()
     {
         foreach (var connectionContext in ConfigManager.ClientConnections)
         {
-            IPAddress.TryParse(connectionContext.connection, out IPAddress? ip);
+            IPAddress.TryParse(connectionContext.Connection, out IPAddress? ip);
             if (ip == null)
             {
-                Console.WriteLine($"Invalid IP address: {connectionContext.connection}");
+                Console.WriteLine($"Invalid IP address: {connectionContext.Connection}");
                 continue;
             }
-            var connectionIdentity = (ip, connectionContext.port);
+            var connectionIdentity = (ip, connectionContext.Port);
             if (EstablishedClientConnections.ContainsKey(connectionIdentity))//Connection has been atempted
             {
                 Client client = EstablishedClientConnections[connectionIdentity];
@@ -68,10 +67,21 @@ public class NetworkManager
             }
             else//No Connection
             {
-                Client client = new(ip, connectionContext.port);
+                Client client = new(ip, connectionContext.Port);
                 client.ConnectAsync();
                 EstablishedClientConnections.Add(connectionIdentity, client);
             }
+        }
+    }
+
+    public void SendToId(Guid id, byte[] bytes)
+    {
+        var session = Host?.FindSession(id)?.Send(bytes);
+
+        foreach (var connectionContext in EstablishedClientConnections.Values)
+        {
+            if (connectionContext.Id == id)
+                connectionContext.Send(bytes);
         }
     }
 

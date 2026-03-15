@@ -1,40 +1,139 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:UI.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="using:UI.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UI.Views.MainWindow"
+        xmlns:ic="using:FluentIcons.Avalonia"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="#662D2D30"
         xmlns:views="clr-namespace:UI"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="MainWindow">
-    
-    <Grid ColumnDefinitions="*, 1, 150">
-        
-        <TabControl Grid.Column="0">
-            
-            <TabItem Header="Tab1">
-                
-                <Grid ColumnDefinitions="150, 1, *">
-                    
-                    <views:ComponentView Grid.Column="0" />
+        ExtendClientAreaTitleBarHeightHint="{OnPlatform Default=-1, Windows=38}"
+        ExtendClientAreaToDecorationsHint="{OnPlatform Default=False, Windows=True}"
+        Title="Net-Vine">
 
-                    <GridSplitter Grid.Column="1" Background="Transparent" Width="6" />
 
-                    <views:Canvas Grid.Column="2" />
-                </Grid>
-            </TabItem>
-            
-            <TabItem Header="Tab2">
-                <Border Background="LightGray" Margin="10" CornerRadius="8">
-                    <views:TableView />
-                </Border>
-            </TabItem>
-        </TabControl>
+    <!-- Styles -->
+    <Window.Styles>
 
-        <GridSplitter Grid.Column="1" Background="Transparent" Width="6" />
+        <Style Selector="Button.selected">
+            <Setter Property="Background" Value="#A5C882"/>
+        </Style>
+        <Style Selector="Button.deselected">
+            <Setter Property="Background" Value="#33000000"/>
+        </Style>
+        <!--
+            This style is based on the default Fluent theme
+            (https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/Menu.xaml),
+            but allows menu items to wrap in multiple rows.
+            You can remove this part if you prefer the default behavior (single row menu).
+        -->
+        <Style Selector="Menu">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Height" Value="NaN" />
+            <!--
+                Height=NaN is required because Avalonia fluent theme uses 32 as default menu height,
+                and this would cause the wrapped rows to be hidden when using WrapPanel as ItemsPanel.
+            -->
+            <Setter Property="ItemContainerTheme" Value="{StaticResource FluentTopLevelMenuItem}" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border
+                        Padding="{TemplateBinding Padding}"
+                        HorizontalAlignment="Stretch"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                        <ItemsPresenter
+                            Name="PART_ItemsPresenter"
+                            VerticalAlignment="Stretch"
+                            KeyboardNavigation.TabNavigation="Continue">
+                            <ItemsPresenter.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsPresenter.ItemsPanel>
+                        </ItemsPresenter>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </Window.Styles>
+    <!--The titlebar starts here.-->
+    <Grid RowDefinitions="Auto,*">
+        <!--  Note: don't set a background for 'titleBar' and 'dragRegion', it would break mouse interaction on the Windows title bar  -->
+        <Grid x:Name="titleBar"
+            Grid.Row="0"
+            HorizontalAlignment="Left"
+            ColumnDefinitions="Auto,*,Auto,Auto,Auto">
 
-        <views:FolderView Grid.Column="2" />
+            <!--  Remove or set Visibility="Collapsed" if you don't want to display an icon  -->
+            <Image x:Name="icon"
+                Grid.Column="0"
+                Width="36"
+                Height="36"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{OnPlatform Default=False, Windows=True}"
+                RenderOptions.BitmapInterpolationMode="HighQuality"
+                Source="/Assets/netvine.png"/>
+            <Button Grid.Column="1" Click="OnGraphClicked" 
+                    FontSize="24" CornerRadius="8,8,0,0" 
+                    Padding="24,0" Margin="5,10,0,0"  
+                    x:Name="GraphButton"
+                    FontFamily="avares://NetVine/Assets#Bebas Neue">
+                <TextBlock Text="Graph"/>
+            </Button>
+            <Button Grid.Column="2" Click="OnTableClicked" 
+                    FontSize="24" CornerRadius="8,8,0,0" 
+                    Padding="24,0" Margin="5,10,0,0" 
+                    x:Name="TableButton"
+                    FontFamily="avares://NetVine/Assets#Bebas Neue">
+                <TextBlock Text="Table"/>
+            </Button>
+            <DockPanel Grid.Column="1" HorizontalAlignment="Left">
+                <NativeMenuBar VerticalAlignment="Center" DockPanel.Dock="Left" />
+            </DockPanel>
+            <Grid x:Name="dragRegion"
+                Grid.Column="4"
+                MinWidth="188"
+                IsVisible="{OnPlatform Default=False, Windows=True}" />
+        </Grid>
+        <!--The program canvas starts here...-->
+        <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150" MinWidth="150"/>
+                    <ColumnDefinition Width="1"/>
+                    <ColumnDefinition Width="*" MinWidth="150"/>
+                </Grid.ColumnDefinitions>
+            <views:FolderView Grid.Column="0"/>
+            <GridSplitter Grid.Column="1" Background="Transparent" Width="6"/>
+            <Grid Grid.Column="2">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Color="#4D0A0A0F" Offset="0"/>
+                        <GradientStop Color="#4D0D1B2E" Offset="1"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
+            <TabControl Grid.Column="2" x:Name="CanvasTabControl" SelectionChanged="OnTabChanged" Padding="0">
+                <TabItem Header="GraphView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                    <Grid ColumnDefinitions="150, 1, *">
+                        <views:ComponentView Grid.Column="0" />
+                        <GridSplitter Grid.Column="1" Background="Transparent" Width="6" />
+                        <views:Canvas Grid.Column="2" />
+                    </Grid>
+                </TabItem>
+                <TabItem Header="TableView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                    <Border Background="LightGray" Margin="10" CornerRadius="8">
+                        <views:TableView />
+                    </Border>
+                </TabItem>
+            </TabControl>
+        </Grid>
     </Grid>
 </Window>

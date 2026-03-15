@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <AssemblyName>NetVine</AssemblyName>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -27,7 +28,11 @@
     <PackageReference Include="ScottPlot" Version="5.1.57" />
     <PackageReference Include="ScottPlot.Avalonia" Version="5.1.57" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/BebasNeue-Regular.ttf" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>

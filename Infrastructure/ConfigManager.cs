@@ -36,7 +36,9 @@ public class ConfigManager
         {
             var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");
             Directory.CreateDirectory(folder);
-            return Path.Combine(folder, "config.yaml");
+
+            bool isMockSetup = Environment.GetCommandLineArgs().Contains(MockDataProducer.LaunchArgument);
+            return Path.Combine(folder,isMockSetup ? "mockconfig.yaml" :"config.yaml");
         }
     }
     /// <summary>Dictionary containing default integer setting values.</summary>
@@ -47,6 +49,9 @@ public class ConfigManager
         {SettingInt.TrackMemoryUsage, 1},
         {SettingInt.TrackNetworkUsage,  1},
         {SettingInt.IsHosting, 0},
+        {SettingInt.LastActivePage, 0 },
+        {SettingInt.WindowWidth, 700 },
+        {SettingInt.WindowHeight, 500 },
         {SettingInt.HostPort, NetworkManager.DefaultPort}
     };
 
@@ -87,9 +92,9 @@ public class ConfigManager
     [YamlMember]
     private Dictionary<SettingString, string> _StringSettings { get; set; }
     [YamlMember]
-    private List<(string connection, int port)> _ClientConnections { get; set; }
+    private List<ConnectionInfo> _ClientConnections { get; set; }
 
-    public static IReadOnlyList<(string connection, int port)> ClientConnections => Instance._ClientConnections;
+    public static IReadOnlyList<ConnectionInfo> ClientConnections => Instance._ClientConnections;
 
     /// <summary>
     /// Called when a setting is changed.
@@ -190,7 +195,7 @@ public class ConfigManager
     /// <param name="connection"></param>
     public static void AddClientConnection(string connection, int port)
     {
-        Instance._ClientConnections.Add((connection,port));
+        Instance._ClientConnections.Add(new(connection,port));
         OnClientConnectionAdded?.Invoke(connection, port);
     }
     /// <summary>

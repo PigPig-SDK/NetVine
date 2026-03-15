@@ -1,4 +1,6 @@
-﻿using Infrastructure.Networking.Packets;
+﻿using Core;
+using Infrastructure.Networking.Packets;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using NetCoreServer;
 
 namespace Infrastructure.Networking;
@@ -12,10 +14,15 @@ public class HostSession : TcpSession
     protected override void OnConnected()
     {
         Console.WriteLine($"Host session connected: {Id}");
+
+        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName)).ToBytes());
+
+        //Send(Packet.CreatePacket(new DateRequestPayload(DateTime.Now, DateTime.Now.AddSeconds(1))).ToBytes());
     }
     protected override void OnDisconnected()
     {
-        Console.WriteLine($"Host session disconnected: {Id}");
+        ConnectedUserInfo.RemoveUserData(Id, out string? username);
+        Console.WriteLine($"Host session disconnected: {Id} {username}");
     }
     protected override void OnReceived(byte[] buffer, long offset, long size)
     {
@@ -25,7 +32,7 @@ public class HostSession : TcpSession
         {
             if(Packet.TryFromBytes(packetbytes!, out Packet? packet))
             {
-                Task.Run(() => packet!.TryExecute());
+                Task.Run(() => packet!.TryExecute(true, Id));
             }
             else
             {
