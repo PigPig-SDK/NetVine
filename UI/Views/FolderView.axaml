@@ -23,7 +23,7 @@
         <Grid RowDefinitions="auto,auto,*,auto">
             <Label Grid.Column="0" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
                     FontFamily="avares://NetVine/Assets#Bebas Neue"
-                    VerticalAlignment="Center">Systems</Label>
+                    VerticalAlignment="Center" Foreground="White">Systems</Label>
             <Rectangle Grid.Row="1" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
             <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
                 <StackPanel x:Name="ScrollView">
@@ -34,39 +34,39 @@
                 <Rectangle Grid.Row="0" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
                 <!-- Live button -->
                 <CheckBox Checked="LiveViewChecked" Unchecked="LiveViewUnchecked" Grid.Row="1" HorizontalAlignment="Center" ToolTip.Tip="Toggle the database viewing for only live data">
-                <CheckBox.Template>
-                    <ControlTemplate>
-                        <Border Background="Transparent"
-                                BorderBrush="#888888"
-                                BorderThickness="2"
-                                CornerRadius="8"
-                                Padding="8,8">
-                            <Border.Styles>
-                                <Style Selector=":pointerover > Border">
-                                    <Setter Property="Background" Value="#22ffffff"/>
-                                </Style>
-                            </Border.Styles>
-                            <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-                                <!-- Custom sprite checkbox box -->
-                                <Panel Grid.Column="0" Width="24" Height="24">
-                                    <!-- Unchecked -->
-                                    <Image Source="/Assets/live_icon.png"
-                                           IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
-                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                    <!-- Checked -->
-                                    <Image Source="/Assets/live_icon_ticked.png"
-                                           IsVisible="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
-                                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                </Panel>
-                                <!-- Label -->
-                                <Label Grid.Column="1" HorizontalAlignment="Stretch" FontSize="25"  VerticalAlignment="Bottom" 
-                                       FontFamily="avares://NetVine/Assets#Bebas Neue"
-                                       Margin="8,0,0,0">LIVE</Label>
-                            </Grid>
-                        </Border>
-                    </ControlTemplate>
-                </CheckBox.Template>
-            </CheckBox>
+                    <CheckBox.Template>
+                        <ControlTemplate>
+                            <Border Background="Transparent"
+                                    BorderBrush="#888888"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    Padding="8,8">
+                                <Border.Styles>
+                                    <Style Selector=":pointerover > Border">
+                                        <Setter Property="Background" Value="#22ffffff"/>
+                                    </Style>
+                                </Border.Styles>
+                                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                    <!-- Custom sprite checkbox box -->
+                                    <Panel Grid.Column="0" Width="24" Height="24">
+                                        <!-- Unchecked -->
+                                        <Image Source="/Assets/live_icon.png"
+                                               IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
+                                               RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                        <!-- Checked -->
+                                        <Image Source="/Assets/live_icon_ticked.png"
+                                               IsVisible="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
+                                               RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                    </Panel>
+                                    <!-- Label -->
+                                    <Label Grid.Column="1" HorizontalAlignment="Stretch" FontSize="25"  VerticalAlignment="Bottom" 
+                                           FontFamily="avares://NetVine/Assets#Bebas Neue"
+                                           Margin="8,0,0,0" Foreground="White">LIVE</Label>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </CheckBox.Template>
+                </CheckBox>
             </Grid>
         </Grid>
 	</Border>

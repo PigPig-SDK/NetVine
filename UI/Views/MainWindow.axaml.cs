@@ -1,8 +1,11 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.Text;
+using UI.ViewModels;
 using YamlDotNet.Core.Events;
 
 namespace UI.Views;
@@ -11,24 +14,42 @@ namespace UI.Views;
 public partial class MainWindow : Window
 {
     private Dictionary<int, Button> _tabBarMapping;
-
+    
+    //Not an ENUM, these values respond to the tab of the CanvasTabControl.
     public const int GraphView = 0;
     public const int TableView = 1;
+    public const int SettingsView = 2;
 
     public MainWindow()
     {
         InitializeComponent();
 
-        _tabBarMapping = new Dictionary<int, Button>() { { GraphView,  GraphButton}, {TableView,TableButton } };
+        _tabBarMapping = new Dictionary<int, Button>() { { GraphView, GraphButton }, { TableView, TableButton }, { SettingsView, SettingsButton } };
 
         Width = ConfigManager.ReadSetting(SettingInt.WindowWidth);
         Height = ConfigManager.ReadSetting(SettingInt.WindowHeight);
 
-        this.SizeChanged += OnSizeChanged; 
+        this.SizeChanged += OnSizeChanged;
 
         //Start with graph selected.
-        CanvasTabControl.SelectedIndex = Math.Clamp(ConfigManager.ReadSetting(SettingInt.LastActivePage),0,1);//Only allow valid pages.
+        CanvasTabControl.SelectedIndex = ConfigManager.ReadSetting(SettingInt.LastActivePage);//Only allow valid pages.
         SetTabSelected(CanvasTabControl.SelectedIndex);
+
+        this.KeyDown += OnKeyDown;
+    }
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        //CTRL + F...
+        if (e.Key == Key.F && e.KeyModifiers == KeyModifiers.Control)
+        {
+            if(SearchBoxInput.IsVisible)
+            {
+                SearchBoxInput.Focus();
+                SearchBoxInput.SelectAll();
+            }
+            e.Handled = true;
+        }
     }
 
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
@@ -49,13 +70,19 @@ public partial class MainWindow : Window
     {
         CanvasTabControl.SelectedIndex = TableView;
     }
+    private void OnSettingsClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CanvasTabControl.SelectedIndex = SettingsView;
+    }
 
     private void SetTabSelected(int tab)
     {
+        SearchBoxInput.Text = string.Empty;
+
         ConfigManager.WriteSetting(SettingInt.LastActivePage, tab);
         foreach (var tabButton in _tabBarMapping)
         {
-            if(tabButton.Key == tab)
+            if (tabButton.Key == tab)
             {
                 //Select
                 tabButton.Value.Classes.Add("selected");
@@ -68,7 +95,18 @@ public partial class MainWindow : Window
                 tabButton.Value.Classes.Add("deselected");
             }
         }
-        
+
+        switch (tab)
+        {
+            case TableView:
+            case SettingsView:
+                SearchBoxPanel.IsVisible = true;
+                break;
+            default:
+                SearchBoxPanel.IsVisible = false;
+                break;
+        }
+
     }
 
     private void OnTabChanged(object? sender, SelectionChangedEventArgs e)
@@ -76,5 +114,15 @@ public partial class MainWindow : Window
         if (CanvasTabControl is null) return;//Use nullability people.
 
         SetTabSelected(CanvasTabControl.SelectedIndex);
+    }
+
+    private void SearchSubmission(object? sender, Avalonia.Input.TextInputEventArgs e)
+    {
+        MainWindowViewModel.OnSearchSubmission?.Invoke(e);
+    }
+
+    private void SearchKeyStroke(object? sender, Avalonia.Input.KeyEventArgs e)
+    {
+        MainWindowViewModel.OnSearchKeyStroke?.Invoke(e);
     }
 }
