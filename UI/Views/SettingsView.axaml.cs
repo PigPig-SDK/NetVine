@@ -17,8 +17,24 @@ public partial class SettingsView : UserControl
     /// </summary>
     private List<SettingGroup> _allSettings => new()
     {
+        new SettingGroup("Application", [
+            new SettingField<Enum>($"Net-Vine version {Program.Version}",
+                "This is your current netvine version.",
+                SettingInputMethod.None,
+                SettingInt.AutoEstablishConnection,//Dummy...
+                "version", "app", "application"),
+            new SettingField<Enum>($"Minimize on close",
+                "When you close net-vine, should it remain silent in the background?",
+                SettingInputMethod.Checkbox,
+                SettingInt.MinimizeOnClose,//Dummy...
+                "minimize", "app", "application"),
+            new SettingField<Enum>($"Load on startup",
+                "Should netvine start automatically with your OS?",
+                SettingInputMethod.Checkbox,
+                SettingInt.LoadOnStartup,//Dummy...
+                "load", "startup", "app", "application"),
+            ]),
         new SettingGroup ("Network",[
-
             new SettingField<SettingInt>("Port for host",
                 "The port used for hosting a server",
                 SettingInputMethod.IntInput,
