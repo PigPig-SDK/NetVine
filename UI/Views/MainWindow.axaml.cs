@@ -14,7 +14,7 @@ namespace UI.Views;
 public partial class MainWindow : Window
 {
     private Dictionary<int, Button> _tabBarMapping;
-    
+
     //Not an ENUM, these values respond to the tab of the CanvasTabControl.
     public const int GraphView = 0;
     public const int TableView = 1;
@@ -43,7 +43,7 @@ public partial class MainWindow : Window
         //CTRL + F...
         if (e.Key == Key.F && e.KeyModifiers == KeyModifiers.Control)
         {
-            if(SearchBoxInput.IsVisible)
+            if (SearchBoxInput.IsVisible)
             {
                 SearchBoxInput.Focus();
                 SearchBoxInput.SelectAll();
@@ -77,6 +77,8 @@ public partial class MainWindow : Window
 
     private void SetTabSelected(int tab)
     {
+        MainWindowViewModel.ActiveTab = tab;
+
         SearchBoxInput.Text = string.Empty;
 
         ConfigManager.WriteSetting(SettingInt.LastActivePage, tab);
@@ -118,11 +120,11 @@ public partial class MainWindow : Window
 
     private void SearchSubmission(object? sender, Avalonia.Input.TextInputEventArgs e)
     {
-        MainWindowViewModel.OnSearchSubmission?.Invoke(e);
+        MainWindowViewModel.OnSearchSubmission?.Invoke(e, SearchBoxInput.Text + e.Text);
     }
 
-    private void SearchKeyStroke(object? sender, Avalonia.Input.KeyEventArgs e)
+    private void SearchTextChanged(object? sender, TextChangedEventArgs e)
     {
-        MainWindowViewModel.OnSearchKeyStroke?.Invoke(e);
+        MainWindowViewModel.OnSearchKeyStroke?.Invoke(SearchBoxInput.Text);
     }
 }

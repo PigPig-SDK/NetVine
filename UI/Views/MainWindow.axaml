@@ -113,7 +113,7 @@
                      VerticalAlignment="Center"
                      VerticalContentAlignment="Center"
                      MinWidth="0"
-                     KeyDown="SearchKeyStroke"
+                     TextChanged="SearchTextChanged"
                      TextInput="SearchSubmission"
                      x:Name="SearchBoxInput"
                      Padding="32,0,8,0" Height="20"/>
