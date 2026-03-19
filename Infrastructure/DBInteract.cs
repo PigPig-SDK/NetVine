@@ -9,6 +9,8 @@ public class DBInteract : DbContext
     
     public DbSet<ProgramData> ProgramDataTable { get; set; } = null!;
 
+    public DbSet<User> UserTable { get; set; } = null!;
+    
     public static Action? OnDataAdded;
     
     /// <summary>
@@ -31,9 +33,6 @@ public class DBInteract : DbContext
         options.UseSqlite($"Data Source={dbLocation}");
     }
     
-    
-    
-    
     /// <summary>
     /// Sets the primary key.
     /// </summary>
@@ -42,17 +41,37 @@ public class DBInteract : DbContext
     {
         modelBuilder.Entity<ProgramData>()
             .HasKey(u => new { u.SystemName, u.Date, u.ProcessName });
+        
+        modelBuilder.Entity<User>()
+            .HasKey(u => new {u.Username});
     }
 
+    
+    
+    
+    
+    
     /// <summary>
-    /// Returns a list of DB contents
+    /// Returns a list of DB ProgramData contents
     /// </summary>
     /// <returns></returns>
-    public static List<ProgramData> ListAll()
+    public static List<ProgramData> ListAllProgramData()
     {
         using (var db = new DBInteract())
         {
             return db.ProgramDataTable.ToList();
+        }
+    }
+    
+    /// <summary>
+    /// Returns a list of DB user contents
+    /// </summary>
+    /// <returns></returns>
+    public static List<User> ListAllUser()
+    {
+        using (var db = new DBInteract())
+        {
+            return db.UserTable.ToList();
         }
     }
     
@@ -176,15 +195,36 @@ public class DBInteract : DbContext
     }
     
     /// <summary>
-    /// Check if entry exists in DB.
+    /// Check if entry exists in DB (ProgramData).
     /// </summary>
     /// <param name="entry"></param>
     /// <returns></returns> Bool. True if exists, false if not.
-    public static bool EntryExists(ProgramData entry)
+    public static bool EntryExists(DBEntry entry)
     {
         using (var db = new DBInteract())
         {
-            return (db.ProgramDataTable.Find(entry.SystemName, entry.Date, entry.ProcessName) != null);
+            if (entry is ProgramData pdEntry)
+            { 
+                return (db.ProgramDataTable.Find(pdEntry.SystemName, pdEntry.Date, pdEntry.ProcessName) != null);   
+            }
+            if (entry is User uEntry)
+            { 
+                return (db.ProgramDataTable.Find(uEntry.Username) != null);   
+            }
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// Check if entry exists in DB (Users).
+    /// </summary>
+    /// <param name="entry"></param>
+    /// <returns></returns> Bool. True if exists, false if not.
+    public static bool EntryExists(User entry)
+    {
+        using (var db = new DBInteract())
+        {
+            return (db.ProgramDataTable.Find(entry.Username) != null);
         }
     }
 
@@ -233,7 +273,7 @@ public class DBInteract : DbContext
     /// </summary>
     public static void PopulateDummyData()
     {
-        if (ListAll().Count == 0)
+        if (ListAllProgramData().Count == 0)
         {
             List<ProgramData> dummyList = new List<ProgramData>();
             for (int i = 0; i < 10; i++)
@@ -273,19 +313,6 @@ public class DBInteract : DbContext
         }
         OnDataAdded?.Invoke();
     }
+    
 
-    public static List<User> GetUsers()
-    {
-        List<User> users = [];
-        using (var db = new DBInteract())
-        {
-            var usernames = db.ProgramDataTable.Select(u => u.SystemName).Distinct().ToList();
-            foreach (string? data in usernames)
-            {
-                if (string.IsNullOrEmpty(data)) continue;//Should not be possible...
-                users.Add(new User { Username = data });
-            }
-        }
-        return users;
-    }
 }

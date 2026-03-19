@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core;
 
 namespace Infrastructure;
 
-public class User
+public class User : DBEntry
 {
     public string Username { get; set; } = "Unknown";
     public bool IsOnline => ConnectedUserInfo.IsUserConnected(Username);
+    
+    public DateTime LastDateConnected { get; set; }
 }
