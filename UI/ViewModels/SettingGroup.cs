@@ -5,9 +5,9 @@ namespace UI.ViewModels;
 public class SettingGroup
 {
     public string Label { get; set; } = string.Empty;
-    public List<SettingField> Fields = [];
+    public List<SettingInput> Fields = [];
 
-    public SettingGroup(string label, List<SettingField> fields)
+    public SettingGroup(string label, List<SettingInput> fields)
     {
         Label = label;
         Fields = fields;

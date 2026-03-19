@@ -1,9 +1,8 @@
 namespace UI.ViewModels;
 
-public enum SettingInputMethod
+public enum StringInputMethod
 {
     None,
-    Checkbox,
     FloatInput,
     IntInput,
     StringInput,

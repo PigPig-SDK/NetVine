@@ -18,82 +18,76 @@ public partial class SettingsView : UserControl
     private List<SettingGroup> _allSettings => new()
     {
         new SettingGroup("Application", [
-            new SettingField<Enum>($"Net-Vine version {Program.Version}",
+            new SettingInputReporter($"Net-Vine version {Program.Version}",
                 "This is your current netvine version.",
-                SettingInputMethod.None,
-                SettingInt.AutoEstablishConnection,//Dummy...
                 "version", "app", "application"),
-            new SettingField<Enum>($"Minimize on close",
+
+            new SettingInputCheckbox<Enum>($"Minimize on close",
                 "When you close net-vine, should it remain silent in the background?",
-                SettingInputMethod.Checkbox,
-                SettingInt.MinimizeOnClose,//Dummy...
+                SettingInt.MinimizeOnClose,
                 "minimize", "app", "application"),
-            new SettingField<Enum>($"Load on startup",
+
+            new SettingInputCheckbox<Enum>($"Load on startup",
                 "Should netvine start automatically with your OS?",
-                SettingInputMethod.Checkbox,
-                SettingInt.LoadOnStartup,//Dummy...
+                SettingInt.LoadOnStartup,
                 "load", "startup", "app", "application"),
             ]),
+
         new SettingGroup ("Network",[
-            new SettingField<SettingInt>("Port for host",
+            new SettingInputfield<SettingInt>("Port for host",
                 "The port used for hosting a server",
-                SettingInputMethod.IntInput,
+                StringInputMethod.IntInput,
                 SettingInt.HostPort,
                 "network", "host") { MaxAcceptedNumericalSize = 65535},
 
-            new SettingField<SettingString>("Ip for host",
+            new SettingInputfield<SettingString>("Ip for host",
                 "The ip used for hosting a server",
-                SettingInputMethod.IntInput,
+                StringInputMethod.IntInput,
                 SettingString.HostIP,
                 "network", "host"),
 
-            new SettingField<SettingFloat>("Auto establish connection rate",
+            new SettingInputfield<SettingFloat>("Auto establish connection rate",
                 "[In Seconds] How often the application will probe all programs on your system. If we are giving you tremendous overhead, try lowering this value.",
-                SettingInputMethod.FloatInput,
+                StringInputMethod.FloatInput,
                 SettingFloat.TickRate,
                 "network", "usage", "interval"),
 
-            new SettingField<SettingInt>("Auto establish connection on startup",
+            new SettingInputCheckbox<SettingInt>("Auto establish connection on startup",
                 "When re-establishing connection, how often do we check?",
-                SettingInputMethod.Checkbox,
                 SettingInt.AutoEstablishConnection,
                 "network", "client"),
         ]),
         new SettingGroup ("Database Storage", [
 
-            new SettingField<SettingInt>("Track CPU usage",
+            new SettingInputCheckbox<SettingInt>("Track CPU usage",
                 "Enables/Disables tracking for this resource",
-                SettingInputMethod.Checkbox,
                 SettingInt.TrackCPUUsage,
                 "cpu", "usage", "db", "database"),
 
-            new SettingField<SettingInt>("Track memory usage",
+            new SettingInputCheckbox<SettingInt>("Track memory usage",
                 "Enables/Disables tracking for this resource",
-                SettingInputMethod.Checkbox,
                 SettingInt.TrackMemoryUsage,
                 "ram", "usage", "db", "database"),
 
-            new SettingField<SettingInt>("Track network usage",
+            new SettingInputCheckbox<SettingInt>("Track network usage",
                 "Enables/Disables tracking for this resource",
-                SettingInputMethod.Checkbox,
                 SettingInt.TrackNetworkUsage,
                 "network", "usage", "db", "database"),
 
-            new SettingField<SettingInt>("Track disk usage",
+            new SettingInputCheckbox<SettingInt>("Track disk usage",
                 "Enables/Disables tracking for this resource",
-                SettingInputMethod.Checkbox,
                 SettingInt.TrackDiskUsage,
                 "disk", "usage", "db", "database"),
 
-            new SettingField<SettingFloat>("Database save interval",
+            new SettingInputfield<SettingFloat>("Database save interval",
                 "[In Seconds] How often the application will write to your database.",
-                SettingInputMethod.FloatInput,
+                StringInputMethod.FloatInput,
                 SettingFloat.DatabaseSaveInterval,
                 "database", "usage", "interval", "db", "database"),
 
-            new SettingField<SettingFloat>("Probe rate",
+            new SettingInputfield<SettingFloat>("Probe rate",
                 "[In Seconds] How often the application will probe all programs on your system. If we are giving you tremendous overhead, try lowering this value.",
-                SettingInputMethod.FloatInput,
+                StringInputMethod.FloatInput,
                 SettingFloat.TickRate,
                 "memory", "usage", "interval", "db", "database"),
         ]),
@@ -127,7 +121,7 @@ public partial class SettingsView : UserControl
                 Header = new TextBlock { Text = group.Label },
                 IsExpanded = true
             };
-            foreach (SettingField field in group.Fields)
+            foreach (SettingInput field in group.Fields)
             {
                 if (!field.IsPartOfFilter(filterWords)) continue;
 
