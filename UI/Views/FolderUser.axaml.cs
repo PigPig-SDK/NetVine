@@ -7,14 +7,12 @@ namespace UI;
 
 public partial class FolderUser : UserControl
 {
-    public bool IsSelected = true;
+    public bool IsSelected = false;
     
-    private readonly static SolidColorBrush _selectedColor = new(Color.Parse("#A5C882"));
-    private readonly static SolidColorBrush _deselectColor = new SolidColorBrush(new Color(255, 82, 82, 86));
+    private readonly static SolidColorBrush _selectedColor = new(Colors.DarkGreen);
+    private readonly static SolidColorBrush _deselectColor = new SolidColorBrush(Colors.Gray);
     private readonly static SolidColorBrush _onlineColor = new SolidColorBrush(Colors.Green);
     private readonly static SolidColorBrush _offlineColor = new SolidColorBrush(Colors.Black);
-    private readonly static SolidColorBrush _lightText = new SolidColorBrush(Colors.White);
-    private readonly static SolidColorBrush _darkText = new SolidColorBrush(Color.Parse("#1E152A"));
 
     public FolderUser(Infrastructure.User user)
     {
@@ -48,6 +46,5 @@ public partial class FolderUser : UserControl
         SelectionButton.Background = IsSelected? _selectedColor : _deselectColor;
         OnlineCircle.Fill = IsOnline ? _onlineColor : _offlineColor;
         Subscript.Content = $"{(IsOnline ? "Online" : "Offline")}";//TODO: Put info here.
-        UsernameLabel.Foreground = IsSelected? _darkText : _lightText;
     }
 }

@@ -2,7 +2,7 @@
 using ProtoBuf;
 
 [ProtoContract]
-public class ProgramData : IProgramData, DBEntry
+public class ProgramData : IProgramData
 {
 
     [ProtoMember(1)] private string _systemName;

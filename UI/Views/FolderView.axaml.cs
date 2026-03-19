@@ -70,7 +70,7 @@ public partial class FolderView : UserControl
             AddUser(user);
         }
 
-        List<User> users = DBInteract.ListAllUser();
+        List<User> users = DBInteract.GetUsers();
         foreach (User user in users)
         {
             if (FolderViewData.UserMapping.ContainsKey(user.Username))

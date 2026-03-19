@@ -6,8 +6,8 @@
              x:Class="UI.FolderUser">
     <Panel>
 
-        <Border Padding="0,25" Margin="10,-25,0,0" Background="Transparent">
-            <Button HorizontalAlignment="Stretch" Padding="0" CornerRadius="8,0,0,8" x:Name="SelectionButton" Height="45" Click="OnClicked">
+        <Border Padding="10" Background="Transparent">
+            <Button HorizontalAlignment="Stretch" CornerRadius="0,8,8,0" x:Name="SelectionButton" Height="45" Click="OnClicked">
                 <Button.Effect>
                     <DropShadowEffect Color="Black" 
                                           BlurRadius="25" 
@@ -17,10 +17,10 @@
                 </Button.Effect>
                 <Grid ColumnDefinitions="auto,*">
                     <Ellipse Width="10" Height="10" Fill="LightGreen" x:Name="OnlineCircle" Grid.Column="0"/>
-                    <Grid RowDefinitions="auto,auto" Grid.Column="1" >
+                    <Grid RowDefinitions="auto,auto" Grid.Column="1">
                         <Label Grid.Row="0" HorizontalAlignment="Stretch"
                                FontFamily="avares://NetVine/Assets#Bebas Neue"
-                               Padding="0" Margin="0" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="30">Username</Label>
+                               Padding="0" Margin="0" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="20">Username</Label>
                         <Label Grid.Row="1" Foreground="Black" HorizontalAlignment="Stretch"
                                FontFamily="avares://NetVine/Assets#Bebas Neue"
                                Padding="0" Margin="0" x:Name="Subscript" VerticalAlignment="Top" FontSize="10">TODO: put IP address here.</Label>
