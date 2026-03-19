@@ -11,60 +11,169 @@ public static class DBArithmetic
     /// <returns>Historical Data</returns>
     public static List<ProgramDataHistorical> HistoricalDataProducer(DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
-        {
-            return db.ProgramDataTable.Where(x => (!date1.HasValue || x.Date >= date1.Value)
-                    && (!date2.HasValue   || x.Date <= date2.Value))
-                .GroupBy(x => new { x.SystemName, x.ProcessName })
-                .Select(y => new ProgramDataHistorical
-                {
-                    SystemName = y.Key.SystemName,
-                    ProcessName = y.Key.ProcessName,
-
-                    CpuUsageAvg = y.Average(z => z.CpuUsage),
-                    DiskUsageAvg = y.Average(z => z.DiskUsage),
-                    NetworkUsageAvg = y.Average(z => z.NetworkUsage),
-                    MemoryUsageAvg = y.Average(z => z.MemoryUsage),
-
-                    CpuUsagePeak = y.Max(z => z.CpuUsage),
-                    DiskUsagePeak = y.Max(z => z.DiskUsage),
-                    NetworkUsagePeak = y.Max(z => z.NetworkUsage),
-                    MemoryUsagePeak = y.Max(z => z.MemoryUsage),
-
-                    NetworkUsageTotal = y.Sum(z => z.MemoryUsage)
-                }).ToList();
-        }
+        return DBInteract.ListAllProgramData().Average(x => x.CpuUsage);
+    }
+    /// <summary>
+    /// Find average cpu usage between 2 dates.
+    /// </summary>
+    /// <param name="date1"></param>
+    /// <param name="date2"></param>
+    /// <returns></returns>
+    public static float AverageCpuUsage(DateTime date1, DateTime date2)
+    {
+        return DBInteract.ListBetweenDates(date1, date2).Average(x => x.CpuUsage);
+    }
+   
+    /// <summary>
+    /// Find average disk usage of database.
+    /// </summary>
+    /// <returns></returns> Average disk usage.
+    public static float AverageDiskUsage()
+    {
+        return DBInteract.ListAllProgramData().Average(x => x.DiskUsage);
+    }
+    
+    /// <summary>
+    /// Find average disk usage between two dates.
+    /// </summary>
+    /// <returns></returns> Average disk usage.
+    public static float AverageDiskUsage(DateTime date1, DateTime date2)
+    {
+        return DBInteract.ListBetweenDates(date1, date2).Average(x => x.DiskUsage);
+    }
+    
+    /// <summary>
+    /// Find average network usage of database.
+    /// </summary>
+    /// <returns></returns> Average network usage.
+    public static float AverageNetworkUsage()
+    {
+        return DBInteract.ListAllProgramData().Average(x => x.NetworkUsage);
+    }
+    
+    /// <summary>
+    /// Find average network usage between two dates.
+    /// </summary>
+    /// <returns></returns> Average network usage.
+    public static float AverageNetworkUsage(DateTime date1, DateTime date2)
+    {
+        return DBInteract.ListBetweenDates(date1, date2).Average(x => x.NetworkUsage);
+    }
+    
+    /// <summary>
+    /// Find average memory usage of database.
+    /// </summary>
+    /// <returns></returns> Average memory usage.
+    public static float AverageMemoryUsage()
+    {
+        return DBInteract.ListAllProgramData().Average(x => x.MemoryUsage);
     }
 
     /// <summary>
-    /// Find historical data of database processes. Grouped by Processes, and combines passed in Systems.
+    /// Find average memory usage between two dates.
+    /// </summary>
+    /// <returns></returns> Average memory usage.
+    public static float AverageMemoryUsage(DateTime date1, DateTime date2)
+    {
+        return DBInteract.ListBetweenDates(date1, date2).Average(x => x.MemoryUsage);
+    }
+    
+    /// <summary>
+    /// Find first instance of peak cpu usage of database. Returns ProgramData in order to retrieve date of peak.
     /// </summary>
     /// <returns>Historical Data</returns>
     public static List<ProgramDataHistorical> HistoricalDataProducer(List<String> systemList, DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
-        {
-            return db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) && 
-                    (!date1.HasValue || x.Date >= date1)
-                    && (!date2.HasValue   || x.Date <= date2))
-                .GroupBy(x => new {x.ProcessName})
-                .Select(y => new ProgramDataHistorical
-                {
-                    SystemName = "Combination",
-                    ProcessName = y.Key.ProcessName,
-            
-                    CpuUsageAvg = y.Average(z => z.CpuUsage),
-                    DiskUsageAvg = y.Average(z => z.DiskUsage),
-                    NetworkUsageAvg = y.Average(z => z.NetworkUsage),
-                    MemoryUsageAvg = y.Average(z => z.MemoryUsage),
-            
-                    CpuUsagePeak = y.Max(z => z.CpuUsage),
-                    DiskUsagePeak = y.Max(z => z.DiskUsage),
-                    NetworkUsagePeak = y.Max(z => z.NetworkUsage),
-                    MemoryUsagePeak = y.Max(z => z.MemoryUsage),
-            
-                    NetworkUsageTotal = y.Sum(z => z.MemoryUsage)
-                }).ToList();
-        }
+        var maxCpuUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
+        return DBInteract.ListAllProgramData().First(x => x.CpuUsage >= maxCpuUsage);
     }
+    
+    /// <summary>
+    /// Find first instance of peak cpu between two dates. Returns ProgramData in order to retrieve date of peak.
+    /// </summary>
+    /// <returns></returns> ProgramData of peak Cpu usage.
+    public static ProgramData PeakCpuUsage(DateTime date1, DateTime date2)
+    {
+        var maxCpuUsage = DBInteract.ListAllProgramData().Max(x => x.CpuUsage);
+        return DBInteract.ListBetweenDates(date1, date2).First(x => x.CpuUsage >= maxCpuUsage);
+    }
+    
+    /// <summary>
+    /// Find first instance of peak disk usage of database. Returns ProgramData in order to retrieve date of peak.
+    /// </summary>
+    /// <returns></returns> ProgramData of peak disk usage.
+    public static ProgramData PeakDiskUsage()
+    {
+        var maxDiskUsage = DBInteract.ListAllProgramData().Max(x => x.DiskUsage);
+        return DBInteract.ListAllProgramData().First(x => x.DiskUsage >= maxDiskUsage);
+    }
+    
+    /// <summary>
+    /// Find first instance of peak disk between two dates. Returns ProgramData in order to retrieve date of peak.
+    /// </summary>
+    /// <returns></returns> ProgramData of peak disk usage.
+    public static ProgramData PeakDiskUsage(DateTime date1, DateTime date2)
+    {
+        var maxDiskUsage = DBInteract.ListAllProgramData().Max(x => x.DiskUsage);
+        return DBInteract.ListBetweenDates(date1, date2).First(x => x.DiskUsage >= maxDiskUsage);
+    }
+    
+    /// <summary>
+    /// Find first instance of peak network usage of database. Returns ProgramData in order to retrieve date of peak.
+    /// </summary>
+    /// <returns></returns> ProgramData of peak network usage.
+    public static ProgramData PeakNetworkUsage()
+    {
+        var maxNetworkUsage = DBInteract.ListAllProgramData().Max(x => x.NetworkUsage);
+        return DBInteract.ListAllProgramData().First(x => x.NetworkUsage >= maxNetworkUsage);
+    }
+    
+    /// <summary>
+    /// Find first instance of peak network between two dates. Returns ProgramData in order to retrieve date of peak.
+    /// </summary>
+    /// <returns></returns> ProgramData of peak network usage.
+    public static ProgramData PeakNetworkUsage(DateTime date1, DateTime date2)
+    {
+        var maxNetworkUsage = DBInteract.ListAllProgramData().Max(x => x.NetworkUsage);
+        return DBInteract.ListBetweenDates(date1, date2).First(x => x.NetworkUsage >= maxNetworkUsage);
+    }
+    
+    /// <summary>
+    /// Find first instance of peak memory usage of database. Returns ProgramData in order to retrieve date of peak.
+    /// </summary>
+    /// <returns></returns> ProgramData of peak memory usage.
+    public static ProgramData PeakMemoryUsage()
+    {
+        var maxMemoryUsage = DBInteract.ListAllProgramData().Max(x => x.MemoryUsage);
+        return DBInteract.ListAllProgramData().First(x => x.MemoryUsage >= maxMemoryUsage);
+    }
+    
+    /// <summary>
+    /// Find first instance of peak memory between two dates. Returns ProgramData in order to retrieve date of peak.
+    /// </summary>
+    /// <returns></returns> ProgramData of peak memory usage.
+    public static ProgramData PeakMemoryUsage(DateTime date1, DateTime date2)
+    {
+        var maxMemoryUsage = DBInteract.ListAllProgramData().Max(x => x.MemoryUsage);
+        return DBInteract.ListBetweenDates(date1, date2).First(x => x.MemoryUsage >= maxMemoryUsage);
+    }
+
+    /// <summary>
+    /// Find the total amount of network that has been consumed across all entries.
+    /// </summary>
+    /// <returns>Total network usage.</returns> 
+    public static float TotalNetworkUsage()
+    {
+        return DBInteract.ListAllProgramData().Sum(x => x.NetworkUsage);
+    }
+    
+    /// <summary>
+    /// Find the total amount of network that has been consumed across entries between two dates.
+    /// </summary>
+    /// <returns>Total network usage.</returns> 
+    public static float TotalNetworkUsage(DateTime date1, DateTime date2)
+    {
+        return DBInteract.ListBetweenDates(date1, date2).Sum(x => x.NetworkUsage);
+    }
+    
 }
