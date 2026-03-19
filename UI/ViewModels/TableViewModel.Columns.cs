@@ -46,7 +46,7 @@ namespace UI.ViewModels
         public bool IsVisible_MemoryTop => IsColumnVisible(SortColumn.MemoryTop);
         public bool IsVisible_DiskAvg => IsColumnVisible(SortColumn.DiskAvg);
         public bool IsVisible_DiskTop => IsColumnVisible(SortColumn.DiskTop);
-
+        public bool IsVisible_NetworkTotal => IsColumnVisible(SortColumn.NetworkTotal);
         public class ColumnDefinition
         {
             public string Header { get; init; }
@@ -65,18 +65,15 @@ namespace UI.ViewModels
             [SortColumn.Memory] = new() { Header = "Memory", Group = ColumnGroup.Memory, Mode = ColumnMode.Live, SortSelector = r => r.LiveData?.MemoryUsage ?? 0 },
             [SortColumn.Disk] = new() { Header = "Disk", Group = ColumnGroup.Disk, Mode = ColumnMode.Live, SortSelector = r => r.LiveData?.DiskUsage ?? 0 },
             [SortColumn.Network] = new() { Header = "Network", Group = ColumnGroup.Network, Mode = ColumnMode.Live, SortSelector = r => r.LiveData?.NetworkUsage ?? 0 },
-            [SortColumn.CpuAvg] = new() { Header = "CPU Avg", Group = ColumnGroup.Cpu, Mode = ColumnMode.History, SortSelector = r => r.CpuAvg },
-            [SortColumn.MemoryAvg] = new() { Header = "Memory Avg", Group = ColumnGroup.Memory, Mode = ColumnMode.History, SortSelector = r => r.RamAvg },
-            [SortColumn.DiskAvg] = new() { Header = "Disk Avg", Group = ColumnGroup.Disk, Mode = ColumnMode.History, SortSelector = r => r.DiskAvg },
-            [SortColumn.NetworkAvg] = new() { Header = "Network Avg", Group = ColumnGroup.Network, Mode = ColumnMode.History, SortSelector = r => r.NetworkAvg },
-            [SortColumn.CpuTop] = new() { Header = "CPU Top", Group = ColumnGroup.Cpu, Mode = ColumnMode.History, SortSelector = r => r.CpuMax },
-            [SortColumn.MemoryTop] = new() { Header = "Memory Top", Group = ColumnGroup.Memory, Mode = ColumnMode.History, SortSelector = r => r.RamMax },
-            [SortColumn.DiskTop] = new() { Header = "Disk Top", Group = ColumnGroup.Disk, Mode = ColumnMode.History, SortSelector = r => r.DiskMax },
-            [SortColumn.NetworkTop] = new() { Header = "Network Top", Group = ColumnGroup.Network, Mode = ColumnMode.History, SortSelector = r => r.NetworkMax },
-            [SortColumn.CpuTotal] = new() { Header = "CPU Total", Group = ColumnGroup.Cpu, Mode = ColumnMode.History, SortSelector = r => r.TotalData?.CpuUsage ?? 0 },
-            [SortColumn.MemoryTotal] = new() { Header = "Memory Total", Group = ColumnGroup.Memory, Mode = ColumnMode.History, SortSelector = r => r.TotalData?.MemoryUsage ?? 0 },
-            [SortColumn.DiskTotal] = new() { Header = "Disk Total", Group = ColumnGroup.Disk, Mode = ColumnMode.History, SortSelector = r => r.TotalData?.DiskUsage ?? 0 },
-            [SortColumn.NetworkTotal] = new() { Header = "Network Total", Group = ColumnGroup.Network, Mode = ColumnMode.History, SortSelector = r => r.TotalData?.NetworkUsage ?? 0 },
+            [SortColumn.CpuAvg] = new() { Header = "CPU Avg", Group = ColumnGroup.Cpu, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.CpuUsageAvg ?? 0 },
+            [SortColumn.MemoryAvg] = new() { Header = "Memory Avg", Group = ColumnGroup.Memory, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.NetworkUsageAvg ?? 0 },
+            [SortColumn.DiskAvg] = new() { Header = "Disk Avg", Group = ColumnGroup.Disk, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.DiskUsageAvg ?? 0 },
+            [SortColumn.NetworkAvg] = new() { Header = "Network Avg", Group = ColumnGroup.Network, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.NetworkUsageAvg ?? 0 },
+            [SortColumn.CpuTop] = new() { Header = "CPU Top", Group = ColumnGroup.Cpu, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.CpuUsagePeak ?? 0 },
+            [SortColumn.MemoryTop] = new() { Header = "Memory Top", Group = ColumnGroup.Memory, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.MemoryUsagePeak ?? 0 },
+            [SortColumn.DiskTop] = new() { Header = "Disk Top", Group = ColumnGroup.Disk, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.DiskUsagePeak ?? 0},
+            [SortColumn.NetworkTop] = new() { Header = "Network Top", Group = ColumnGroup.Network, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.NetworkUsagePeak ?? 0},
+            [SortColumn.NetworkTotal] = new() { Header = "Network Total", Group = ColumnGroup.Network, Mode = ColumnMode.History, SortSelector = r => r.HistoricalData?.NetworkUsageTotal ?? 0 },
         };
 
         private Dictionary<ColumnGroup, bool> _groupVisibility = new()
@@ -104,7 +101,7 @@ namespace UI.ViewModels
                 || (result.Mode == ColumnMode.Live && LiveViewModel.IsLive));
         }
 
-        //sorting:
+        //sorting ?:
         private SortColumn _sortColumn;
         private bool _sortAscending;
         IEnumerable<TableRow> ApplySort(IEnumerable<TableRow> rows)

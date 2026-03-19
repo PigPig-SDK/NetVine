@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Core;
+using Infrastructure;
 
 
 namespace UI.ViewModels
@@ -22,40 +23,11 @@ namespace UI.ViewModels
             set { _liveData = value; OnPropertyChanged(); }
         }
 
-        private IProgramData? _totalData;
-        public IProgramData? TotalData
+        private ProgramDataHistorical? _historicalData;
+        public ProgramDataHistorical? HistoricalData
         {
-            get => _totalData;
-            set { _totalData = value; OnPropertyChanged(); }
+            get => _historicalData;
+            set { _historicalData = value; OnPropertyChanged(); }
         }
-
-        private float _cpuAvg;
-        public float CpuAvg
-        {
-            get => _cpuAvg;
-            set { _cpuAvg = value; OnPropertyChanged(); }
-        }
-
-        private float _cpuMax;
-        public float CpuMax { get => _cpuMax; set { _cpuMax = value; OnPropertyChanged(); } }
-
-        private float _ramAvg;
-        public float RamAvg { get => _ramAvg; set { _ramAvg = value; OnPropertyChanged(); } }
-
-        private float _ramMax;
-        public float RamMax { get => _ramMax; set { _ramMax = value; OnPropertyChanged(); } }
-
-        private float _diskAvg;
-        public float DiskAvg { get => _diskAvg; set { _diskAvg = value; OnPropertyChanged(); } }
-
-        private float _diskMax;
-        public float DiskMax { get => _diskMax; set { _diskMax = value; OnPropertyChanged(); } }
-
-        private float _networkAvg;
-        public float NetworkAvg { get => _networkAvg; set { _networkAvg = value; OnPropertyChanged(); } }
-
-        private float _networkMax;
-        public float NetworkMax { get => _networkMax; set { _networkMax = value; OnPropertyChanged(); } }
-
     }
 }

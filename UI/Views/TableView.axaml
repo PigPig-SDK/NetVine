@@ -35,6 +35,7 @@
                 
                     ItemsSource="{Binding FilteredRows}"
                     Sorting="DataGrid_Sorting"
+                    Loaded="DataGrid_Loaded"
                     FontWeight="Medium"
                     IsReadOnly="True"
                     RowHeight="18"
@@ -80,15 +81,17 @@
                 <DataGridTextColumn Header="Memory"    Width="*"  MinWidth="100" Binding="{Binding LiveData.MemoryUsage,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Memory   }"/>
                 <DataGridTextColumn Header="Disk"      Width="*"  MinWidth="100" Binding="{Binding LiveData.DiskUsage,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Disk     }"/>
                 <DataGridTextColumn Header="Network"   Width="*"  MinWidth="100" Binding="{Binding LiveData.NetworkUsage,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Network  }"/>
-                <DataGridTextColumn Header="CPU Avg"   Width="*"  MinWidth="100" Binding="{Binding CpuAvg,   StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuAvg   }"/>
-                <DataGridTextColumn Header="CPU Max"   Width="*"  MinWidth="100" Binding="{Binding CpuMax,   StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuTop   }"/>
-                <DataGridTextColumn Header="CPU Total" Width="*"  MinWidth="100" Binding="{Binding CpuMax}"                           IsVisible="{Binding IsVisible_CpuTop   }"/>
-                <DataGridTextColumn Header="Ram Avg"   Width="*"  MinWidth="100" Binding="{Binding RamAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryAvg}"/>
-                <DataGridTextColumn Header="Ram Max"   Width="*"  MinWidth="100" Binding="{Binding RamMax,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryTop}"/>
-                <DataGridTextColumn Header="Ram Total" Width="*"  MinWidth="100" Binding="{Binding RamMax}"                           IsVisible="{Binding IsVisible_MemoryTop}"/>
-                <DataGridTextColumn Header="Disk Avg"  Width="*"  MinWidth="100" Binding="{Binding DiskAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskAvg  }"/>
-                <DataGridTextColumn Header="Disk Max"  Width="*"  MinWidth="100" Binding="{Binding DiskMax,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskTop  }"/>
-                <DataGridTextColumn Header="Disk Total" Width="*" MinWidth="100" Binding="{Binding DiskMax}"                                       IsVisible="{Binding IsVisible_DiskTop  }"/>
+                <DataGridTextColumn Header="CPU Avg"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.CpuUsageAvg,   StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuAvg   }"/>
+                <DataGridTextColumn Header="CPU Max"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.CpuUsagePeak,   StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuTop   }"/>
+                <DataGridTextColumn Header="Ram Avg"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.MemoryUsageAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryAvg}"/>
+                <DataGridTextColumn Header="Ram Max"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.MemoryUsagePeak,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryTop}"/>
+                <DataGridTextColumn Header="Disk Avg"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.DiskUsageAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskAvg  }"/>
+                <DataGridTextColumn Header="Disk Max"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.DiskUsagePeak,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskTop  }"/>                
+                <DataGridTextColumn Header="Network Avg"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.NetworkUsageAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_NetworkTotal }"/>
+                <DataGridTextColumn Header="Network Total"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.NetworkUsagePeak,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_NetworkTotal }"/>
+                <DataGridTextColumn Header="Network Total"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.NetworkUsageTotal,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_NetworkTotal }"/>
+
+
             </DataGrid.Columns>
 
         </DataGrid>

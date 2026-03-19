@@ -16,6 +16,13 @@ public partial class TableView : UserControl
     {
         InitializeComponent();
         DataContext = new TableViewModel();
+        if (DataContext is TableViewModel vm)
+            vm.OnRowsRefreshed += () =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(
+                    RestoreScrollPosition,
+                    Avalonia.Threading.DispatcherPriority.Background);
+            };
     }
 
     private void DataGrid_Sorting(object? sender, DataGridColumnEventArgs e)
@@ -66,6 +73,7 @@ public partial class TableView : UserControl
     {
         if (_scrollViewer != null)
         {
+            Console.WriteLine($"Saved position: {_savedOffset}");
             _isRestoring = true;
             _scrollViewer.Offset = _savedOffset;
             // don't set _isRestoring = false here, let ScrollViewer_ScrollChanged reset it
