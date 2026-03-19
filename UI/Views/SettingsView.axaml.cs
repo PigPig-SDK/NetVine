@@ -34,19 +34,19 @@ public partial class SettingsView : UserControl
             ]),
 
         new SettingGroup ("Network",[
-            new SettingInputfield<SettingInt>("Port for host",
+            new SettingInputField<SettingInt>("Port for host",
                 "The port used for hosting a server",
                 StringInputMethod.IntInput,
                 SettingInt.HostPort,
                 "network", "host") { MaxAcceptedNumericalSize = 65535},
 
-            new SettingInputfield<SettingString>("Ip for host",
+            new SettingInputField<SettingString>("Ip for host",
                 "The ip used for hosting a server",
                 StringInputMethod.IntInput,
                 SettingString.HostIP,
                 "network", "host"),
 
-            new SettingInputfield<SettingFloat>("Auto establish connection rate",
+            new SettingInputField<SettingFloat>("Auto establish connection rate",
                 "[In Seconds] How often the application will probe all programs on your system. If we are giving you tremendous overhead, try lowering this value.",
                 StringInputMethod.FloatInput,
                 SettingFloat.TickRate,
@@ -79,13 +79,13 @@ public partial class SettingsView : UserControl
                 SettingInt.TrackDiskUsage,
                 "disk", "usage", "db", "database"),
 
-            new SettingInputfield<SettingFloat>("Database save interval",
+            new SettingInputField<SettingFloat>("Database save interval",
                 "[In Seconds] How often the application will write to your database.",
                 StringInputMethod.FloatInput,
                 SettingFloat.DatabaseSaveInterval,
                 "database", "usage", "interval", "db", "database"),
 
-            new SettingInputfield<SettingFloat>("Probe rate",
+            new SettingInputField<SettingFloat>("Probe rate",
                 "[In Seconds] How often the application will probe all programs on your system. If we are giving you tremendous overhead, try lowering this value.",
                 StringInputMethod.FloatInput,
                 SettingFloat.TickRate,

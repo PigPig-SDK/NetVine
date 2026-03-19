@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace UI.ViewModels;
 
-public class SettingInputfield<T> : SettingInput where T : Enum
+public class SettingInputField<T> : SettingInput where T : Enum
 {
     public T ConfigSetting { get; set; }
 
@@ -14,7 +14,7 @@ public class SettingInputfield<T> : SettingInput where T : Enum
     public int MaxAcceptedNumericalSize = int.MaxValue;
     public int MinAcceptedNumericalSize = 0;
 
-    public SettingInputfield(string label, string discription, StringInputMethod inputType, T configSetting, params string[] keywords)
+    public SettingInputField(string label, string discription, StringInputMethod inputType, T configSetting, params string[] keywords)
     {
         Label = label;
         Keywords = keywords;
