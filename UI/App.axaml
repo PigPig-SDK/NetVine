@@ -10,8 +10,7 @@
             <TrayIcon Icon="/Assets/icon.ico" ToolTipText="Net-Vine" Clicked="ShowWindow">
                 <TrayIcon.Menu>
                     <NativeMenu>
-                        <NativeMenuItem Header="Open" Click="ShowWindow">
-                        </NativeMenuItem>
+                        <NativeMenuItem Header="Open" Click="ShowWindow"/>
                         <NativeMenuItemSeparator/>
                         <NativeMenuItem Header="Quit" Click="QuitWindow"/>
                     </NativeMenu>
