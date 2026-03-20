@@ -170,7 +170,7 @@ public class DBInteract : DbContext
     {
         if(EntryExists(entry))
         {
-            Console.WriteLine("Entry already exists!");
+            //Console.WriteLine("Entry already exists!");
             return;
         }
         db.ProgramDataTable.Add(entry);
@@ -224,7 +224,7 @@ public class DBInteract : DbContext
     {
         using (var db = new DBInteract())
         {
-            return (db.ProgramDataTable.Find(entry.Username) != null);
+            return (db.UserTable.Find(entry.Username) != null);
         }
     }
 
@@ -313,6 +313,25 @@ public class DBInteract : DbContext
         }
         OnDataAdded?.Invoke();
     }
-    
 
+    /// <summary>
+    /// Adds unique users to the database.
+    /// </summary>
+    /// <remarks>This does not call save on the database, please use SaveChanges or SaveChangesAsync()</remarks>
+    public void AddUser(User user)
+    {
+        if (!EntryExists(user))
+            UserTable.Add(user);
+    }
+
+    public static void Initialize()
+    {
+        using (var db = new DBInteract())
+        {
+            //Submit our local machine as a user.
+            User localUser = new User(SystemHistory.Instance.SystemName);
+            db.AddUser(localUser);
+            db.SaveChanges();
+        }
+    }
 }
