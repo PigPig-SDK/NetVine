@@ -27,7 +27,9 @@ public class DBInteract : DbContext
     /// <param name="options"></param> Database name.
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        var dbLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine", "AppMetics.db");
+        var dbLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "NetVine", MockDataProducer.IsBeingUsed()? "AppMeticsMock.db" : "AppMetics.db");
+
         Directory.CreateDirectory(Path.GetDirectoryName(dbLocation)!);
         
         options.UseSqlite($"Data Source={dbLocation}");
