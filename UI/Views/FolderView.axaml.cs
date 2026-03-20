@@ -61,15 +61,6 @@ public partial class FolderView : UserControl
 
     public void UpdateUsers()
     {
-        if (!FolderViewData.UserMapping.ContainsKey(SystemHistory.Instance.SystemName))//Add ourselves!
-        {
-            User user = new User()
-            {
-                Username = SystemHistory.Instance.SystemName,
-            };
-            AddUser(user);
-        }
-
         List<User> users = DBInteract.ListAllUser();
         foreach (User user in users)
         {

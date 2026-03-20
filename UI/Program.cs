@@ -16,16 +16,16 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        //Step 1: Load configuration
+        // Load configuration
         ConfigManager.Initialize();
 
-        //Step 2: Emplace DB
-        new DBInteract().Dispose();
-
-        //Step 3: Setup history tracker.
+        // Setup history tracker.
         SystemHistory.SetupInstance();
 
-        //Step 4: Setup network manager
+        // Emplace DB
+        DBInteract.Initialize();
+
+        // Setup network manager
         NetworkManager.SetupInstance();
 
         BuildAvaloniaApp()
