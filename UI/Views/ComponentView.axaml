@@ -3,7 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UI.ComponentView">
+             xmlns:vm="using:UI.ViewModels"
+             x:Class="UI.ComponentView"
+             x:DataType="vm:ComponentViewModel">
+
     <Border Background="#808080"
             BorderBrush="Black"
             BorderThickness="1"
@@ -11,10 +14,30 @@
         <StackPanel Spacing="8">
             <TextBlock VerticalAlignment="Center"
                        HorizontalAlignment="Center" />
-            <Button Content="CPU" />
-            <Button Content="GPU" />
-            <Button Content="RAM" />
-            <Button Content="DISK" />
+            <Button HorizontalAlignment="Stretch">
+                <StackPanel>
+                    <TextBlock Text="CPU" FontWeight="Bold" />
+                    <TextBlock Text="{Binding ButtonCPUText}" FontSize="11" Opacity="0.8" />
+                </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch">
+                <StackPanel>
+                    <TextBlock Text="GPU" FontWeight="Bold" />
+                    <TextBlock Text="{Binding ButtonGPUText}" FontSize="11" Opacity="0.8" />
+                </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch">
+                <StackPanel>
+                    <TextBlock Text="RAM" FontWeight="Bold" />
+                    <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+                </StackPanel>
+            </Button>
+            <Button HorizontalAlignment="Stretch">
+                <StackPanel>
+                    <TextBlock Text="DISK" FontWeight="Bold" />
+                    <TextBlock Text="{Binding ButtonDISKText}" FontSize="11" Opacity="0.8" />
+                </StackPanel>
+            </Button>
         </StackPanel>
     </Border>
 </UserControl>
