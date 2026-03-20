@@ -183,6 +183,7 @@ namespace UI.ViewModels
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                //broken, needs fixed (just a copy paste of the live view. This probably needs to be looked at more carefully)
                 foreach (var incoming in data)
                 {
                     var row = FindOrCreate(incoming.SystemName, incoming.ProcessName); // safe, on UI thread
