@@ -19,6 +19,18 @@ public class NetworkManager
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
         _instance = new NetworkManager();
         ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
+        ConfigManager.OnSettingChanged += _instance.OnSettingChanged;
+    }
+
+    private void OnSettingChanged(Enum setting)
+    {
+        if(setting is SettingFloat settingFloat)
+        {
+            if(settingFloat == SettingFloat.NetworkReconnectInterval)
+            {
+                _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+            }
+        }
     }
 
     private void OnAddClientConnection(string connection, int port) => RefreshClientConnections();//Lazy, but efficent.
