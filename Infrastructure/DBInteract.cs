@@ -6,7 +6,6 @@ using System.Collections.Generic;
 namespace Infrastructure;
 public class DBInteract : DbContext
 {
-    
     public DbSet<ProgramData> ProgramDataTable { get; set; } = null!;
 
     public DbSet<User> UserTable { get; set; } = null!;
@@ -24,7 +23,7 @@ public class DBInteract : DbContext
     /// <summary>
     /// Database creation.
     /// </summary>
-    /// <param name="options"></param> Database name.
+    /// <param name="options">Database name</param> 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         var dbLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine", "AppMetics.db");
@@ -36,7 +35,6 @@ public class DBInteract : DbContext
     /// <summary>
     /// Sets the primary key.
     /// </summary>
-    /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<ProgramData>()
@@ -45,16 +43,10 @@ public class DBInteract : DbContext
         modelBuilder.Entity<User>()
             .HasKey(u => new {u.Username});
     }
-
-    
-    
-    
-    
     
     /// <summary>
     /// Returns a list of DB ProgramData contents
     /// </summary>
-    /// <returns></returns>
     public static List<ProgramData> ListAllProgramData()
     {
         using (var db = new DBInteract())
@@ -66,7 +58,6 @@ public class DBInteract : DbContext
     /// <summary>
     /// Returns a list of DB user contents
     /// </summary>
-    /// <returns></returns>
     public static List<User> ListAllUser()
     {
         using (var db = new DBInteract())
@@ -78,7 +69,6 @@ public class DBInteract : DbContext
     /// <summary>
     /// Lists all items in DB.
     /// </summary>
-    /// <returns></returns>
     public static void ListAllToString()
     {
         using (var db = new DBInteract())
@@ -93,7 +83,6 @@ public class DBInteract : DbContext
                     Console.WriteLine("Disk Usage: " + entry.DiskUsage);
                     Console.WriteLine("Network Usage: " + entry.NetworkUsage);
                     Console.WriteLine("Memory Usage: " + entry.MemoryUsage + "\n");
-                    
                 }
             }
             else
@@ -107,9 +96,6 @@ public class DBInteract : DbContext
     ///List items between the two given dates.
     ///Will list from a Date onwards given start or end are null.
     /// </summary>
-    /// <param name="start"></param> Start date.
-    /// <param name="end"></param> End date.
-    /// <returns></returns>
     public static List<ProgramData> ListBetweenDates(DateTime? start, DateTime? end)
     {
         using var db = new  DBInteract();
@@ -126,7 +112,6 @@ public class DBInteract : DbContext
         }
 
         return query.OrderBy(p => p.Date).ToList();
-
     }
     
     
@@ -142,11 +127,11 @@ public class DBInteract : DbContext
             db.SaveChanges();
         }
     }
-    
+
     /// <summary>
     /// Submit an entry to the DB without an existing context.
     /// </summary>
-    /// <param name="entry"></param> Submission
+    /// <param name="entry">Submission</param> 
     public static void SubmitEntry(ProgramData entry)
     {
         using (var db = new DBInteract())
@@ -160,12 +145,12 @@ public class DBInteract : DbContext
         }
         OnDataAdded?.Invoke();
     }
-    
+
     /// <summary>
     /// Submit an entry to the DB with an existing context.
     /// </summary>
-    /// <param name="entry"></param> Submission
-    /// <param name="db"></param> Context
+    /// <param name="entry">Submission</param> 
+    /// <param name="db">Context</param> 
     public static void SubmitEntry(ProgramData entry, DBInteract db)
     {
         if(EntryExists(entry))
@@ -180,7 +165,6 @@ public class DBInteract : DbContext
     /// <summary>
     /// Delete an entry from the DB.
     /// </summary>
-    /// <param name="entry"></param>
     public static void DeleteEntry(ProgramData entry)
     {
         using (var db = new DBInteract())
@@ -193,13 +177,12 @@ public class DBInteract : DbContext
             }
         }
     }
-    
+
     /// <summary>
     /// Check if entry exists in DB (ProgramData).
     /// </summary>
-    /// <param name="entry"></param>
-    /// <returns></returns> Bool. True if exists, false if not.
-    public static bool EntryExists(DBEntry entry)
+    /// <returns>Bool. True if exists, false if not.</returns> 
+    public static bool EntryExists<T>(T entry)
     {
         using (var db = new DBInteract())
         {
@@ -207,19 +190,21 @@ public class DBInteract : DbContext
             { 
                 return (db.ProgramDataTable.Find(pdEntry.SystemName, pdEntry.Date, pdEntry.ProcessName) != null);   
             }
-            if (entry is User uEntry)
+            else if (entry is User uEntry)
             { 
                 return (db.ProgramDataTable.Find(uEntry.Username) != null);   
             }
+            else
+            {
+                return false;
+            }
         }
-        return false;
     }
-    
+
     /// <summary>
     /// Check if entry exists in DB (Users).
     /// </summary>
-    /// <param name="entry"></param>
-    /// <returns></returns> Bool. True if exists, false if not.
+    /// <returns>Bool. True if exists, false if not.</returns> 
     public static bool EntryExists(User entry)
     {
         using (var db = new DBInteract())
@@ -231,10 +216,6 @@ public class DBInteract : DbContext
     /// <summary>
     /// Returns ProgramData from Primary key if it exists in DB, and null if it does nut
     /// </summary>
-    /// <param name="SystemName"></param>
-    /// <param name="Date"></param>
-    /// <param name="ProcessName"></param>
-    /// <returns></returns>
     public static ProgramData? RetrieveEntry(string SystemName, DateTime Date, string ProcessName)
     {
         using (var db = new DBInteract())
@@ -248,9 +229,7 @@ public class DBInteract : DbContext
     /// Checks if first entry passed in is older than second entry.
     /// If so, returns first entry, if not, returns second.
     /// </summary>
-    /// <param name="entry1"></param>
-    /// <param name="entry2"></param>
-    /// <returns></returns> Older entry.
+    /// <returns>The older entry</returns> 
     public static ProgramData? OlderEntry(ProgramData entry1, ProgramData entry2)
     {
         using (var db = new DBInteract())
@@ -301,7 +280,7 @@ public class DBInteract : DbContext
     /// <summary>
     ///Store a list of IProgramData
     /// </summary>
-    /// <param name="info"></param> List
+    /// <param name="info">List</param> 
     public static void Store(IEnumerable<IProgramData> info)
     {
         using (var db = new DBInteract())

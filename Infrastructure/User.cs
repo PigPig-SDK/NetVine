@@ -8,7 +8,7 @@ using Core;
 
 namespace Infrastructure;
 
-public class User : DBEntry
+public class User
 {
     public string Username { get; set; } = "Unknown";
     public bool IsOnline => ConnectedUserInfo.IsUserConnected(Username);
