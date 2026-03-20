@@ -52,7 +52,10 @@ public class ConfigManager
         {SettingInt.LastActivePage, 0 },
         {SettingInt.WindowWidth, 700 },
         {SettingInt.WindowHeight, 500 },
-        {SettingInt.HostPort, NetworkManager.DefaultPort}
+        {SettingInt.HostPort, NetworkManager.DefaultPort},
+        {SettingInt.AutoEstablishConnection, 1 },
+        {SettingInt.MinimizeOnClose, 0 },
+        {SettingInt.LoadOnStartup, 0 }
     };
 
 
