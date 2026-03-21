@@ -50,7 +50,6 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.ShutdownMode = (ConfigManager.ReadSetting(SettingInt.MinimizeOnClose) == 1) ? Avalonia.Controls.ShutdownMode.OnExplicitShutdown : Avalonia.Controls.ShutdownMode.OnMainWindowClose;
-            Console.WriteLine(desktop.ShutdownMode);
         }
     }
 

@@ -54,4 +54,9 @@ public class MockDataProducer : IProgramDataProducer
 
         return result;
     }
+
+    public static bool IsBeingUsed()
+    {
+        return Environment.GetCommandLineArgs().Contains(LaunchArgument);
+    }
 }

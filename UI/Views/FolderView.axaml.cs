@@ -56,20 +56,10 @@ public partial class FolderView : UserControl
         ScrollView.Children.Add(folderUser);
         FolderViewData.UserMapping.Add(user.Username, folderUser);
         folderUser.IsOnline = user.IsOnline;
-        Console.WriteLine(user.IsOnline);
     }
 
     public void UpdateUsers()
     {
-        if (!FolderViewData.UserMapping.ContainsKey(SystemHistory.Instance.SystemName))//Add ourselves!
-        {
-            User user = new User()
-            {
-                Username = SystemHistory.Instance.SystemName,
-            };
-            AddUser(user);
-        }
-
         List<User> users = DBInteract.ListAllUser();
         foreach (User user in users)
         {
