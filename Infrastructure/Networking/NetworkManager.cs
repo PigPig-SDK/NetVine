@@ -9,7 +9,7 @@ public class NetworkManager
 
     private Timer _timer;
     public const int DefaultPort = 54236;
-    public const string DefaultHost = "127.0.0.1";
+    public const string DefaultHost = "0.0.0.0";
 
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
     public Host? Host { get; private set; }
