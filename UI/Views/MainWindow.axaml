@@ -64,6 +64,21 @@
     </Window.Styles>
     <!--The titlebar starts here.-->
     <Grid RowDefinitions="Auto,*">
+        <Border Padding="0,10" IsHitTestVisible="False">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#99282838" Offset="0"/>
+                    <GradientStop Color="#99222228" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="Black" 
+                                    BlurRadius="50" 
+                                    OffsetX="0" 
+                                    OffsetY="4" 
+                                    Opacity="0.5"/>
+            </Border.Effect>
+        </Border>
       <Grid x:Name="titleBar"
           Grid.Row="0"
           HorizontalAlignment="Stretch"
