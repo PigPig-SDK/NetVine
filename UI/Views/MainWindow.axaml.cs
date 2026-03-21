@@ -38,6 +38,15 @@ public partial class MainWindow : Window
         this.KeyDown += OnKeyDown;
     }
 
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        if (ConfigManager.ReadSetting(SettingInt.MinimizeOnClose) == 1)
+        {
+            e.Cancel = true;
+            Hide();
+            base.OnClosing(e);
+        }
+    }
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         //CTRL + F...

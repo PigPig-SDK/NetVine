@@ -42,14 +42,14 @@ public partial class SettingsView : UserControl
 
             new SettingInputField<SettingString>("Ip for host",
                 "The ip used for hosting a server",
-                StringInputMethod.IntInput,
+                StringInputMethod.StringInput,
                 SettingString.HostIP,
                 "network", "host"),
 
-            new SettingInputField<SettingFloat>("Auto establish connection rate",
-                "[In Seconds] How often the application will probe all programs on your system. If we are giving you tremendous overhead, try lowering this value.",
+            new SettingInputField<SettingFloat>("Reconnect interval",
+                "[In Seconds] How often the application attempts to re-connect to its hosts",
                 StringInputMethod.FloatInput,
-                SettingFloat.TickRate,
+                SettingFloat.NetworkReconnectInterval,
                 "network", "usage", "interval"),
 
             new SettingInputCheckbox<SettingInt>("Auto establish connection on startup",

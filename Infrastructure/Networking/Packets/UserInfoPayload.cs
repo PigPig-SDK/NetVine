@@ -19,10 +19,16 @@ public class UserInfoPayload : IPacketPayload
     {
         UserName = userName;
     }
-
-    public void Execute(bool isServer, Guid id)
+    public async Task AddUser()
     {
-        Console.WriteLine($"User online : {UserName}");
+        using var context = new DBInteract();
+        context.AddUser(new User(UserName));//Try add new user
+        await context.SaveChangesAsync();
+    }
+
+    public async void Execute(bool isServer, Guid id)
+    {
         ConnectedUserInfo.AddUserData(id, UserName);
+        await AddUser();
     }
 }
