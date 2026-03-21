@@ -1,99 +1,95 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:UI.ViewModels"
-             xmlns:views="clr-namespace:UI"
-             xmlns:dg="using:Avalonia.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.TableView"
-             x:DataType="vm:TableViewModel">
-    
-    <UserControl.Styles>
-        <Style Selector="TextBox.SearchBox">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CaretBrush" Value="Black"/>
-        </Style>
-        <Style Selector="TextBox.SearchBox:focus-within /template/ Border">
-            <Setter Property="Background" Value="DarkGreen"/>
-        </Style>
-    </UserControl.Styles>
-
-    <Design.DataContext>
-        <vm:TableViewModel />
-    </Design.DataContext>
-    <Grid RowDefinitions="Auto, *">
-        <TextBox Classes="SearchBox"
-                    Margin="0"
-                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                    Watermark="Search..." 
-                    Foreground="Black"
-                    Background="{DynamicResource TableBackground}"
-                    />
+             x:DataType="vm:TableViewModel"> <Grid RowDefinitions="Auto, *">
+        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                 Watermark="Search..." Margin="5"/>
+        
         <DataGrid Grid.Row="1"
-                    x:Name="MyDataGrid"
+                  x:Name="MyDataGrid"
+                  ItemsSource="{Binding TableRowsView}" 
+                  Sorting="DataGrid_Sorting"
+                  CanUserSortColumns="True"
+                  IsReadOnly="True"
+                  GridLinesVisibility="All">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="PC Name" 
+                                    Binding="{Binding (vm:TableRow).SystemName}" 
+                                    IsVisible="True"
+                                    Width="Auto"/>
                 
-                    ItemsSource="{Binding FilteredRows}"
-                    Sorting="DataGrid_Sorting"
-                    Loaded="DataGrid_Loaded"
-                    FontWeight="Medium"
-                    IsReadOnly="True"
-                    RowHeight="18"
-                    GridLinesVisibility="All"
-                    CanUserResizeColumns="True"
-                    CanUserSortColumns="True"
-                    ColumnHeaderHeight="25">
-            <DataGrid.Styles>
-             <!--   <Style Selector="DataGridColumnHeader">
-                    <Setter Property="AreSeparatorsVisible" Value="True"/>
-                    <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis"/>   
-                    <Setter Property="SeparatorBrush" Value="Gray"/>
-                    <Setter Property="Background" Value="White"/>
-                    <Setter Property="Foreground" Value="Black"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="ContentTemplate">
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}" 
-                                        TextWrapping="Wrap"
-                                        TextAlignment="Center" 
-                                        VerticalAlignment="Center"/>
-                        </DataTemplate>
-                    </Setter>
-                </Style> -->
-                <Style Selector="DataGridRow">
-                    <Setter Property="Background" Value="LightGray"/>
-                    <Setter Property="Foreground" Value="Black"/>
-                    <Setter Property="FontWeight" Value="Medium"/>
-                </Style>
-                <Style Selector="DataGrid">
-					<Setter Property="VerticalGridLinesBrush" Value="Gray"/>
-                </Style>
-                <Style Selector="DataGridCell">
-                    <Setter Property="FontSize" Value="14"/>
-                    <Setter Property="TextBlock.TextTrimming" Value="CharacterEllipsis"/>               
-                </Style>
-            </DataGrid.Styles>
-           
-           <DataGrid.Columns>
-                <DataGridTextColumn Header="PC Name"   Width="Auto" MinWidth="100" Binding="{Binding SystemName}"    IsVisible="{Binding IsVisible_PcName   }"/>
-                <DataGridTextColumn Header="Process"   Width="Auto" MinWidth="100" Binding="{Binding AppName}"       IsVisible="{Binding IsVisible_Process  }"/>
-                <DataGridTextColumn Header="CPU"       Width="*"  MinWidth="40" Binding="{Binding LiveData.CpuUsage,   StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_Cpu      }"/>
-                <DataGridTextColumn Header="Memory"    Width="*"  MinWidth="100" Binding="{Binding LiveData.MemoryUsage,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Memory   }"/>
-                <DataGridTextColumn Header="Disk"      Width="*"  MinWidth="100" Binding="{Binding LiveData.DiskUsage,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Disk     }"/>
-                <DataGridTextColumn Header="Network"   Width="*"  MinWidth="100" Binding="{Binding LiveData.NetworkUsage,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_Network  }"/>
-                <DataGridTextColumn Header="CPU Avg"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.CpuUsageAvg,   StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuAvg   }"/>
-                <DataGridTextColumn Header="CPU Max"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.CpuUsagePeak,   StringFormat={}{0:F2}%}" IsVisible="{Binding IsVisible_CpuTop   }"/>
-                <DataGridTextColumn Header="Ram Avg"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.MemoryUsageAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryAvg}"/>
-                <DataGridTextColumn Header="Ram Max"   Width="*"  MinWidth="100" Binding="{Binding HistoricalData.MemoryUsagePeak,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_MemoryTop}"/>
-                <DataGridTextColumn Header="Disk Avg"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.DiskUsageAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskAvg  }"/>
-                <DataGridTextColumn Header="Disk Max"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.DiskUsagePeak,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_DiskTop  }"/>                
-                <DataGridTextColumn Header="Network Avg"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.NetworkUsageAvg,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_NetworkTotal }"/>
-                <DataGridTextColumn Header="Network Total"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.NetworkUsagePeak,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_NetworkTotal }"/>
-                <DataGridTextColumn Header="Network Total"  Width="*"  MinWidth="100" Binding="{Binding HistoricalData.NetworkUsageTotal,   StringFormat={}{0:F2}}"  IsVisible="{Binding IsVisible_NetworkTotal }"/>
+                <DataGridTextColumn Header="Process" 
+                                    Binding="{Binding (vm:TableRow).AppName}" 
+                                    IsVisible="True"
+                                    Width="Auto"/>
+                
+                <DataGridTextColumn Header="CPU"     
+                                    Binding="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" 
+                                    IsVisible="{Binding ShowLive}"
+                                    Width="*"/>
+                
+                <DataGridTextColumn Header="Memory"  
+                                    Binding="{Binding (vm:TableRow).LiveData.MemoryUsage, StringFormat={}{0:F2}}" 
+                                    IsVisible="{Binding ShowLive}"
+                                    Width="*"/>
 
+                <DataGridTextColumn Header="Disk"  
+                                    Binding="{Binding (vm:TableRow).LiveData.DiskUsage, StringFormat={}{0:F2}}" 
+                                    IsVisible="{Binding ShowLive}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Network"  
+                                    Binding="{Binding (vm:TableRow).LiveData.NetworkUsage, StringFormat={}{0:F2}}" 
+                                    IsVisible="{Binding ShowLive}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="CPU Avg"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.CpuUsageAvg, StringFormat={}{0:F2}%}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="CPU Top"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.CpuUsagePeak, StringFormat={}{0:F2}%}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Memory Avg"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.MemoryUsageAvg, StringFormat={}{0:F2}}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Memory Top"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.MemoryUsagePeak, StringFormat={}{0:F2}}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Disk Avg"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.DiskUsageAvg, StringFormat={}{0:F2}}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Disk Top"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.DiskUsagePeak, StringFormat={}{0:F2}}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Network Avg"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.NetworkUsageAvg, StringFormat={}{0:F2}}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Network Top"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.NetworkUsagePeak, StringFormat={}{0:F2}}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
+
+                <DataGridTextColumn Header="Network Total"
+                                    Binding="{Binding (vm:TableRow).HistoricalData.NetworkUsageTotal, StringFormat={}{0:F2}}"
+                                    IsVisible="{Binding ShowHistorical}"
+                                    Width="*"/>
 
             </DataGrid.Columns>
-
         </DataGrid>
     </Grid>
 </UserControl>
