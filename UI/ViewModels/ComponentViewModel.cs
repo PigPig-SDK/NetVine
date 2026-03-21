@@ -9,6 +9,7 @@ namespace UI.ViewModels
 {
     public class ComponentViewModel : INotifyPropertyChanged
     {
+        //whatever value the graph last received, update these with that value
         private string CPUtext = "0.0%";
         private string GPUtext = "0.0%";
         private string RAMtext = "0.0%";
