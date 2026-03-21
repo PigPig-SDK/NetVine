@@ -64,20 +64,7 @@
     </Window.Styles>
     <!--The titlebar starts here.-->
     <Grid RowDefinitions="Auto,*">
-        <Border Padding="0,10" IsHitTestVisible="False">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Color="#99282838" Offset="0"/>
-                    <GradientStop Color="#99222228" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
-            <Border.Effect>
-                <DropShadowEffect Color="Black" 
-                                    BlurRadius="50" 
-                                    OffsetX="0" 
-                                    OffsetY="4" 
-                                    Opacity="0.5"/>
-            </Border.Effect>
+        <Border Padding="0,10" IsHitTestVisible="False" Background="#99222228">
         </Border>
       <Grid x:Name="titleBar"
           Grid.Row="0"
@@ -111,7 +98,7 @@
         </Button>
 
         <Button Grid.Column="3" Click="OnSettingsClicked"
-                CornerRadius="8,8,0,0"
+                CornerRadius="0,16,0,0"
                 Width="30"
                 Padding="24,0" Margin="5,10,0,0"
                 ToolTip.Tip="Settings"
