@@ -141,6 +141,9 @@ public class WindowsDataProducer : IProgramDataProducer
         Dictionary<int, ulong> networkOut;
         Dictionary<int, ulong> networkIn;
 
+        DateTime now = new DateTime(DateTime.Now.Year, DateTime.Now.Month,
+            DateTime.Now.Day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+
         //Change out network usage
         lock (_networkReadingLocks[NetworkClassification.Outgoing])
         {
@@ -214,6 +217,7 @@ public class WindowsDataProducer : IProgramDataProducer
                         DiskUsage = diskUsage,
                         NetworkUsage = networkUsage,
                         Timespan = (float)rate.TotalSeconds,
+                        Date = now,
                     });
                 else
                 {
