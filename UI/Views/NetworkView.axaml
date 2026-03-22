@@ -1,25 +1,41 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="using:UI"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UI.FolderView">
-    <Grid RowDefinitions="auto,auto,*,auto">
-        <Label Grid.Column="0" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
+             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="450"
+             x:Class="UI.NetworkView">
+    <Grid RowDefinitions="auto,auto, auto, *, auto, auto">
+        <!-- Title -->
+        <Label Grid.Row="0" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
                 FontFamily="avares://NetVine/Assets#Bebas Neue"
-                VerticalAlignment="Center" Foreground="White">Data</Label>
-        <Rectangle Grid.Row="1" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="2">
-            <StackPanel x:Name="ScrollView">
+                VerticalAlignment="Center" Foreground="White">Host</Label>
+        
+        <!-- Hosting -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,auto">
+            <TextBox Grid.Column="0"  MinWidth="0" Watermark="Port" UseFloatingWatermark="True" Margin="10,0,10,0"/>
+		    <Button Grid.Column="1" Content="Host"  Margin="0,0,10,0" HorizontalAlignment="Center"/>	
+        </Grid>
+        <!-- Connecting -->
+        <Grid Grid.Row="2" RowDefinitions="auto, auto, auto">
+		    <Rectangle Grid.Row="0" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
+            <Label Grid.Row="1" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
+                FontFamily="avares://NetVine/Assets#Bebas Neue"
+                VerticalAlignment="Center" Foreground="White">Connect</Label>
+            <Grid Grid.Row="3" ColumnDefinitions="*,auto">
+                <TextBox Grid.Column="0"  MinWidth="0" Watermark="Ip:Port" UseFloatingWatermark="True" Margin="10,0,10,0" x:Name="AddConnectionInput"/>
+		        <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center" Click="TryAddConnection"/>	
+            </Grid>
+        </Grid>
+        <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+			<StackPanel x:Name="ConnectionPanel">
             </StackPanel>
         </ScrollViewer>
-        <Grid Grid.Row="3" RowDefinitions="auto,auto">
-            <!-- Slight padding. -->
-            <Rectangle Grid.Row="0" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
-            <Grid Grid.Row="1" RowDefinitions="*,*,*,*">
+
+        <!-- Disconnect -->
+        <Rectangle Grid.Row="4" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
+        <Grid Grid.Row="5" RowDefinitions="*,*,*,*">
                 <!-- Live toggle -->
-                <CheckBox Checked="LiveViewChecked" Grid.Row="1" Unchecked="LiveViewUnchecked" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Toggle the database viewing for only live data">
+                <CheckBox  Grid.Row="1" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Shutdown all connections">
                     <CheckBox.Template>
                         <ControlTemplate>
                             <Border Background="Transparent"
@@ -48,13 +64,12 @@
                                     <Label Grid.Column="1" HorizontalAlignment="Stretch" FontSize="25" MinHeight="40" VerticalAlignment="Center" 
                                             FontFamily="avares://NetVine/Assets#Bebas Neue"
                                             Foreground="White"
-                                            Margin="4,4,0,0">LIVE</Label>
+                                            Margin="4,4,0,0">Shutdown</Label>
                                 </Grid>
                             </Border>
                         </ControlTemplate>
                     </CheckBox.Template>
                 </CheckBox>
             </Grid>
-        </Grid>
     </Grid>
 </UserControl>

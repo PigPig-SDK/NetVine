@@ -5,28 +5,30 @@
              mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="30"
              x:Class="UI.FolderUser">
     <Panel>
-
-        <Border Padding="0,25" Margin="10,-25,0,0" Background="Transparent">
-            <Button HorizontalAlignment="Stretch" Padding="0" CornerRadius="8,0,0,8" x:Name="SelectionButton" Height="45" Click="OnClicked">
-                <Button.Effect>
-                    <DropShadowEffect Color="Black" 
-                                          BlurRadius="25" 
-                                          OffsetX="0" 
-                                          OffsetY="5" 
-                                          Opacity="0.75"/>
-                </Button.Effect>
-                <Grid ColumnDefinitions="auto,*">
-                    <Ellipse Width="10" Height="10" Fill="LightGreen" x:Name="OnlineCircle" Grid.Column="0"/>
-                    <Grid RowDefinitions="auto,auto" Grid.Column="1" >
-                        <Label Grid.Row="0" HorizontalAlignment="Stretch"
-                               FontFamily="avares://NetVine/Assets#Bebas Neue"
-                               Padding="0" Margin="0" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="30">Username</Label>
-                        <Label Grid.Row="1" Foreground="Black" HorizontalAlignment="Stretch"
-                               FontFamily="avares://NetVine/Assets#Bebas Neue"
-                               Padding="0" Margin="0" x:Name="Subscript" VerticalAlignment="Top" FontSize="10">TODO: put IP address here.</Label>
+        <Grid RowDefinitions="15,*">
+            <Image Grid.Row="0" Source="/Assets/folder_top.png" HorizontalAlignment="Left" Margin="10,0,0,-10" Width="24" Height="29" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+            <Border Padding="0,25" Margin="10,-25,0,0" Background="Transparent" Grid.Row="1">
+                <Button HorizontalAlignment="Stretch" Padding="0" CornerRadius="0,0,0,8" x:Name="SelectionButton" Height="45" Click="OnClicked">
+                    <Button.Effect>
+                        <DropShadowEffect Color="Black" 
+                                              BlurRadius="25" 
+                                              OffsetX="0" 
+                                              OffsetY="5" 
+                                              Opacity="0.75"/>
+                    </Button.Effect>
+                    <Grid ColumnDefinitions="auto,*">
+                        <Ellipse Width="10" Height="10" Fill="LightGreen" x:Name="OnlineCircle" Grid.Column="0"/>
+                        <Grid RowDefinitions="auto,auto" Grid.Column="1" >
+                            <Label Grid.Row="0" HorizontalAlignment="Stretch"
+                                   FontFamily="avares://NetVine/Assets#Bebas Neue"
+                                   Padding="0" Margin="0" x:Name="UsernameLabel" VerticalAlignment="Center" FontSize="30">Username</Label>
+                            <Label Grid.Row="1" Foreground="Black" HorizontalAlignment="Stretch"
+                                   FontFamily="avares://NetVine/Assets#Bebas Neue"
+                                   Padding="0" Margin="0" x:Name="Subscript" VerticalAlignment="Top" FontSize="10">TODO: put IP address here.</Label>
+                        </Grid>
                     </Grid>
-                </Grid>
-            </Button>
-        </Border>
+                </Button>
+            </Border>
+        </Grid>
     </Panel>
 </UserControl>
