@@ -215,7 +215,7 @@ public class DBInteract : DbContext
             }
             if (entry is User uEntry)
             { 
-                return (db.ProgramDataTable.Find(uEntry.Username) != null);   
+                return (db.UserTable.Find(uEntry.Username) != null);   
             }
         }
         return false;
