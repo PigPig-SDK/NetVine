@@ -2,6 +2,7 @@
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Infrastructure;
 
@@ -105,7 +106,8 @@ public class ConfigManager
     /// </summary>
     /// <remarks>Expect Enum of : SettingInt, SettingFloat or SettingString</remarks>
     public static Action<Enum>? OnSettingChanged { get; set; }
-    public static Action<string, int>? OnClientConnectionAdded { get; set; }
+    public static Action<ConnectionInfo>? OnClientConnectionAdded { get; set; }
+    public static Action<ConnectionInfo>? OnClientConnectionRemoved { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the ConfigManager class with default configuration file path and empty settings
@@ -195,11 +197,20 @@ public class ConfigManager
     /// <summary>
     /// Adds a ip to the list of connections
     /// </summary>
-    /// <param name="connection"></param>
-    public static void AddClientConnection(string connection, int port)
+    public static void AddClientConnection(ConnectionInfo connectionInfo)
     {
-        Instance._ClientConnections.Add(new(connection,port));
-        OnClientConnectionAdded?.Invoke(connection, port);
+        Instance._ClientConnections.Add(connectionInfo);
+        OnClientConnectionAdded?.Invoke(connectionInfo);
+    }
+    /// <summary>
+    /// Removes a connection from the configuration
+    /// </summary>
+    public static void RemoveClientConnection(ConnectionInfo connectionInfo)
+    {
+        if(Instance._ClientConnections.Remove(connectionInfo))
+        {
+            OnClientConnectionRemoved?.Invoke(connectionInfo);
+        }
     }
     /// <summary>
     /// Loads a configuration from a YAML file at the specified path.

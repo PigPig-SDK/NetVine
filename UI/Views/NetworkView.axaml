@@ -22,12 +22,13 @@
                 FontFamily="avares://NetVine/Assets#Bebas Neue"
                 VerticalAlignment="Center" Foreground="White">Connect</Label>
             <Grid Grid.Row="3" ColumnDefinitions="*,auto">
-                <TextBox Grid.Column="0"  MinWidth="0" Watermark="Ip:Port" UseFloatingWatermark="True" Margin="10,0,10,0"/>
-		        <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center"/>	
+                <TextBox Grid.Column="0"  MinWidth="0" Watermark="Ip:Port" UseFloatingWatermark="True" Margin="10,0,10,0" x:Name="AddConnectionInput"/>
+		        <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center" Click="TryAddConnection"/>	
             </Grid>
         </Grid>
-        <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-			Connections go here
+        <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+			<StackPanel x:Name="ConnectionPanel">
+            </StackPanel>
         </ScrollViewer>
 
         <!-- Disconnect -->

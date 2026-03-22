@@ -21,7 +21,7 @@ public class NetworkManager
         ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
     }
 
-    private void OnAddClientConnection(string connection, int port) => RefreshClientConnections();//Lazy, but efficent.
+    private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();//Lazy, but efficent.
 
     private NetworkManager() 
     {
@@ -50,10 +50,10 @@ public class NetworkManager
     {
         foreach (var connectionContext in ConfigManager.ClientConnections)
         {
-            IPAddress.TryParse(connectionContext.Connection, out IPAddress? ip);
+            IPAddress.TryParse(connectionContext.Ip, out IPAddress? ip);
             if (ip == null)
             {
-                Console.WriteLine($"Invalid IP address: {connectionContext.Connection}");
+                Console.WriteLine($"Invalid IP address: {connectionContext.Ip}");
                 continue;
             }
             var connectionIdentity = (ip, connectionContext.Port);
