@@ -1,18 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Core;
 using Infrastructure;
-
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace UI.ViewModels
 {
-    /// <summary>
-    /// Represents a row of performance metrics for a specific system application, including CPU, RAM, disk, and
-    /// network usage statistics. This is also sort of a placeholder class. Planning on adding some columns.
-    /// </summary>
-    /// <remarks>This class is designed to hold average and maximum resource usage values, which can
-    /// be useful for monitoring and analyzing application performance over time.</remarks>
     public class TableRow : ObservableObject
     {
+        // Existing properties
         public string SystemName { get; set; }
         public string AppName { get; set; }
 
@@ -28,6 +25,55 @@ namespace UI.ViewModels
         {
             get => _historicalData;
             set { _historicalData = value; OnPropertyChanged(); }
+        }
+
+        // Icon properties
+        private Bitmap? _icon;
+        private bool _iconLoaded = false;
+
+        public Bitmap? AppIcon
+        {
+            get
+            {
+                if (!_iconLoaded)
+                {
+                    _iconLoaded = true;
+                    _ = LoadIconAsync();
+                }
+                return _icon;
+            }
+        }
+
+        private async Task LoadIconAsync()
+        {
+            var bitmap = await Task.Run(() =>
+            {
+                try
+                {
+                    var process = System.Diagnostics.Process
+                        .GetProcessesByName(AppName)
+                        .FirstOrDefault();
+
+                    if (process?.MainModule?.FileName is not { } path)
+                        return null;
+
+                    var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
+                    if (icon == null) return null;
+
+                    using var bmp = icon.ToBitmap();
+                    using var ms = new System.IO.MemoryStream();
+                    bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    ms.Position = 0;
+                    return new Bitmap(ms);
+                }
+                catch { return null; }
+            });
+
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _icon = bitmap;
+                OnPropertyChanged(nameof(AppIcon));
+            });
         }
     }
 }

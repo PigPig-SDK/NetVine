@@ -2,19 +2,49 @@
 using Core;
 using Infrastructure;
 using Microsoft.Diagnostics.Tracing.Parsers;
+using Microsoft.EntityFrameworkCore.Metadata;
+using System;
 using System.Collections.Generic;
 
 namespace UI.ViewModels
 {
-    public class TableViewModel
+    public class TableViewModel : ViewModelBase
     {
         private TableDataManager _tableData;
 
-        public bool ShowLive { get => LiveViewModel.IsLive; }
+        public bool ShowLive  => LiveViewModel.IsLive;
 
-        public bool ShowHistorical { get => !LiveViewModel.IsLive; }
+        public bool ShowHistorical => !LiveViewModel.IsLive;
 
-        public string SearchText { get; set; } = "";
+        private void ViewChanged(bool b)
+        {
+            OnPropertyChanged(nameof(ShowLive));
+            OnPropertyChanged(nameof(ShowHistorical));
+            TableRowsView.Refresh();
+
+        }
+
+        private string _searchText = "";
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                _searchText = value;
+                OnPropertyChanged();
+                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                    ? null
+                    : FilterRow;
+                TableRowsView.Refresh();
+            }
+        }
+
+        private bool FilterRow(object obj)
+        {
+            if (obj is not TableRow row) return false;
+            return row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+        }
         public DataGridCollectionView TableRowsView { get; set; }
 
 
@@ -68,11 +98,6 @@ namespace UI.ViewModels
             });
         }
         
-        private void ViewChanged(bool b)
-        {
-            TableRowsView.Refresh();
-        }
-
         public void SetSort(string? header, bool isAscending)
         {
             if (header == null || !_headerToProperty.TryGetValue(header, out var path)) return;

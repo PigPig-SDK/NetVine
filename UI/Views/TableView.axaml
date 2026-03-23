@@ -19,10 +19,21 @@
                                     IsVisible="True"
                                     Width="Auto"/>
                 
-                <DataGridTextColumn Header="Process" 
-                                    Binding="{Binding (vm:TableRow).AppName}" 
-                                    IsVisible="True"
-                                    Width="Auto"/>
+                <DataGridTemplateColumn Header="Process" Width="*" MinWidth="150">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:TableRow">
+                            <StackPanel Orientation="Horizontal" Spacing="6" 
+                                        VerticalAlignment="Center" Margin="4 0">
+                                <Image Source="{Binding AppIcon}" 
+                                        Width="16" Height="16"
+                                        IsVisible="{Binding AppIcon, 
+                                            Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                <TextBlock Text="{Binding AppName}" 
+                                            VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 
                 <DataGridTextColumn Header="CPU"     
                                     Binding="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" 
