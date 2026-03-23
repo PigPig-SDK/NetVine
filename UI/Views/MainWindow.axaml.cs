@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Infrastructure;
 using System;
 using System.Collections.Generic;
+using UI.ViewModels;
 using YamlDotNet.Core.Events;
 
 namespace UI.Views;
@@ -12,14 +13,11 @@ public partial class MainWindow : Window
 {
     private Dictionary<int, Button> _tabBarMapping;
 
-    public const int GraphView = 0;
-    public const int TableView = 1;
-
     public MainWindow()
     {
         InitializeComponent();
 
-        _tabBarMapping = new Dictionary<int, Button>() { { GraphView,  GraphButton}, {TableView,TableButton } };
+        _tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton}, { MainWindowViewModel.TableView,TableButton } };
 
         Width = ConfigManager.ReadSetting(SettingInt.WindowWidth);
         Height = ConfigManager.ReadSetting(SettingInt.WindowHeight);
@@ -42,16 +40,19 @@ public partial class MainWindow : Window
 
     private void OnGraphClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        CanvasTabControl.SelectedIndex = GraphView;
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.GraphView;
     }
 
     private void OnTableClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        CanvasTabControl.SelectedIndex = TableView;
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.TableView;
     }
 
     private void SetTabSelected(int tab)
     {
+        if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed.
+            MainWindowViewModel.OnTabChanged?.Invoke(tab);
+
         ConfigManager.WriteSetting(SettingInt.LastActivePage, tab);
         foreach (var tabButton in _tabBarMapping)
         {
@@ -75,6 +76,8 @@ public partial class MainWindow : Window
     {
         if (CanvasTabControl is null) return;//Use nullability people.
 
-        SetTabSelected(CanvasTabControl.SelectedIndex);
+        int tab = CanvasTabControl.SelectedIndex;
+
+        SetTabSelected(tab);
     }
 }
