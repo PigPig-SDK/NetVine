@@ -1,7 +1,7 @@
 ﻿
 namespace Infrastructure.Networking;
 
-public class ConnectionInfo
+public record class ConnectionInfo
 {
     public string Ip { get; set; }
     public int Port { get; set; }
