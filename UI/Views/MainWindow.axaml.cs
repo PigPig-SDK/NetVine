@@ -87,8 +87,9 @@ public partial class MainWindow : Window
 
     private void SetTabSelected(int tab)
     {
-        if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. old code from merge conflict
-            MainWindowViewModel.OnTabChanged?.Invoke(tab);
+        if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
+            MainWindowViewModel.OnTabChanged?.Invoke(tab);//old code from merge conflict. Action for tab changes
+
         MainWindowViewModel.ActiveTab = tab;
 
         SearchBoxInput.Text = string.Empty;
@@ -127,9 +128,7 @@ public partial class MainWindow : Window
     {
         if (CanvasTabControl is null) return;//Use nullability people.
 
-        int tab = CanvasTabControl.SelectedIndex;
-
-        SetTabSelected(tab);
+        SetTabSelected(CanvasTabControl.SelectedIndex);
     }
 
     private void SearchSubmission(object? sender, Avalonia.Input.TextInputEventArgs e)

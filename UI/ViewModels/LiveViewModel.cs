@@ -9,7 +9,10 @@ public static class LiveViewModel
         {
             _isLive = value;
             ViewChanged?.Invoke(_isLive);
+            ViewChangedEvent?.Invoke(_isLive);
         } }
 
-    public static Action<bool>? ViewChanged { get; set; }
+    public static  Action<bool>? ViewChanged { get; set; }
+
+    public static event Action<bool>? ViewChangedEvent;
 }

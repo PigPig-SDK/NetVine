@@ -16,6 +16,16 @@ public partial class TableView : UserControl
     {
         InitializeComponent();
         DataContext = new TableViewModel();
+        LiveViewModel.ViewChangedEvent += OnViewChanged;
+    }
+
+    /// <summary>
+    /// Prevents program from crashing when changing between live view and historical
+    /// </summary>
+    /// <param name="isLive"></param>
+    private void OnViewChanged(bool isLive)
+    {
+        MyDataGrid.SelectedItem = null;
     }
 
     private void DataGrid_Loaded(object? sender, RoutedEventArgs e)

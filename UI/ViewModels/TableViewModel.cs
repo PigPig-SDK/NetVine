@@ -55,10 +55,10 @@ namespace UI.ViewModels
 
             //Event Subscriptions
             MainWindowViewModel.OnTabChanged += OnTabChanged;
-            LiveViewModel.ViewChanged += ViewChanged;
+            LiveViewModel.ViewChangedEvent += ViewChanged;
             SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
             DBInteract.OnDataAdded += OnSnapshotHistorical;
-
+            MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
 
             //Commands
             ToggleCpuCommand = new RelayCommand(ToggleCpu);
@@ -116,8 +116,11 @@ namespace UI.ViewModels
         
         // Public Methods
 
-
-
+        public void OnSearchKeyStroke(string? search)
+        {
+            if (search == null) return;
+            SearchText = search;
+        }
         public void OnSnapshotLive(List<IProgramData> data)
         {
             DebugLogger.Log("OnSnapShotLive called");
@@ -269,7 +272,7 @@ namespace UI.ViewModels
                 _tableViewActive = true;
                 //resubscribe to events
                 DebugLogger.Log("Table events subscribed");
-                LiveViewModel.ViewChanged += ViewChanged;
+                LiveViewModel.ViewChangedEvent += ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnDataAdded += OnSnapshotHistorical;
             }
@@ -279,7 +282,7 @@ namespace UI.ViewModels
                 _tableViewActive = false;
                 //unsubscribe from events
                 DebugLogger.Log("Table events unsubscribed");
-                LiveViewModel.ViewChanged -= ViewChanged;
+                LiveViewModel.ViewChangedEvent -= ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnDataAdded -= OnSnapshotHistorical;
             }

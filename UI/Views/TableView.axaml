@@ -3,8 +3,6 @@
              xmlns:vm="using:UI.ViewModels"
              x:Class="UI.TableView"
              x:DataType="vm:TableViewModel"> <Grid RowDefinitions="Auto, *">
-        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                 Watermark="Search..." Margin="5"/>
         
         <DataGrid Grid.Row="1"
                   x:Name="MyDataGrid"

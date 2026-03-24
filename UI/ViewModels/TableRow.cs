@@ -34,7 +34,7 @@ namespace UI.ViewModels
         }
 
         
-        
+        //icon stuff here is temporary and should later be handled by the database
         
         // Icon properties
         private Bitmap? _icon;

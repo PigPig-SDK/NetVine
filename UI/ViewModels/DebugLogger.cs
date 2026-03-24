@@ -9,6 +9,7 @@ namespace UI.ViewModels
             AppDomain.CurrentDomain.BaseDirectory, "debug.txt");
 
         public static bool ConsoleEnabled = true;
+        public static bool FileEnabled = false;
         public static bool Enabled = true;
 
         public static void Log(string message, string? fileName = null)
@@ -18,7 +19,7 @@ namespace UI.ViewModels
             var line = $"[{DateTime.Now:HH:mm:ss\\:ms}] [+{elapsed:hh\\:mm\\:ss\\:ms}] {message}";
             if (ConsoleEnabled) Console.WriteLine(line);
             var file = fileName ?? _logFile;
-            System.IO.File.AppendAllText(file, line + Environment.NewLine);
+            if (FileEnabled) System.IO.File.AppendAllText(file, line + Environment.NewLine);
         }
 
     }
