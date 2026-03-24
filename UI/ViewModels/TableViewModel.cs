@@ -15,7 +15,6 @@ namespace UI.ViewModels
     public class TableViewModel : ViewModelBase
     {
 
-        private static int updateCount = 0;
 
         // Fields
         private static readonly Dictionary<string, string> _headerToProperty = new()
@@ -122,7 +121,9 @@ namespace UI.ViewModels
         public void OnSnapshotLive(List<IProgramData> data)
         {
             DebugLogger.Log("OnSnapShotLive called");
+
             if (!LiveViewModel.IsLive || !_tableViewActive) return;
+            
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateLiveData(data);
@@ -179,6 +180,8 @@ namespace UI.ViewModels
             OnPropertyChanged(nameof(ShowNetworkHistorical));
         }
 
+        //commands for context menu
+
         private void ToggleCpu()
         {
             _showCpu = !_showCpu;
@@ -207,6 +210,7 @@ namespace UI.ViewModels
             OnIsVisiblePropertiesChanged();
         }
 
+        //initial population on startup
         private void PopulateTableInit()
         {
             //replace this with code that works. Right now, does nothing
@@ -223,8 +227,7 @@ namespace UI.ViewModels
                 OnSwitchToLive();
             else
                 OnSwitchToHistorical();
-            //System.IO.File.AppendAllText("tableRowDebugData.txt", Environment.NewLine + "View Changed" + Environment.NewLine);
-            //_tableData.PrintAllDataToDebugFile();
+
         }
 
         private void OnSwitchToLive()

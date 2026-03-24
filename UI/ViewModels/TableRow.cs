@@ -48,7 +48,6 @@ namespace UI.ViewModels
         /// <param name="path"></param>
         public void PrintToFile(string path = "tablerow_debug.txt")
         {
-            //var fullPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "tablerow_debug.txt");
             var fullPath = path;
             var live = LiveData == null ? "null" : $"AppName={AppName} SystemName = {SystemName} CPU={LiveData.CpuUsage} MEM={LiveData.MemoryUsage}";
             var hist = HistoricalData == null ? "null" : $"AppName={AppName} SystemName={SystemName} CpuAvg={HistoricalData.CpuUsageAvg} CpuPeak={HistoricalData.CpuUsagePeak} MemAvg={HistoricalData.MemoryUsageAvg}";
