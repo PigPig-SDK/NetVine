@@ -8,9 +8,10 @@ namespace UI.ViewModels
         private static readonly string _logFile = System.IO.Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory, "debug.txt");
 
-        public static bool ConsoleEnabled = true;
+        //enable for checking the table view 
+        public static bool ConsoleEnabled = false;
         public static bool FileEnabled = false;
-        public static bool Enabled = true;
+        public static bool Enabled = false;
 
         public static void Log(string message, string? fileName = null)
         {
