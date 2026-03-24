@@ -8,8 +8,8 @@ namespace UI.ViewModels
         private static readonly string _logFile = System.IO.Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory, "debug.txt");
 
-        public static bool ConsoleEnabled = false;
-        public static bool Enabled = false;
+        public static bool ConsoleEnabled = true;
+        public static bool Enabled = true;
 
         public static void Log(string message, string? fileName = null)
         {

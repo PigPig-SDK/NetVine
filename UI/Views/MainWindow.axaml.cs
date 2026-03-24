@@ -87,8 +87,8 @@ public partial class MainWindow : Window
 
     private void SetTabSelected(int tab)
     {
-        //if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. old code from merge conflict
-        //    MainWindowViewModel.OnTabChanged?.Invoke(tab);
+        if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. old code from merge conflict
+            MainWindowViewModel.OnTabChanged?.Invoke(tab);
         MainWindowViewModel.ActiveTab = tab;
 
         SearchBoxInput.Text = string.Empty;

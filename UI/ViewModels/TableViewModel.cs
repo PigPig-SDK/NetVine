@@ -264,17 +264,7 @@ namespace UI.ViewModels
         {
             DebugLogger.Log($"Tab changed to tab {tab}");
 
-            if (tab == 0) {
-                _tableViewActive = false;
-                //unsubscribe from events
-                DebugLogger.Log("Table events unsubscribed");
-                LiveViewModel.ViewChanged -= ViewChanged;
-                SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
-                DBInteract.OnDataAdded -= OnSnapshotHistorical;
-            }
-
-
-            else if (tab == 1)
+            if (tab == 1)
             {
                 _tableViewActive = true;
                 //resubscribe to events
@@ -282,6 +272,16 @@ namespace UI.ViewModels
                 LiveViewModel.ViewChanged += ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnDataAdded += OnSnapshotHistorical;
+            }
+
+            else
+            {
+                _tableViewActive = false;
+                //unsubscribe from events
+                DebugLogger.Log("Table events unsubscribed");
+                LiveViewModel.ViewChanged -= ViewChanged;
+                SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
+                DBInteract.OnDataAdded -= OnSnapshotHistorical;
             }
 
         }
