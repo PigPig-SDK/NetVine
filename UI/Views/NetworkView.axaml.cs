@@ -16,6 +16,7 @@ public partial class NetworkView : UserControl
         DetachedFromLogicalTree += OnLeaveScope;
         InitializeComponent();
         PopulateConnections();
+        UpdateHostConfig();
     }
 
     private void ClientConnectionAdded(ConnectionInfo info)
@@ -27,12 +28,30 @@ public partial class NetworkView : UserControl
     {
         ConfigManager.OnClientConnectionAdded += ClientConnectionAdded;
         ConfigManager.OnClientConnectionRemoved += ClientConnectionRemoved;
+        ConfigManager.OnSettingChanged += OnSettingChanged;
     }
 
     private void OnLeaveScope(object? sender, LogicalTreeAttachmentEventArgs e)
     {
         ConfigManager.OnClientConnectionAdded -= ClientConnectionAdded;
         ConfigManager.OnClientConnectionRemoved -= ClientConnectionRemoved;
+        ConfigManager.OnSettingChanged -= OnSettingChanged;
+    }
+
+    private void OnSettingChanged(Enum setting)
+    {
+        UpdateHostConfig();
+    }
+
+    private void UpdateHostConfig()
+    {
+        string hostStatus = $"Host Alive: {NetworkManager.Instance.Host is not null}";
+        if(NetworkManager.Instance.Host is not null)
+        {
+            hostStatus += $"\nClient Count: {NetworkManager.Instance.Host.ConnectedSessions}";
+        }
+
+        HostStatusLabel.Content = hostStatus;
     }
 
     private void ClientConnectionRemoved(ConnectionInfo info)
