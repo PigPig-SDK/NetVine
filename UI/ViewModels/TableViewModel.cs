@@ -1,196 +1,310 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Core;
-using Microsoft.Diagnostics.Tracing.Parsers;
-using Microsoft.Extensions.Options;
+using Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using static UI.ViewModels.TableViewModel;
 
 namespace UI.ViewModels
 {
-    //Future improvements:
-    //TODO: UpdateData -- listerner for a data update from the infrastructure.
-    //TODO: Simplify filtering -- better syntax, dropdown menu instead?
-    //TODO: Add more columns, like current usage. Be sure these are toggleable in the context menu.
-
-    internal class TableViewModel : ViewModelBase
+    public class TableViewModel : ViewModelBase
     {
 
-        /// <summary>
-        /// Initializes a new instance of the TableViewModel class, setting up command properties for toggling CPU,
-        /// disk, RAM, and network states.
-        /// </summary>
-        /// <remarks>This constructor populates the table with initial dummy data and prepares command
-        /// properties that can be bound to UI elements, enabling user interaction with system resource
-        /// toggles.</remarks>
+
+        // Fields
+        private static readonly Dictionary<string, string> _headerToProperty = new()
+        {
+            ["PC Name"] = nameof(TableRow.SystemName),
+            ["Process"] = nameof(TableRow.AppName),
+            ["CPU"] = "LiveData.CpuUsage",
+            ["Memory"] = "LiveData.MemoryUsage",
+            ["CPU Avg"] = "HistoricalData.CpuUsageAvg",
+            ["CPU Top"] = "HistoricalData.CpuUsagePeak",
+            ["Memory Avg"] = "HistoricalData.MemoryUsageAvg",
+            ["Memory Top"] = "HistoricalData.MemoryUsagePeak",
+            ["Disk Avg"] = "HistoricalData.DiskUsageAvg",
+            ["Disk Top"] = "HistoricalData.DiskUsagePeak",
+            ["Network Avg"] = "HistoricalData.NetworkUsageAvg",
+            ["Network Top"] = "HistoricalData.NetworkUsagePeak",
+            ["Network Total"] = "HistoricalData.NetworkUsageTotal",
+        };
+
+        private TableDataManager _tableData;
+        private bool _tableViewActive = false;
+        private string _searchText = "";
+
+
+        private bool _showCpu = true;
+        private bool _showMemory = true;
+        private bool _showDisk = true;
+        private bool _showNetwork = true;
+
+        // Constructor
         public TableViewModel()
         {
-            PopulateTableWithDummyData();
+            _tableData = new TableDataManager();
+            TableRowsView = new DataGridCollectionView(_tableData.TableRows);
+
+            var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
+            _tableViewActive = lastActiveTab == 1 ? true : false;
+
+            //Event Subscriptions
+            MainWindowViewModel.OnTabChanged += OnTabChanged;
+            LiveViewModel.ViewChangedEvent += ViewChanged;
+            SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+            DBInteract.OnDataAdded += OnSnapshotHistorical;
+            MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
+
+            //Commands
             ToggleCpuCommand = new RelayCommand(ToggleCpu);
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
-            ToggleRamCommand = new RelayCommand(ToggleRam);
-            ToggleNetCommand = new RelayCommand(ToggleNet);
+            ToggleMemoryCommand = new RelayCommand(ToggleMemory);
+            ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
+
+            PopulateTableInit();
         }
-        
-        /// <summary>
-        /// Represents a row of performance metrics for a specific system application, including CPU, RAM, disk, and
-        /// network usage statistics. This is also sort of a placeholder class. Planning on adding some columns.
-        /// </summary>
-        /// <remarks>This class is designed to hold average and maximum resource usage values, which can
-        /// be useful for monitoring and analyzing application performance over time.</remarks>
-        public class TableRow
+
+        // Properties
+
+        public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
+        public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
+        public string DiskMenuText => _showDisk ? "Hide Disk usage" : "Show Disk usage";
+        public string NetworkMenuText => _showNetwork ? "Hide Network usage" : "Show Network usage";
+        public bool ShowLive => LiveViewModel.IsLive;
+        public bool IsAppnameVisible => true;
+        public bool IsSystemNameVisible => true;
+        public bool ShowHistorical => !LiveViewModel.IsLive;
+        public DataGridCollectionView TableRowsView { get; set; }
+
+        public string SearchText
         {
-            public string SystemName { get; set; }
-            public string AppName { get; set; }
-            public float CpuAvg { get; set; }
-            public float CpuMax { get; set; }
-            public float RamAvg { get; set; }
-            public float RamMax { get; set; }
-            public float DiskAvg { get; set; }
-            public float DiskMax { get; set; }
-            public float NetworkAvg { get; set; }
-            public float NetworkMax { get; set; }
-        }
-
-        //Main table data storage
-        public ObservableCollection<TableRow> TableRows { get; set; } = [];
-
-        //Context Menu proprties and commands...
-        public bool DisplaySystemName { get; set; } = true;
-        public bool DisplayAppName { get; set; } = true;
-        private bool _displayCpuAvg = true;
-        public bool DisplayCpuAvg { get => _displayCpuAvg; set { _displayCpuAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextCpu));}}
-        private bool _displayCpuMax = true;
-        public bool DisplayCpuTop { get => _displayCpuMax; set {_displayCpuMax = value; OnPropertyChanged();OnPropertyChanged(nameof(ContextMenuTextCpu)); }}
-        private bool _displayRamAvg = true;
-        public bool DisplayRamAvg { get => _displayRamAvg; set { _displayRamAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextRam)); } }
-        private bool _displayRamTop = true;
-        public bool DisplayRamTop { get => _displayRamTop; set { _displayRamTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextRam)); } }
-        private bool _displayDiskAvg = true;
-        public bool DisplayDiskAvg { get => _displayDiskAvg ; set {_displayDiskAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextDisk)); } }
-        private bool _displayDiskTop = true;
-        public bool DisplayDiskTop { get => _displayDiskTop ; set {_displayDiskTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextDisk)); } }
-        private bool _displayNetAvg = true;
-        public bool DisplayNetworkAvg { get => _displayNetAvg ; set {_displayNetAvg = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextNet)); } }
-        private bool _displayNetTop = true;
-        public bool DisplayNetworkTop { get => _displayNetTop; set { _displayNetTop = value; OnPropertyChanged(); OnPropertyChanged(nameof(ContextMenuTextNet)); } }
-        private string _ContextMenuSearchText(bool shown, string word) => shown? $"Hide {word}" : $"Show {word}";
-        public string ContextMenuTextCpu => _ContextMenuSearchText(DisplayCpuAvg, "CPU Usage");
-        public string ContextMenuTextRam => _ContextMenuSearchText(DisplayRamAvg, "Ram Usage");
-        public string ContextMenuTextDisk => _ContextMenuSearchText(DisplayDiskAvg, "Disk Usage");
-        public string ContextMenuTextNet => _ContextMenuSearchText(DisplayNetworkAvg, "Network Usage");
-        public ICommand ToggleCpuCommand { get; set; }
-        public ICommand ToggleDiskCommand { get; set; }
-        public ICommand ToggleRamCommand { get; set; }
-        public ICommand ToggleNetCommand { get; set; }
-        private void ToggleCpu() => (DisplayCpuAvg, DisplayCpuTop) = (!DisplayCpuAvg, !DisplayCpuTop);
-        private void ToggleDisk() => (DisplayDiskAvg, DisplayDiskTop) = (!DisplayDiskAvg, !DisplayDiskTop);
-        private void ToggleRam() => (DisplayRamAvg, DisplayRamTop) = (!DisplayRamAvg, !DisplayRamTop);
-        private void ToggleNet() => (DisplayNetworkAvg, DisplayNetworkTop) = (!DisplayNetworkAvg, !DisplayNetworkTop);
-
-
-
-        /// <summary>
-        /// Property for the text in the search bar. When this is updated, 
-        /// it triggers a property change notification for the FilteredRows property, 
-        /// which causes the UI to update the displayed rows based on the new search text.
-        /// </summary>
-        private string? _searchText;
-        public string SearchText{
-            get => _searchText ??= "";
+            get => _searchText;
             set
             {
-                _searchText = value; 
+                _searchText = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(FilteredRows));
+                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                    ? null
+                    : FilterRow;
+                TableRowsView.Refresh();
             }
-        }       
-
-        //TODO: Maybe add filter class which we can test
-        /// <summary>
-        /// Gets the collection of table rows that match the current search criteria.
-        /// Pretty redamentary and not very robust. Will be replaced with something better (like a testable class).
-        /// </summary>
-        /// <remarks>The returned rows are filtered based on the value of <see cref="SearchText"/>. This
-        /// property is useful for retrieving a dynamic subset of rows that satisfy the search condition, such as for
-        /// displaying search results in a user interface.</remarks>
-        public IEnumerable<TableRow> FilteredRows => FilterRows(SearchText);
-        IEnumerable<TableRow> FilterRows(string searchIn)
-        {   
-            if (searchIn == "" || searchIn == null) return TableRows;
-
-            var result = Regex.Matches(searchIn, @"\(([^)]+)\)|(\w+)(?!\s*[,\w]*\))")
-                .Cast<Match>()
-                .Select(m =>
-                {
-                    var content = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value;
-                    return content.Split(',').Select(s => s.Trim()).ToList();
-                })
-                .ToList();
-
-            return result.SelectMany(row => TableRows.Where(tableRow => row.Count == 2
-                  ? (row.Contains(tableRow.AppName) && row.Contains(tableRow.SystemName))
-                        || (row.Contains(tableRow.SystemName) && row.Contains(tableRow.AppName))
-                   : 
-                        row.Count == 1
-                             ? row.Contains(tableRow.SystemName) || row.Contains(tableRow.AppName)
-                        : 
-                            false));
         }
+        
 
+        // Context menu properties
+        
+        public bool ShowCpuLive => _showCpu && LiveViewModel.IsLive;
+        public bool ShowMemoryLive => _showMemory && LiveViewModel.IsLive;
+        public bool ShowDiskLive => _showDisk && LiveViewModel.IsLive;
+        public bool ShowNetworkLive => _showNetwork && LiveViewModel.IsLive;
 
-        /// <summary>
-        /// Processes an incoming snapshot of program data, updating the current state accordingly.
-        /// </summary>
-        /// <param name="data">A list of program data objects representing the latest state of the program. Cannot be null.</param>
-        private void OnSnapshot(List<IProgramData> data)
+        public bool ShowCpuHistorical => _showCpu && !LiveViewModel.IsLive;
+        public bool ShowMemoryHistorical => _showMemory && !LiveViewModel.IsLive;
+        public bool ShowDiskHistorical => _showDisk && !LiveViewModel.IsLive;
+        public bool ShowNetworkHistorical => _showNetwork && !LiveViewModel.IsLive;
+
+        public IRelayCommand ToggleCpuCommand { get; }
+        public IRelayCommand ToggleMemoryCommand { get; }
+        public IRelayCommand ToggleDiskCommand { get; }
+        public IRelayCommand ToggleNetworkCommand { get; }
+
+        
+        // Public Methods
+
+        public void OnSearchKeyStroke(string? search)
         {
-            //when data comes in
+            if (search == null) return;
+            SearchText = search;
         }
-
-
-        /// <summary>
-        /// Populates the table with sample data for testing or demonstration purposes.
-        /// </summary>
-        /// <remarks>This method generates 50 rows of dummy data, randomly assigning system and
-        /// application names, as well as random values for CPU, RAM, disk, and network metrics. Intended for use in
-        /// development scenarios where representative data is needed to visualize or test table
-        /// functionality.</remarks>
-        private void PopulateTableWithDummyData()
+        public void OnSnapshotLive(List<IProgramData> data)
         {
-            string[] dummySysNames = { "MyComputer", "WorkPC", "GamingRig" };
-            string[] dummyAppNames = { "Netvine", "Chrome", "Visual Studio", "Spotify", "Microsoft Excel" };
-            var rng = new Random();
-            int numberOfRows = 50;
+            Debug.Log("OnSnapShotLive called");
 
-            for (int i = 0; i < numberOfRows; i++)
+            if (!LiveViewModel.IsLive || !_tableViewActive) return;
+            
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                TableRows.Add(new TableRow
-                {
-                    SystemName = dummySysNames[rng.Next(dummySysNames.Length)],
-                    AppName = dummyAppNames[rng.Next(dummyAppNames.Length)],
-                    CpuAvg = MathF.Round(rng.NextSingle() * 100, 2),
-                    CpuMax = MathF.Round(rng.NextSingle() * 100, 2),
-                    RamAvg = MathF.Round(rng.NextSingle() * 16384, 2),
-                    RamMax = MathF.Round(rng.NextSingle() * 16384, 2),
-                    DiskAvg = MathF.Round(rng.NextSingle() * 500, 2),
-                    DiskMax = MathF.Round(rng.NextSingle() * 500, 2),
-                    NetworkAvg = MathF.Round(rng.NextSingle() * 1000, 2),
-                    NetworkMax = MathF.Round(rng.NextSingle() * 1000, 2),
-                });
-            }
+                _tableData.UpdateLiveData(data);
+                TableRowsView.Refresh();
+                ReapplySort();
+                Debug.Log("OnSnapShotLive update completed");
+            });
         }
 
 
 
+        public void OnSnapshotHistorical()
+        {
+            Debug.Log("OnSnapshotHistorical called");
+            if (LiveViewModel.IsLive || !_tableViewActive) return;
+            
+            var data = DBArithmetic.HistoricalDataProducer(null, null);
 
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(data);
+                TableRowsView.Refresh();
+                ReapplySort();
+                Debug.Log("OnSnapshot historical update completed");
+            });
+        }
+
+
+
+        public void SetSort(string? header, bool isAscending)
+        {
+            if (header == null || !_headerToProperty.TryGetValue(header, out var path)) return;
+            TableRowsView.SortDescriptions.Clear();
+            TableRowsView.SortDescriptions.Add(DataGridSortDescription.FromPath(path,
+                isAscending
+                    ? System.ComponentModel.ListSortDirection.Ascending
+                    : System.ComponentModel.ListSortDirection.Descending));
+        }
+
+        // Private Methods
+
+        private void OnIsVisiblePropertiesChanged()
+        {
+            OnPropertyChanged(nameof(ShowLive));
+            OnPropertyChanged(nameof(ShowHistorical));
+
+            OnPropertyChanged(nameof(ShowCpuLive));
+            OnPropertyChanged(nameof(ShowCpuHistorical));
+            OnPropertyChanged(nameof(ShowMemoryLive));
+            OnPropertyChanged(nameof(ShowMemoryHistorical));
+            OnPropertyChanged(nameof(ShowDiskLive));
+            OnPropertyChanged(nameof(ShowDiskHistorical));
+            OnPropertyChanged(nameof(ShowNetworkLive));
+            OnPropertyChanged(nameof(ShowNetworkHistorical));
+        }
+
+        //commands for context menu
+
+        private void ToggleCpu()
+        {
+            _showCpu = !_showCpu;
+            OnPropertyChanged(nameof(CpuMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        private void ToggleMemory()
+        {
+            _showMemory = !_showMemory;
+            OnPropertyChanged(nameof(MemoryMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        private void ToggleDisk()
+        {
+            _showDisk = !_showDisk;
+            OnPropertyChanged(nameof(DiskMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        private void ToggleNetwork()
+        {
+            _showNetwork = !_showNetwork;
+            OnPropertyChanged(nameof(NetworkMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        //initial population on startup
+        private void PopulateTableInit()
+        {
+            //replace this with code that works. Right now, does nothing
+            OnSwitchToLive(); // just attempts to populate both with initial data
+            OnSwitchToHistorical();
+        }
+
+        private void ViewChanged(bool b)
+        {
+            Debug.Log($"ViewChanged fired, isLive={b}");
+            Debug.Log($"Printing Recieved Data to a file");
+
+            if (b)
+                OnSwitchToLive();
+            else
+                OnSwitchToHistorical();
+
+        }
+
+        private void OnSwitchToLive()
+        {
+            Debug.Log("OnSwitchToLive called");
+            var data = SystemHistory.Instance.GetLatestPoll();
+            Debug.Log($"GetLatestPoll returned {data?.Count ?? 0} items");
+            Dispatcher.UIThread.Post(() =>
+            {
+                Debug.Log("Dispatcher post executing for live");
+                _tableData.UpdateLiveData(data!);
+                OnIsVisiblePropertiesChanged();
+                TableRowsView.Refresh();
+                Debug.Log($"live data update complete");
+            });
+        }
+
+        private void OnSwitchToHistorical()
+        {
+            Debug.Log("OnSwitchToHistorical called");
+            var data = DBArithmetic.HistoricalDataProducer(null, null);
+            Debug.Log($"HistoricalDataProducer returned {data?.Count ?? 0} items");
+            Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(data!);
+                OnIsVisiblePropertiesChanged();
+
+                TableRowsView.Refresh();
+                Debug.Log($"historical data update complete");
+            });
+        }
+
+        private void OnTabChanged(int tab)
+        {
+            Debug.Log($"Tab changed to tab {tab}");
+
+            if (tab == 1)
+            {
+                _tableViewActive = true;
+                //resubscribe to events
+                Debug.Log("Table events subscribed");
+                LiveViewModel.ViewChangedEvent += ViewChanged;
+                SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+                DBInteract.OnDataAdded += OnSnapshotHistorical;
+            }
+
+            else
+            {
+                _tableViewActive = false;
+                //unsubscribe from events
+                Debug.Log("Table events unsubscribed");
+                LiveViewModel.ViewChangedEvent -= ViewChanged;
+                SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
+                DBInteract.OnDataAdded -= OnSnapshotHistorical;
+            }
+
+        }
+
+        private void ReapplySort()
+        {
+            if (TableRowsView.SortDescriptions.Count == 0) return;
+            var sorts = TableRowsView.SortDescriptions.ToList();
+            TableRowsView.SortDescriptions.Clear();
+            foreach (var sort in sorts)
+                TableRowsView.SortDescriptions.Add(sort);
+        }
+
+        private bool FilterRow(object obj)
+        {
+            
+
+            if (obj is not TableRow row) return false;
+            return row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+        }
 
     }
 }

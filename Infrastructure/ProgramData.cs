@@ -4,9 +4,9 @@ using ProtoBuf;
 [ProtoContract]
 public class ProgramData : IProgramData
 {
-    
-    [ProtoMember(1)]
-    private string _systemName, _processName;
+
+    [ProtoMember(1)] private string _systemName;
+    [ProtoMember(2)] private string _processName;
     
     [ProtoMember(2)]
     private float _cpuUsage, _diskUsage, _networkUsage, _memoryUsage, _timespan;
@@ -31,7 +31,7 @@ public class ProgramData : IProgramData
     
     [ProtoMember(9)]
     public float MemoryUsage { get => _memoryUsage; set => _memoryUsage = value; }
-    
+
     [ProtoMember(10)]
     public float Timespan { get => _timespan; set => _timespan = value; }
     
@@ -40,5 +40,6 @@ public class ProgramData : IProgramData
     
     [ProtoMember(12)]
     public int ProcessId { get; set; }
+    
     
 }

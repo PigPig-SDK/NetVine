@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UI.ViewModels;
 
@@ -12,8 +8,8 @@ public static class LiveViewModel
     public static bool IsLive { get => _isLive; set 
         {
             _isLive = value;
-            ViewChanged?.Invoke(_isLive);
+            ViewChangedEvent?.Invoke(_isLive);
         } }
 
-    public static Action<bool>? ViewChanged { get; set; }
+    public static event Action<bool>? ViewChangedEvent;
 }

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+
 namespace Infrastructure;
 
 public class WindowsDataProducer : IProgramDataProducer
@@ -230,11 +231,11 @@ public class WindowsDataProducer : IProgramDataProducer
             }
             catch (Win32Exception ex)
             {
-                Debug.WriteLine($"Access denied to process {process.ProcessName}: {ex.Message}");
+                Core.Debug.Log($"Access denied to process {process.ProcessName}: {ex.Message}");
             }
             catch (InvalidOperationException ex)
             {
-                Debug.WriteLine($"Process {process.ProcessName} exited before reading: {ex.Message}");
+                Core.Debug.Log($"Process {process.ProcessName} exited before reading: {ex.Message}");
             }
         }
 

@@ -24,6 +24,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        //_tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton}, { MainWindowViewModel.TableView,TableButton } }; old code from merge conflict
         _tabBarMapping = new Dictionary<int, Button>() { { GraphView, GraphButton }, { TableView, TableButton }, { SettingsView, SettingsButton } };
 
         Width = ConfigManager.ReadSetting(SettingInt.WindowWidth);
@@ -72,12 +73,12 @@ public partial class MainWindow : Window
 
     private void OnGraphClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        CanvasTabControl.SelectedIndex = GraphView;
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.GraphView;
     }
 
     private void OnTableClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        CanvasTabControl.SelectedIndex = TableView;
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.TableView;
     }
     private void OnSettingsClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -86,6 +87,9 @@ public partial class MainWindow : Window
 
     private void SetTabSelected(int tab)
     {
+        if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
+           MainWindowViewModel.RaiseTabChanged(tab); //invokes OnTabChanged
+
         MainWindowViewModel.ActiveTab = tab;
 
         SearchBoxInput.Text = string.Empty;

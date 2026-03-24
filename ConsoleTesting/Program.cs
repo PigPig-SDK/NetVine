@@ -60,7 +60,6 @@ while (true)
         Console.WriteLine($"Populating Dummies...\n");
         DBInteract.PopulateDummyData();
         DBInteract.ListAllToString();
-
     }
     else if (input == "list")
     {

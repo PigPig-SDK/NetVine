@@ -49,6 +49,12 @@ public class SystemHistory : IDisposable
         _instance = new(producer, 30, TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate)));
     }
 
+    public List<IProgramData> GetLatestPoll()
+    {
+        if (_tracker.TryGetSnapshot(0, out var snapshot))
+            return snapshot!;//Snapshot is not null. Try/get method avoids null.
+        return [];
+    }
     private void OnSettingChanged(Enum setting)
     {
         if (setting is not SettingFloat settingfloat) return;

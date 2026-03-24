@@ -34,10 +34,10 @@ public class MockDataProducer : IProgramDataProducer
                     SystemName = SystemName,
                     Date = DateTime.Now,
                     ProcessName = processName,
-                    CpuUsage = (random.Next() * 50),
-                    DiskUsage = (random.Next() * 4080),
-                    NetworkUsage = (random.Next() * 0.5f),
-                    MemoryUsage = (random.Next() * 25.0f),
+                    CpuUsage = (float)(random.NextDouble() * 50),
+                    DiskUsage = (float)(random.NextDouble() * 4080),
+                    NetworkUsage = (float)(random.NextDouble() * 0.5f),
+                    MemoryUsage = (float)(random.NextDouble() * 25.0f),
                 });
             else
                 result.Add(new ProgramData
@@ -45,10 +45,10 @@ public class MockDataProducer : IProgramDataProducer
                     SystemName = SystemName,
                     Date = DateTime.Now,
                     ProcessName = processName,
-                    CpuUsage = (random.Next()),
-                    DiskUsage = (random.Next() * 20),
-                    NetworkUsage = (random.Next() * 0.1f),
-                    MemoryUsage = (random.Next() * 10.0f),
+                    CpuUsage = (float)(random.NextDouble()),
+                    DiskUsage = (float)(random.NextDouble() * 20),
+                    NetworkUsage = (float)(random.NextDouble() * 0.1f),
+                    MemoryUsage = (float)(random.NextDouble() * 10.0f),
                 });
         }
 

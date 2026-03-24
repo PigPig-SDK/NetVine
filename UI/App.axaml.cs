@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
+
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Infrastructure;
@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using UI.ViewModels;
 using UI.Views;
+
 
 namespace UI;
 
