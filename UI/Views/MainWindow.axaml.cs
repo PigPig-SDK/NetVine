@@ -88,7 +88,7 @@ public partial class MainWindow : Window
     private void SetTabSelected(int tab)
     {
         if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
-            MainWindowViewModel.OnTabChanged?.Invoke(tab);//old code from merge conflict. Action for tab changes
+           MainWindowViewModel.RaiseTabChanged(tab); //invokes OnTabChanged
 
         MainWindowViewModel.ActiveTab = tab;
 

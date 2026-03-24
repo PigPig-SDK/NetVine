@@ -59,31 +59,26 @@ namespace UI.ViewModels
         /// <param name="data"></param>
         public void UpdateHistoricalData(List<ProgramDataHistorical> data)
         {
-            DebugLogger.Log($"UpdateHistoricalData called with {data.Count} items");
+            Debug.Log($"UpdateHistoricalData called with {data.Count} items");
 
             var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
             var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
 
             foreach (var item in data)
             {
-                //DebugLogger.Log($"Incoming: {item.SystemName} | {item.ProcessName} | CpuAvg={item.CpuUsageAvg} | MemAvg={item.MemoryUsageAvg}");
-
                 var key = (item.SystemName, item.ProcessName);
                 if (existing.TryGetValue(key, out var row))
                 {
-                    //DebugLogger.Log($"Updating existing row: {item.SystemName} | {item.ProcessName}");
                     row.HistoricalData = item;
-                    DebugLogger.Log($"After update: {row.SystemName} | CpuAvg={row.HistoricalData?.CpuUsageAvg}");
                 }
                 else
                 {
-                    //DebugLogger.Log($"Adding new row: {item.SystemName} | {item.ProcessName}");
                     TableRows.Add(new TableRow { SystemName = item.SystemName, AppName = item.ProcessName, HistoricalData = item });
                 }
             }
 
             var toRemove = TableRows.Where(r => !incoming.ContainsKey((r.SystemName, r.AppName))).ToList();
-            DebugLogger.Log($"Removing {toRemove.Count} stale rows");
+            Debug.Log($"Removing {toRemove.Count} stale rows");
             foreach (var row in toRemove)
                 TableRows.Remove(row);
         }

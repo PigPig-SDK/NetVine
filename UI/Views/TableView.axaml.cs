@@ -28,13 +28,13 @@ public partial class TableView : UserControl
         MyDataGrid.SelectedItem = null;
     }
 
-    private void DataGrid_Loaded(object? sender, RoutedEventArgs e)
+    private void DataGridLoaded(object? sender, RoutedEventArgs e)
     {
         foreach (var column in MyDataGrid.Columns)
             _sortDirections[column.Header?.ToString() ?? ""] = true;
     }
 
-    private void DataGrid_Sorting(object? sender, DataGridColumnEventArgs e)
+    private void DataGridSorting(object? sender, DataGridColumnEventArgs e)
     {
         if (DataContext is TableViewModel vm)
         {

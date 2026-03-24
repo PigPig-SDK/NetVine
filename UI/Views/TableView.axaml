@@ -8,7 +8,7 @@
                   x:Name="MyDataGrid"
                   CanUserResizeColumns="True"
                   ItemsSource="{Binding TableRowsView}" 
-                  Sorting="DataGrid_Sorting"
+                  Sorting="DataGridSorting"
                   CanUserSortColumns="True"
                   IsReadOnly="True"
                   GridLinesVisibility="All">

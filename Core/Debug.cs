@@ -2,16 +2,16 @@
 
 namespace UI.ViewModels
 {
-    public static class DebugLogger
+    public static partial class Debug
     {
         private static readonly DateTime _startTime = DateTime.Now;
         private static readonly string _logFile = System.IO.Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory, "debug.txt");
 
         //enable for checking the table view 
-        public static bool ConsoleEnabled = false;
+        public static bool ConsoleEnabled = true;
         public static bool FileEnabled = false;
-        public static bool Enabled = false;
+        public static bool Enabled = true;
 
         public static void Log(string message, string? fileName = null)
         {

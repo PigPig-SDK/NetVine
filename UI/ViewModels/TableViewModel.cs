@@ -123,7 +123,7 @@ namespace UI.ViewModels
         }
         public void OnSnapshotLive(List<IProgramData> data)
         {
-            DebugLogger.Log("OnSnapShotLive called");
+            Debug.Log("OnSnapShotLive called");
 
             if (!LiveViewModel.IsLive || !_tableViewActive) return;
             
@@ -132,7 +132,7 @@ namespace UI.ViewModels
                 _tableData.UpdateLiveData(data);
                 TableRowsView.Refresh();
                 ReapplySort();
-                DebugLogger.Log("OnSnapShotLive update completed");
+                Debug.Log("OnSnapShotLive update completed");
             });
         }
 
@@ -140,7 +140,7 @@ namespace UI.ViewModels
 
         public void OnSnapshotHistorical()
         {
-            DebugLogger.Log("OnSnapshotHistorical called");
+            Debug.Log("OnSnapshotHistorical called");
             if (LiveViewModel.IsLive || !_tableViewActive) return;
             
             var data = DBArithmetic.HistoricalDataProducer(null, null);
@@ -150,7 +150,7 @@ namespace UI.ViewModels
                 _tableData.UpdateHistoricalData(data);
                 TableRowsView.Refresh();
                 ReapplySort();
-                DebugLogger.Log("OnSnapshot historical update completed");
+                Debug.Log("OnSnapshot historical update completed");
             });
         }
 
@@ -223,8 +223,8 @@ namespace UI.ViewModels
 
         private void ViewChanged(bool b)
         {
-            DebugLogger.Log($"ViewChanged fired, isLive={b}");
-            DebugLogger.Log($"Printing Recieved Data to a file");
+            Debug.Log($"ViewChanged fired, isLive={b}");
+            Debug.Log($"Printing Recieved Data to a file");
 
             if (b)
                 OnSwitchToLive();
@@ -235,43 +235,43 @@ namespace UI.ViewModels
 
         private void OnSwitchToLive()
         {
-            DebugLogger.Log("OnSwitchToLive called");
+            Debug.Log("OnSwitchToLive called");
             var data = SystemHistory.Instance.GetLatestPoll();
-            DebugLogger.Log($"GetLatestPoll returned {data?.Count ?? 0} items");
+            Debug.Log($"GetLatestPoll returned {data?.Count ?? 0} items");
             Dispatcher.UIThread.Post(() =>
             {
                 Console.WriteLine("Dispatcher post executing for live");
                 _tableData.UpdateLiveData(data!);
                 OnIsVisiblePropertiesChanged();
                 TableRowsView.Refresh();
-                DebugLogger.Log($"live data update complete");
+                Debug.Log($"live data update complete");
             });
         }
 
         private void OnSwitchToHistorical()
         {
-            DebugLogger.Log("OnSwitchToHistorical called");
+            Debug.Log("OnSwitchToHistorical called");
             var data = DBArithmetic.HistoricalDataProducer(null, null);
-            DebugLogger.Log($"HistoricalDataProducer returned {data?.Count ?? 0} items");
+            Debug.Log($"HistoricalDataProducer returned {data?.Count ?? 0} items");
             Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data!);
                 OnIsVisiblePropertiesChanged();
 
                 TableRowsView.Refresh();
-                DebugLogger.Log($"historical data update complete");
+                Debug.Log($"historical data update complete");
             });
         }
 
         private void OnTabChanged(int tab)
         {
-            DebugLogger.Log($"Tab changed to tab {tab}");
+            Debug.Log($"Tab changed to tab {tab}");
 
             if (tab == 1)
             {
                 _tableViewActive = true;
                 //resubscribe to events
-                DebugLogger.Log("Table events subscribed");
+                Debug.Log("Table events subscribed");
                 LiveViewModel.ViewChangedEvent += ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnDataAdded += OnSnapshotHistorical;
@@ -281,7 +281,7 @@ namespace UI.ViewModels
             {
                 _tableViewActive = false;
                 //unsubscribe from events
-                DebugLogger.Log("Table events unsubscribed");
+                Debug.Log("Table events unsubscribed");
                 LiveViewModel.ViewChangedEvent -= ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnDataAdded -= OnSnapshotHistorical;
