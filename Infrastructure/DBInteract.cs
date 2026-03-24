@@ -24,10 +24,12 @@ public class DBInteract : DbContext
     /// <summary>
     /// Database creation.
     /// </summary>
-    /// <param name="options"></param> Database name.
+    /// <param name="options">Database name.</param> 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
-        var dbLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine", "AppMetics.db");
+        var dbLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "NetVine", MockDataProducer.IsBeingUsed()? "AppMeticsMock.db" : "AppMetics.db");
+
         Directory.CreateDirectory(Path.GetDirectoryName(dbLocation)!);
         
         options.UseSqlite($"Data Source={dbLocation}");
@@ -107,8 +109,8 @@ public class DBInteract : DbContext
     ///List items between the two given dates.
     ///Will list from a Date onwards given start or end are null.
     /// </summary>
-    /// <param name="start"></param> Start date.
-    /// <param name="end"></param> End date.
+    /// <param name="start">Start date.</param> 
+    /// <param name="end">End date.</param> 
     /// <returns></returns>
     public static List<ProgramData> ListBetweenDates(DateTime? start, DateTime? end)
     {
@@ -146,17 +148,21 @@ public class DBInteract : DbContext
     /// <summary>
     /// Submit an entry to the DB without an existing context.
     /// </summary>
-    /// <param name="entry"></param> Submission
-    public static void SubmitEntry(ProgramData entry)
+    /// <param name="entry">Submission.</param> 
+    public static void SubmitEntry<T>(T entry) where T : class
     {
         using (var db = new DBInteract())
         {
             if(EntryExists(entry))
             {
+                
+                Console.WriteLine("Entry already exists!");
                 return;
             }
-            db.ProgramDataTable.Add(entry);
-            db.SaveChanges();   
+            db.Set<T>().Add(entry);
+            db.SaveChanges();  
+            
+            
         }
         OnDataAdded?.Invoke();
     }
@@ -164,17 +170,17 @@ public class DBInteract : DbContext
     /// <summary>
     /// Submit an entry to the DB with an existing context.
     /// </summary>
-    /// <param name="entry"></param> Submission
-    /// <param name="db"></param> Context
-    public static void SubmitEntry(ProgramData entry, DBInteract db)
+    /// <param name="entry">Submission.</param> 
+    /// <param name="db">Context.</param> 
+    public static void SubmitEntry<T>(T entry, DBInteract db) where T : class
     {
         if(EntryExists(entry))
         {
-            Console.WriteLine("Entry already exists!");
+            //Console.WriteLine("Entry already exists!");
             return;
         }
-        db.ProgramDataTable.Add(entry);
-        db.SaveChanges();
+        db.Set<T>().Add(entry);
+        db.SaveChanges();  
     }
    
     /// <summary>
@@ -195,11 +201,11 @@ public class DBInteract : DbContext
     }
     
     /// <summary>
-    /// Check if entry exists in DB (ProgramData).
+    /// Check if entry exists in DB.
     /// </summary>
     /// <param name="entry"></param>
-    /// <returns></returns> Bool. True if exists, false if not.
-    public static bool EntryExists(DBEntry entry)
+    /// <returns>Bool. True if exists, false if not.</returns> 
+    public static bool EntryExists<T>(T entry)
     {
         using (var db = new DBInteract())
         {
@@ -209,24 +215,12 @@ public class DBInteract : DbContext
             }
             if (entry is User uEntry)
             { 
-                return (db.ProgramDataTable.Find(uEntry.Username) != null);   
+                return (db.UserTable.Find(uEntry.Username) != null);   
             }
         }
         return false;
     }
     
-    /// <summary>
-    /// Check if entry exists in DB (Users).
-    /// </summary>
-    /// <param name="entry"></param>
-    /// <returns></returns> Bool. True if exists, false if not.
-    public static bool EntryExists(User entry)
-    {
-        using (var db = new DBInteract())
-        {
-            return (db.ProgramDataTable.Find(entry.Username) != null);
-        }
-    }
 
     /// <summary>
     /// Returns ProgramData from Primary key if it exists in DB, and null if it does nut
@@ -250,7 +244,7 @@ public class DBInteract : DbContext
     /// </summary>
     /// <param name="entry1"></param>
     /// <param name="entry2"></param>
-    /// <returns></returns> Older entry.
+    /// <returns>Older entry.</returns> 
     public static ProgramData? OlderEntry(ProgramData entry1, ProgramData entry2)
     {
         using (var db = new DBInteract())
@@ -301,7 +295,7 @@ public class DBInteract : DbContext
     /// <summary>
     ///Store a list of IProgramData
     /// </summary>
-    /// <param name="info"></param> List
+    /// <param name="info"></param>
     public static void Store(IEnumerable<IProgramData> info)
     {
         using (var db = new DBInteract())
@@ -313,6 +307,25 @@ public class DBInteract : DbContext
         }
         OnDataAdded?.Invoke();
     }
-    
 
+    /// <summary>
+    /// Adds unique users to the database.
+    /// </summary>
+    /// <remarks>This does not call save on the database, please use SaveChanges or SaveChangesAsync()</remarks>
+    public void AddUser(User user)
+    {
+        if (!EntryExists(user))
+            UserTable.Add(user);
+    }
+
+    public static void Initialize()
+    {
+        using (var db = new DBInteract())
+        {
+            //Submit our local machine as a user.
+            User localUser = new User(SystemHistory.Instance.SystemName);
+            db.AddUser(localUser);
+            db.SaveChanges();
+        }
+    }
 }

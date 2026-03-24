@@ -6,8 +6,13 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     public const int GraphView = 0;
     public const int TableView = 1;
-    public string Greeting { get; } = "Welcome to Avalonia!";
 
     public static Action<int>? OnTabChanged;
 
+    public string Greeting { get; } = "Your moms car.";
+    public static int ActiveTab { get; set; }
+
+    public static Action<Avalonia.Input.TextInputEventArgs, string?>? OnSearchSubmission;
+
+    public static Action<string?>? OnSearchKeyStroke;
 }

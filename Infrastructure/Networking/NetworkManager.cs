@@ -9,7 +9,7 @@ public class NetworkManager
 
     private Timer _timer;
     public const int DefaultPort = 54236;
-    public const string DefaultHost = "127.0.0.1";
+    public const string DefaultHost = "0.0.0.0";
 
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
     public Host? Host { get; private set; }
@@ -19,9 +19,21 @@ public class NetworkManager
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
         _instance = new NetworkManager();
         ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
+        ConfigManager.OnSettingChanged += _instance.OnSettingChanged;
     }
 
-    private void OnAddClientConnection(string connection, int port) => RefreshClientConnections();//Lazy, but efficent.
+    private void OnSettingChanged(Enum setting)
+    {
+        if(setting is SettingFloat settingFloat)
+        {
+            if(settingFloat == SettingFloat.NetworkReconnectInterval)
+            {
+                _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+            }
+        }
+    }
+
+    private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();//Lazy, but efficent.
 
     private NetworkManager() 
     {
@@ -50,10 +62,10 @@ public class NetworkManager
     {
         foreach (var connectionContext in ConfigManager.ClientConnections)
         {
-            IPAddress.TryParse(connectionContext.Connection, out IPAddress? ip);
+            IPAddress.TryParse(connectionContext.Ip, out IPAddress? ip);
             if (ip == null)
             {
-                Console.WriteLine($"Invalid IP address: {connectionContext.Connection}");
+                Console.WriteLine($"Invalid IP address: {connectionContext.Ip}");
                 continue;
             }
             var connectionIdentity = (ip, connectionContext.Port);

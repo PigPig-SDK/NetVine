@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Infrastructure;
+using System;
 using System.Linq;
 using UI.ViewModels;
 using UI.Views;
@@ -29,12 +30,30 @@ public partial class App : Application
             {
                 DataContext = new MainWindowViewModel(),
             };
-
+            UpdateShutdownStatus();
             desktop.ShutdownRequested += OnShutdownRequested;
         }
-
+        ConfigManager.OnSettingChanged += OnSettingChanged;
         base.OnFrameworkInitializationCompleted();
     }
+
+    public void OnSettingChanged(Enum setting)
+    {
+        if (setting is SettingInt settingInt)
+        {
+            if (settingInt != SettingInt.MinimizeOnClose) return;
+            UpdateShutdownStatus();
+        }
+    }
+
+    void UpdateShutdownStatus()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.ShutdownMode = (ConfigManager.ReadSetting(SettingInt.MinimizeOnClose) == 1) ? Avalonia.Controls.ShutdownMode.OnExplicitShutdown : Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+        }
+    }
+
     private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
     {
         ConfigManager.TrySaveToFile();
@@ -49,6 +68,23 @@ public partial class App : Application
         foreach (var plugin in dataValidationPluginsToRemove)
         {
             BindingPlugins.DataValidators.Remove(plugin);
+        }
+    }
+
+    private void ShowWindow(object? sender, System.EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.MainWindow?.Show();
+            desktop.MainWindow?.Activate();
+        }
+    }
+
+    private void QuitWindow(object? sender, System.EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
         }
     }
 }

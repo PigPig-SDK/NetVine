@@ -34,7 +34,7 @@ public class SystemHistory : IDisposable
     public static void SetupInstance()
     {
         IProgramDataProducer? producer = null;
-        if(Environment.GetCommandLineArgs().Contains(MockDataProducer.LaunchArgument))
+        if(MockDataProducer.IsBeingUsed())
         {
             producer = new MockDataProducer();
         }

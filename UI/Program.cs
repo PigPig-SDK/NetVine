@@ -4,39 +4,39 @@ using Infrastructure;
 using Infrastructure.Networking;
 using System;
 
-namespace UI
+namespace UI;
+
+internal sealed class Program
 {
-    internal sealed class Program
+    public const string Version = "0.0.1";
+
+    // Initialization code. Don't use any Avalonia, third-party APIs or any
+    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+    // yet and stuff might break.
+    [STAThread]
+    public static void Main(string[] args)
     {
+        // Load configuration
+        ConfigManager.Initialize();
 
-        // Initialization code. Don't use any Avalonia, third-party APIs or any
-        // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-        // yet and stuff might break.
-        [STAThread]
-        public static void Main(string[] args)
-        {
-            //Step 1: Load configuration
-            ConfigManager.Initialize();
+        // Setup history tracker.
+        SystemHistory.SetupInstance();
 
-            //Step 2: Emplace DB
-            new DBInteract().Dispose();
+        // Emplace DB
+        DBInteract.Initialize();
 
-            //Step 3: Setup history tracker.
-            SystemHistory.SetupInstance();
+        // Setup network manager
+        NetworkManager.SetupInstance();
 
-
-            //Step 4: Setup network manager
-            NetworkManager.SetupInstance();
-
-            BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
-        }
-
-        // Avalonia configuration, don't remove; also used by visual designer.
-        public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace();
+        BuildAvaloniaApp()
+        .StartWithClassicDesktopLifetime(args);
     }
+
+    // Avalonia configuration, don't remove; also used by visual designer.
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .WithInterFont()
+            .LogToTrace();
 }
+

@@ -10,11 +10,11 @@ public partial class FolderUser : UserControl
     public bool IsSelected = true;
     
     private readonly static SolidColorBrush _selectedColor = new(Color.Parse("#A5C882"));
-    private readonly static SolidColorBrush _deselectColor = new SolidColorBrush(new Color(255, 82, 82, 86));
-    private readonly static SolidColorBrush _onlineColor = new SolidColorBrush(Colors.Green);
-    private readonly static SolidColorBrush _offlineColor = new SolidColorBrush(Colors.Black);
-    private readonly static SolidColorBrush _lightText = new SolidColorBrush(Colors.White);
-    private readonly static SolidColorBrush _darkText = new SolidColorBrush(Color.Parse("#1E152A"));
+    private readonly static SolidColorBrush _deselectColor = new (new Color(255, 82, 82, 86));
+    private readonly static SolidColorBrush _onlineColor = new (Colors.Green);
+    private readonly static SolidColorBrush _offlineColor = new (Colors.Black);
+    private readonly static SolidColorBrush _lightText = new (Colors.White);
+    private readonly static SolidColorBrush _darkText = new (Color.Parse("#1E152A"));
 
     public FolderUser(Infrastructure.User user)
     {
