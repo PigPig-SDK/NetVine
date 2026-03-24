@@ -2,6 +2,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core;
 using Infrastructure;
+using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,12 +26,36 @@ namespace UI.ViewModels
         public ProgramDataHistorical? HistoricalData
         {
             get => _historicalData;
-            set { _historicalData = value; OnPropertyChanged(); }
+            set
+            {
+                _historicalData = value;
+                OnPropertyChanged(nameof(HistoricalData));
+            }
         }
 
+        
+        
+        
         // Icon properties
         private Bitmap? _icon;
         private bool _iconLoaded = false;
+
+        //methods
+
+        /// <summary>
+        /// appends to a debug file, with all data from the row.
+        /// </summary>
+        /// <param name="path"></param>
+        public void PrintToFile(string path = "tablerow_debug.txt")
+        {
+            //var fullPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "tablerow_debug.txt");
+            var fullPath = path;
+            var live = LiveData == null ? "null" : $"AppName={AppName} SystemName = {SystemName} CPU={LiveData.CpuUsage} MEM={LiveData.MemoryUsage}";
+            var hist = HistoricalData == null ? "null" : $"AppName={AppName} SystemName={SystemName} CpuAvg={HistoricalData.CpuUsageAvg} CpuPeak={HistoricalData.CpuUsagePeak} MemAvg={HistoricalData.MemoryUsageAvg}";
+
+            var line = $"{SystemName} | {AppName} | {live} | {hist}";
+            System.IO.File.AppendAllText(fullPath, line + Environment.NewLine);
+        }
 
         public Bitmap? AppIcon
         {

@@ -1,56 +1,23 @@
 ﻿using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using Core;
 using Infrastructure;
-using Microsoft.Diagnostics.Tracing.Parsers;
-using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace UI.ViewModels
 {
     public class TableViewModel : ViewModelBase
     {
-        private TableDataManager _tableData;
 
-        public bool ShowLive  => LiveViewModel.IsLive;
+        private static int updateCount = 0;
 
-        public bool ShowHistorical => !LiveViewModel.IsLive;
-
-        private void ViewChanged(bool b)
-        {
-            OnPropertyChanged(nameof(ShowLive));
-            OnPropertyChanged(nameof(ShowHistorical));
-            TableRowsView.Refresh();
-
-        }
-
-        private string _searchText = "";
-        public string SearchText
-        {
-            get => _searchText;
-            set
-            {
-                _searchText = value;
-                OnPropertyChanged();
-                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
-                    ? null
-                    : FilterRow;
-                TableRowsView.Refresh();
-            }
-        }
-
-        private bool FilterRow(object obj)
-        {
-            if (obj is not TableRow row) return false;
-            return row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
-                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
-        }
-        public DataGridCollectionView TableRowsView { get; set; }
-
-
-        /// <summary>
-        /// The header names need to be converted to the actual property name for sorting
-        /// </summary>
+        // Fields
         private static readonly Dictionary<string, string> _headerToProperty = new()
         {
             ["PC Name"] = nameof(TableRow.SystemName),
@@ -68,36 +35,123 @@ namespace UI.ViewModels
             ["Network Total"] = "HistoricalData.NetworkUsageTotal",
         };
 
-        
+        private TableDataManager _tableData;
+        private bool _tableViewActive = false;
+        private string _searchText = "";
 
+
+        private bool _showCpu = true;
+        private bool _showMemory = true;
+        private bool _showDisk = true;
+        private bool _showNetwork = true;
+
+        // Constructor
         public TableViewModel()
         {
             _tableData = new TableDataManager();
             TableRowsView = new DataGridCollectionView(_tableData.TableRows);
 
+            var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
+            _tableViewActive = lastActiveTab == 1 ? true : false;
+
+            //Event Subscriptions
+            MainWindowViewModel.OnTabChanged += OnTabChanged;
             LiveViewModel.ViewChanged += ViewChanged;
-             SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+            SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
             DBInteract.OnDataAdded += OnSnapshotHistorical;
+
+
+            //Commands
+            ToggleCpuCommand = new RelayCommand(ToggleCpu);
+            ToggleDiskCommand = new RelayCommand(ToggleDisk);
+            ToggleMemoryCommand = new RelayCommand(ToggleMemory);
+            ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
+
+            PopulateTableInit();
         }
+
+        // Properties
+
+        public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
+        public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
+        public string DiskMenuText => _showDisk ? "Hide Disk usage" : "Show Disk usage";
+        public string NetworkMenuText => _showNetwork ? "Hide Network usage" : "Show Network usage";
+        public bool ShowLive => LiveViewModel.IsLive;
+        public bool IsAppnameVisible => true;
+        public bool IsSystemNameVisible => true;
+        public bool ShowHistorical => !LiveViewModel.IsLive;
+        public DataGridCollectionView TableRowsView { get; set; }
+
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                _searchText = value;
+                OnPropertyChanged();
+                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                    ? null
+                    : FilterRow;
+                TableRowsView.Refresh();
+            }
+        }
+        
+
+        // Context menu properties
+        
+        public bool ShowCpuLive => _showCpu && LiveViewModel.IsLive;
+        public bool ShowMemoryLive => _showMemory && LiveViewModel.IsLive;
+        public bool ShowDiskLive => _showDisk && LiveViewModel.IsLive;
+        public bool ShowNetworkLive => _showNetwork && LiveViewModel.IsLive;
+
+        public bool ShowCpuHistorical => _showCpu && !LiveViewModel.IsLive;
+        public bool ShowMemoryHistorical => _showMemory && !LiveViewModel.IsLive;
+        public bool ShowDiskHistorical => _showDisk && !LiveViewModel.IsLive;
+        public bool ShowNetworkHistorical => _showNetwork && !LiveViewModel.IsLive;
+
+        public IRelayCommand ToggleCpuCommand { get; }
+        public IRelayCommand ToggleMemoryCommand { get; }
+        public IRelayCommand ToggleDiskCommand { get; }
+        public IRelayCommand ToggleNetworkCommand { get; }
+
+        
+        // Public Methods
+
+
 
         public void OnSnapshotLive(List<IProgramData> data)
         {
+            DebugLogger.Log("OnSnapShotLive called");
+            if (!LiveViewModel.IsLive || !_tableViewActive) return;
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateLiveData(data);
                 TableRowsView.Refresh();
+                ReapplySort();
+                DebugLogger.Log("OnSnapShotLive update completed");
             });
         }
+
+
+
         public void OnSnapshotHistorical()
         {
+            DebugLogger.Log("OnSnapshotHistorical called");
+            if (LiveViewModel.IsLive || !_tableViewActive) return;
+            
             var data = DBArithmetic.HistoricalDataProducer(null, null);
+
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data);
                 TableRowsView.Refresh();
+                ReapplySort();
+                DebugLogger.Log("OnSnapshot historical update completed");
             });
         }
-        
+
+
+
         public void SetSort(string? header, bool isAscending)
         {
             if (header == null || !_headerToProperty.TryGetValue(header, out var path)) return;
@@ -107,6 +161,143 @@ namespace UI.ViewModels
                     ? System.ComponentModel.ListSortDirection.Ascending
                     : System.ComponentModel.ListSortDirection.Descending));
         }
+
+        // Private Methods
+
+        private void OnIsVisiblePropertiesChanged()
+        {
+            OnPropertyChanged(nameof(ShowLive));
+            OnPropertyChanged(nameof(ShowHistorical));
+
+            OnPropertyChanged(nameof(ShowCpuLive));
+            OnPropertyChanged(nameof(ShowCpuHistorical));
+            OnPropertyChanged(nameof(ShowMemoryLive));
+            OnPropertyChanged(nameof(ShowMemoryHistorical));
+            OnPropertyChanged(nameof(ShowDiskLive));
+            OnPropertyChanged(nameof(ShowDiskHistorical));
+            OnPropertyChanged(nameof(ShowNetworkLive));
+            OnPropertyChanged(nameof(ShowNetworkHistorical));
+        }
+
+        private void ToggleCpu()
+        {
+            _showCpu = !_showCpu;
+            OnPropertyChanged(nameof(CpuMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        private void ToggleMemory()
+        {
+            _showMemory = !_showMemory;
+            OnPropertyChanged(nameof(MemoryMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        private void ToggleDisk()
+        {
+            _showDisk = !_showDisk;
+            OnPropertyChanged(nameof(DiskMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        private void ToggleNetwork()
+        {
+            _showNetwork = !_showNetwork;
+            OnPropertyChanged(nameof(NetworkMenuText));
+            OnIsVisiblePropertiesChanged();
+        }
+
+        private void PopulateTableInit()
+        {
+            //replace this with code that works. Right now, does nothing
+            OnSwitchToLive(); // just attempts to populate both with initial data
+            OnSwitchToHistorical();
+        }
+
+        private void ViewChanged(bool b)
+        {
+            DebugLogger.Log($"ViewChanged fired, isLive={b}");
+            DebugLogger.Log($"Printing Recieved Data to a file");
+
+            if (b)
+                OnSwitchToLive();
+            else
+                OnSwitchToHistorical();
+            //System.IO.File.AppendAllText("tableRowDebugData.txt", Environment.NewLine + "View Changed" + Environment.NewLine);
+            //_tableData.PrintAllDataToDebugFile();
+        }
+
+        private void OnSwitchToLive()
+        {
+            DebugLogger.Log("OnSwitchToLive called");
+            var data = SystemHistory.Instance.GetLatestPoll();
+            DebugLogger.Log($"GetLatestPoll returned {data?.Count ?? 0} items");
+            Dispatcher.UIThread.Post(() =>
+            {
+                Console.WriteLine("Dispatcher post executing for live");
+                _tableData.UpdateLiveData(data!);
+                OnIsVisiblePropertiesChanged();
+                TableRowsView.Refresh();
+                DebugLogger.Log($"live data update complete");
+            });
+        }
+
+        private void OnSwitchToHistorical()
+        {
+            DebugLogger.Log("OnSwitchToHistorical called");
+            var data = DBArithmetic.HistoricalDataProducer(null, null);
+            DebugLogger.Log($"HistoricalDataProducer returned {data?.Count ?? 0} items");
+            Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(data!);
+                OnIsVisiblePropertiesChanged();
+
+                TableRowsView.Refresh();
+                DebugLogger.Log($"historical data update complete");
+            });
+        }
+
+        private void OnTabChanged(int tab)
+        {
+            DebugLogger.Log($"Tab changed to tab {tab}");
+
+            if (tab == 0) {
+                _tableViewActive = false;
+                //unsubscribe from events
+                DebugLogger.Log("Table events unsubscribed");
+                LiveViewModel.ViewChanged -= ViewChanged;
+                SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
+                DBInteract.OnDataAdded -= OnSnapshotHistorical;
+            }
+
+
+            else if (tab == 1)
+            {
+                _tableViewActive = true;
+                //resubscribe to events
+                DebugLogger.Log("Table events subscribed");
+                LiveViewModel.ViewChanged += ViewChanged;
+                SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+                DBInteract.OnDataAdded += OnSnapshotHistorical;
+            }
+
+        }
+
+        private void ReapplySort()
+        {
+            if (TableRowsView.SortDescriptions.Count == 0) return;
+            var sorts = TableRowsView.SortDescriptions.ToList();
+            TableRowsView.SortDescriptions.Clear();
+            foreach (var sort in sorts)
+                TableRowsView.SortDescriptions.Add(sort);
+        }
+
+        private bool FilterRow(object obj)
+        {
+            if (obj is not TableRow row) return false;
+            return row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+        }
+
     }
 }
-
