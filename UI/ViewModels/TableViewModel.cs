@@ -7,7 +7,6 @@ using Core;
 using Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace UI.ViewModels
@@ -240,7 +239,7 @@ namespace UI.ViewModels
             Debug.Log($"GetLatestPoll returned {data?.Count ?? 0} items");
             Dispatcher.UIThread.Post(() =>
             {
-                Console.WriteLine("Dispatcher post executing for live");
+                Debug.Log("Dispatcher post executing for live");
                 _tableData.UpdateLiveData(data!);
                 OnIsVisiblePropertiesChanged();
                 TableRowsView.Refresh();
@@ -300,6 +299,8 @@ namespace UI.ViewModels
 
         private bool FilterRow(object obj)
         {
+            
+
             if (obj is not TableRow row) return false;
             return row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
                 || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
