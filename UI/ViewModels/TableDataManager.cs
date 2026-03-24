@@ -12,16 +12,26 @@ namespace UI.ViewModels
     /// </summary>
     public class TableDataManager
     {
+
+        /// <summary>
+        /// ObservableCollection containing the rows for the table
+        /// </summary>
         public ObservableCollection<TableRow> TableRows { get; set; }
 
+        /// <summary>
+        /// Constructor, creates a new collection for the rows
+        /// </summary>
         public TableDataManager()
         {
             TableRows = new ObservableCollection<TableRow>();
         }
 
+        /// <summary>
+        /// Contains the update logic, getting the list of up-to-date data for the live view
+        /// </summary>
+        /// <param name="data"></param> new data to take in
         public void UpdateLiveData(List<IProgramData> data)
         {
-            if (!LiveViewModel.IsLive) return;
 
             var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
             var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
@@ -42,25 +52,41 @@ namespace UI.ViewModels
                 TableRows.Remove(row);
         }
 
+
+        /// <summary>
+        /// Contains the logic to update the historical data inside of the TableRows collection
+        /// </summary>
+        /// <param name="data"></param>
         public void UpdateHistoricalData(List<ProgramDataHistorical> data)
         {
-            if (LiveViewModel.IsLive) return;
+            DebugLogger.Log($"UpdateHistoricalData called with {data.Count} items");
 
             var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
             var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
 
             foreach (var item in data)
             {
+                //DebugLogger.Log($"Incoming: {item.SystemName} | {item.ProcessName} | CpuAvg={item.CpuUsageAvg} | MemAvg={item.MemoryUsageAvg}");
+
                 var key = (item.SystemName, item.ProcessName);
                 if (existing.TryGetValue(key, out var row))
+                {
+                    //DebugLogger.Log($"Updating existing row: {item.SystemName} | {item.ProcessName}");
                     row.HistoricalData = item;
+                    DebugLogger.Log($"After update: {row.SystemName} | CpuAvg={row.HistoricalData?.CpuUsageAvg}");
+                }
                 else
+                {
+                    //DebugLogger.Log($"Adding new row: {item.SystemName} | {item.ProcessName}");
                     TableRows.Add(new TableRow { SystemName = item.SystemName, AppName = item.ProcessName, HistoricalData = item });
+                }
             }
 
             var toRemove = TableRows.Where(r => !incoming.ContainsKey((r.SystemName, r.AppName))).ToList();
+            DebugLogger.Log($"Removing {toRemove.Count} stale rows");
             foreach (var row in toRemove)
                 TableRows.Remove(row);
         }
+
     }
 }
