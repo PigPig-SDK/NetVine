@@ -72,7 +72,15 @@ public class NetworkManager
     private void AddClientConnection(ConnectionInfo info) => RefreshClientConnections();
     private void RemoveClientConnection(ConnectionInfo info)
     {
-        //TODO: Implement!
+        IPAddress? ip = info.GetIP();
+        if(ip is null) return;
+
+        (IPAddress, int) infoTuple = (ip, info.Port);
+
+        if (!EstablishedClientConnections.ContainsKey(infoTuple)) return;
+        //Shutdown the client connection!
+        EstablishedClientConnections[infoTuple].Disconnect();
+        EstablishedClientConnections.Remove(infoTuple);
     }
 
     private NetworkManager() 
@@ -100,8 +108,10 @@ public class NetworkManager
 
     public void RefreshClientConnections()
     {
-        foreach (var connectionContext in ConfigManager.ClientConnections)
+        foreach (ConnectionInfo connectionContext in ConfigManager.ClientConnections)
         {
+            connectionContext.GetIP();
+
             IPAddress.TryParse(connectionContext.Ip, out IPAddress? ip);
             if (ip == null)
             {
