@@ -21,9 +21,10 @@ public partial class NetworkView : UserControl
 
         _portInput = AddTextbox(SettingInt.HostPort, "Port");
         _ipInput = AddTextbox(SettingString.HostIP, "Host IP Binding");
-
         PopulateConnections();
         UpdateHostConfig();
+        UpdateToggleButtonName();
+
     }
     public SettingInput? AddTextbox<T>(T setting, string watermark) where T : Enum
     {
@@ -77,12 +78,18 @@ public partial class NetworkView : UserControl
     private void OnSettingChanged(Enum setting)
     {
         UpdateHostConfig();
+        UpdateToggleButtonName();
+    }
+
+    private void UpdateToggleButtonName()
+    {
+        ToggleHostButton.Content = ConfigManager.ReadSetting(SettingInt.IsHosting) == 0 ? "Start Host" : "Stop Host";
     }
 
     private void UpdateHostConfig()
     {
         string hostStatus = $"Host Alive: {NetworkManager.Instance.Host is not null}";
-        if(NetworkManager.Instance.Host is not null)
+        if (NetworkManager.Instance.Host is not null)
         {
             hostStatus += $"\nClient Count: {NetworkManager.Instance.Host.ConnectedSessions}";
         }
@@ -132,5 +139,13 @@ public partial class NetworkView : UserControl
         return;
     ErrorSubmittingDisplay:
         ErrorSubmittingDisplay();
+    }
+
+    private void ToggleHostClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        int isHosting = ConfigManager.ReadSetting(SettingInt.IsHosting);
+        //Toggle.
+        isHosting = (isHosting == 0)? 1 : 0;
+        ConfigManager.WriteSetting(SettingInt.IsHosting, isHosting);
     }
 }

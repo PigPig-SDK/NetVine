@@ -18,7 +18,8 @@ public class NetworkManager
     {
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
         _instance = new NetworkManager();
-        ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
+        ConfigManager.OnClientConnectionAdded += _instance.AddClientConnection;
+        ConfigManager.OnClientConnectionRemoved += _instance.RemoveClientConnection;
         ConfigManager.OnSettingChanged += _instance.OnSettingChanged;
     }
 
@@ -40,6 +41,12 @@ public class NetworkManager
                 case SettingInt.HostPort:
                     RestartHost();
                     break;
+                case SettingInt.IsHosting:
+                    if (ConfigManager.ReadSetting(SettingInt.IsHosting) == 0)//False
+                        DisconnectHost();
+                    else if(Host is null)//We can rehost...
+                        StartHost();
+                        break;
 
             }
         }
@@ -62,7 +69,11 @@ public class NetworkManager
         DisconnectHost();
         StartHost();
     }
-    private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();//Lazy, but efficent.
+    private void AddClientConnection(ConnectionInfo info) => RefreshClientConnections();
+    private void RemoveClientConnection(ConnectionInfo info)
+    {
+        //TODO: Implement!
+    }
 
     private NetworkManager() 
     {
@@ -144,6 +155,6 @@ public class NetworkManager
     ~NetworkManager()
     {
         Disconnect();
-        ConfigManager.OnClientConnectionAdded -= _instance.OnAddClientConnection;
+        ConfigManager.OnClientConnectionAdded -= _instance.AddClientConnection;
     }
 }
