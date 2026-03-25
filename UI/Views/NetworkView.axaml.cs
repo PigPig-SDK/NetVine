@@ -4,21 +4,50 @@ using Infrastructure;
 using Infrastructure.Networking;
 using System;
 using System.Collections.Generic;
+using UI.ViewModels;
 
 namespace UI;
 
 public partial class NetworkView : UserControl
 {
     private Dictionary<ConnectionInfo, NetworkViewConnection> _connectionViews = [];
+    private SettingInput? _portInput = null;
+    private SettingInput? _ipInput = null;
     public NetworkView()
     {
         AttachedToLogicalTree += OnEnterScope;
         DetachedFromLogicalTree += OnLeaveScope;
         InitializeComponent();
+
+        _portInput = AddTextbox(SettingInt.HostPort);
+        _ipInput = AddTextbox(SettingString.HostIP);
+
         PopulateConnections();
         UpdateHostConfig();
     }
+    public SettingInput? AddTextbox<T>(T setting) where T : Enum
+    {
+        //Bind input/format textbox
+        SettingInput? input = UiSettings.GetInputField(setting);
+        if (input is not null and SettingInputField<T> inputField)
+        {
+            if (_portInput.Input is not null and TextBox textbox)
+            {
+                textbox.KeyDown += (s, e) => {
+                    if (e.Key == Avalonia.Input.Key.Enter)
+                    {
+                        _portInput.OnEnterPressed();
+                        e.Handled = true;
+                    }
+                };
 
+                hostSettingsStackPannel.Children.Add(_portInput.Input);
+            }
+            _portInput.BindSettingChange();
+            _portInput.IsWritingActive = true;
+        }
+        return input;
+    }
     private void ClientConnectionAdded(ConnectionInfo info)
     {
         PopulateConnections();//Someone to populate.
