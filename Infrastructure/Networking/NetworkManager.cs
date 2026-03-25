@@ -24,15 +24,44 @@ public class NetworkManager
 
     private void OnSettingChanged(Enum setting)
     {
-        if(setting is SettingFloat settingFloat)
+        if (setting is SettingFloat settingFloat)
         {
-            if(settingFloat == SettingFloat.NetworkReconnectInterval)
+            switch (settingFloat)
             {
-                _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+                case SettingFloat.NetworkReconnectInterval:
+                    _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+                    break;
             }
         }
-    }
+        else if (setting is SettingInt settingInt)
+        {
+            switch (settingInt)
+            {
+                case SettingInt.HostPort:
+                    RestartHost();
+                    break;
 
+            }
+        }
+        else if (setting is SettingString settingString)
+        {
+            switch(settingString)
+            {
+                case SettingString.HostIP: 
+                    RestartHost(); 
+                    break;
+            }
+        }
+
+    }
+    /// <summary>
+    /// Disconnects and restarts the hosting process
+    /// </summary>
+    public void RestartHost()
+    {
+        DisconnectHost();
+        StartHost();
+    }
     private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();//Lazy, but efficent.
 
     private NetworkManager() 
@@ -96,7 +125,12 @@ public class NetworkManager
                 connectionContext.Send(bytes);
         }
     }
-
+    public void DisconnectHost()
+    {
+        Host?.DisconnectAll();
+        Host?.Dispose();
+        Host = null;
+    }
     public void Disconnect()
     {
         //Disconnect from others...
@@ -104,9 +138,7 @@ public class NetworkManager
         {
             client.DisconnectShutdown();
         }
-
-        Host?.DisconnectAll();
-        Host?.Dispose();
+        DisconnectHost();
     }
 
     ~NetworkManager()
