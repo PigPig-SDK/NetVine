@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="UI.Views.TimeFrameSelectionWindow"
+        Width="500"
+        Height="300"
+        Title="Select Timeframe">
+
+    <StackPanel Margin="20" Spacing="10">
+        <TextBlock Text="Select Start Date:"/>
+        <DatePicker x:Name="Date1Selector"/>
+        <TimePicker x:Name="Time1Selector"
+                    ClockIdentifier="24HourClock"
+                    MinuteIncrement="1"/>
+        
+        <TextBlock Text="Select End Date:"/>
+        <DatePicker x:Name="Date2Selector"/>
+        <TimePicker x:Name="Time2Selector"
+                    ClockIdentifier="24HourClock"
+                    MinuteIncrement="1"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Content="Exit" Click="Exit"/>
+            <Button Content="Select" Click="Select"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
