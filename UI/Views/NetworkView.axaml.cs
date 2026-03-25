@@ -19,32 +19,39 @@ public partial class NetworkView : UserControl
         DetachedFromLogicalTree += OnLeaveScope;
         InitializeComponent();
 
-        _portInput = AddTextbox(SettingInt.HostPort);
-        _ipInput = AddTextbox(SettingString.HostIP);
+        _portInput = AddTextbox(SettingInt.HostPort, "Port");
+        _ipInput = AddTextbox(SettingString.HostIP, "Host IP Binding");
 
         PopulateConnections();
         UpdateHostConfig();
     }
-    public SettingInput? AddTextbox<T>(T setting) where T : Enum
+    public SettingInput? AddTextbox<T>(T setting, string watermark) where T : Enum
     {
         //Bind input/format textbox
         SettingInput? input = UiSettings.GetInputField(setting);
         if (input is not null and SettingInputField<T> inputField)
         {
-            if (_portInput.Input is not null and TextBox textbox)
+            if (input.Input is not null and TextBox textbox)
             {
-                textbox.KeyDown += (s, e) => {
+                textbox.UseFloatingWatermark = true;
+                textbox.Watermark = watermark;
+
+                textbox.Margin = new(0);
+                textbox.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+
+                textbox.KeyDown += (s, e) =>
+                {
                     if (e.Key == Avalonia.Input.Key.Enter)
                     {
-                        _portInput.OnEnterPressed();
+                        input.OnEnterPressed();
                         e.Handled = true;
                     }
                 };
 
-                hostSettingsStackPannel.Children.Add(_portInput.Input);
+                hostSettingsStackPannel.Children.Add(input.Input);
             }
-            _portInput.BindSettingChange();
-            _portInput.IsWritingActive = true;
+            input.BindSettingChange();
+            input.IsWritingActive = true;
         }
         return input;
     }
