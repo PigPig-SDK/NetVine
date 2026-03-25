@@ -31,7 +31,7 @@ public static class DBArithmetic
                     NetworkUsagePeak = y.Max(z => z.NetworkUsage),
                     MemoryUsagePeak = y.Max(z => z.MemoryUsage),
 
-                    NetworkUsageTotal = y.Sum(z => z.MemoryUsage)
+                    NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
                 }).ToList();
         }
     }
