@@ -18,7 +18,7 @@ public class DBInteract : DbContext
     /// </summary>
     public DBInteract()
     {
-        Database.EnsureCreated();
+        
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public class DBInteract : DbContext
     {
         using (var db = new DBInteract())
         {
-            if(EntryExists(entry))
+            if(EntryExists(entry, db))
             {
                 
                 Console.WriteLine("Entry already exists!");
@@ -174,7 +174,7 @@ public class DBInteract : DbContext
     /// <param name="db">Context.</param> 
     public static void SubmitEntry<T>(T entry, DBInteract db) where T : class
     {
-        if(EntryExists(entry))
+        if(EntryExists(entry, db))
         {
             //Console.WriteLine("Entry already exists!");
             return;
@@ -205,18 +205,15 @@ public class DBInteract : DbContext
     /// </summary>
     /// <param name="entry"></param>
     /// <returns>Bool. True if exists, false if not.</returns> 
-    public static bool EntryExists<T>(T entry)
+    public static bool EntryExists<T>(T entry, DBInteract db)
     {
-        using (var db = new DBInteract())
-        {
-            if (entry is ProgramData pdEntry)
-            { 
-                return (db.ProgramDataTable.Find(pdEntry.SystemName, pdEntry.Date, pdEntry.ProcessName) != null);   
-            }
-            if (entry is User uEntry)
-            { 
-                return (db.UserTable.Find(uEntry.Username) != null);   
-            }
+        if (entry is ProgramData pdEntry)
+        { 
+            return (db.ProgramDataTable.Find(pdEntry.SystemName, pdEntry.Date, pdEntry.ProcessName) != null);   
+        }
+        if (entry is User uEntry)
+        { 
+            return (db.UserTable.Find(uEntry.Username) != null);   
         }
         return false;
     }
@@ -314,8 +311,8 @@ public class DBInteract : DbContext
     /// <remarks>This does not call save on the database, please use SaveChanges or SaveChangesAsync()</remarks>
     public void AddUser(User user)
     {
-        if (!EntryExists(user))
-            UserTable.Add(user);
+        if (!EntryExists(user, this))
+            UserTable.Add(user);    
     }
 
     public static void Initialize()
@@ -323,9 +320,12 @@ public class DBInteract : DbContext
         using (var db = new DBInteract())
         {
             //Submit our local machine as a user.
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
             User localUser = new User(SystemHistory.Instance.SystemName);
             db.AddUser(localUser);
             db.SaveChanges();
+            
         }
     }
 }
