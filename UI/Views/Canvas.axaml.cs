@@ -9,7 +9,7 @@ namespace UI;
 public partial class Canvas : UserControl
 {
     private readonly CanvasViewModel _vm;
-    private AvaPlot _canvasPlot; // field so all methods can access it
+    private AvaPlot _canvasPlot;
 
     public Canvas()
     {
