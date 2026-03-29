@@ -10,6 +10,6 @@ public partial class ComponentView : UserControl
     public ComponentView()
     {
         InitializeComponent();
-        DataContext = new ComponentViewModel();
+        DataContext = new ComponentViewModel(ChartService.Instance);
     }
 }

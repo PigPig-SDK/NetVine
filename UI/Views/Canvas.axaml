@@ -9,7 +9,7 @@
 	       
 
 
-           <ScottPlot:AvaPlot Name="LineGraph">
+           <ScottPlot:AvaPlot Name="CanvasPlot">
                 
            </ScottPlot:AvaPlot>
 

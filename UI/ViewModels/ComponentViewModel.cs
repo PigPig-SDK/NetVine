@@ -9,6 +9,29 @@ namespace UI.ViewModels
 {
     public class ComponentViewModel : INotifyPropertyChanged
     {
+        private readonly ChartService _chartService;
+
+        public ComponentViewModel(ChartService chartService)
+        {
+            _chartService = chartService;
+        }
+
+        public List<string> ChartTypes { get; } = new() { "Line", "Bar", "Pie" };
+
+        private string _selectedChartType = "Line";
+        public string SelectedChartType
+        {
+            get => _selectedChartType;
+            set
+            {
+                _selectedChartType = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedChartType)));
+                _chartService.ChartType = value;
+            }
+        }
+
+
+
         //whatever value the graph last received, update these with that value
         private string CPUtext = "0.0%";
         private string GPUtext = "0.0%";
@@ -53,7 +76,7 @@ namespace UI.ViewModels
         }
 
 
-
+        public event Action? ChartTypeChanged; 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
