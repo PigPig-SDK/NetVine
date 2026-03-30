@@ -7,4 +7,5 @@ public enum PacketType : byte
     DBUpdateRequest,
     DBUpdateResponse,
     UserInfo,
+    InitiateLiveView,
 }

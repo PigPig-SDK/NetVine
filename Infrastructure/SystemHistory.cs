@@ -16,7 +16,7 @@ public class SystemHistory : IDisposable
     private Stopwatch _stopwatch;
 
     public uint TotalSnapshotCount { get; private set; }
-    public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
+    public event Action<List<IProgramData>>? OnSnapshotTaken;
 
     public string SystemName { get { return _producer.SystemName; } }
 

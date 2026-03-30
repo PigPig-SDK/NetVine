@@ -14,6 +14,11 @@ public class NetworkManager
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
     public Host? Host { get; private set; }
 
+    /// <summary>
+    /// Called when a client loses their connection with the host.
+    /// </summary>
+    public Action<Guid> OnDisconnectFromHost;
+
     public static void SetupInstance()
     {
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
