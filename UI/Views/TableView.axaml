@@ -18,6 +18,7 @@
                     <MenuItem Header="{Binding MemoryMenuText}" Command="{Binding ToggleMemoryCommand}"/>
                     <MenuItem Header="{Binding DiskMenuText}" Command="{Binding ToggleDiskCommand}"/>
                     <MenuItem Header="{Binding NetworkMenuText}" Command="{Binding ToggleNetworkCommand}"/>
+                    <MenuItem Header="{Binding AllMenuText}" Command="{Binding ToggleAllCommand}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
@@ -39,7 +40,8 @@
                                        IsVisible="{Binding AppIcon,
                                            Converter={x:Static ObjectConverters.IsNotNull}}"/>
                                 <TextBlock Text="{Binding AppName}"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center"
+                                           ToolTip.Tip="{Binding AppName}"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -48,27 +50,27 @@
                 <DataGridTextColumn Header="CPU"     
                                     Binding="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" 
                                     IsVisible="{Binding ShowCpuLive}"
-                                    Width="*"/>
+                                    Width="*" MinWidth="100"/>
                 
                 <DataGridTextColumn Header="Memory"  
                                     Binding="{Binding (vm:TableRow).LiveData.MemoryUsage, StringFormat={}{0:F2}}" 
                                     IsVisible="{Binding ShowMemoryLive}"
-                                    Width="*"/>
+                                    Width="*" MinWidth="100"/>
 
                 <DataGridTextColumn Header="Disk"  
                                     Binding="{Binding (vm:TableRow).LiveData.DiskUsage, StringFormat={}{0:F2}}" 
                                     IsVisible="{Binding ShowDiskLive}"
-                                    Width="*"/>
+                                    Width="*" MinWidth="100"/>
 
                 <DataGridTextColumn Header="Network"  
                                     Binding="{Binding (vm:TableRow).LiveData.NetworkUsage, StringFormat={}{0:F2}}" 
                                     IsVisible="{Binding ShowNetworkLive}"
-                                    Width="*"/>
+                                    Width="*" MinWidth="100"/>
 
                 <DataGridTextColumn Header="CPU Avg"
                                     Binding="{Binding (vm:TableRow).HistoricalData.CpuUsageAvg, StringFormat={}{0:F2}%}"
                                     IsVisible="{Binding ShowCpuHistorical}"
-                                    Width="*"/>
+                                    Width="*" />
 
                 <DataGridTextColumn Header="CPU Top"
                                     Binding="{Binding (vm:TableRow).HistoricalData.CpuUsagePeak, StringFormat={}{0:F2}%}"
