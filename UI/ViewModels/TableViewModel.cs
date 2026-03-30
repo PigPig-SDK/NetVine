@@ -225,9 +225,10 @@ namespace UI.ViewModels
             if (LiveViewModel.IsLive || !_tableViewActive) return;
             
             var timeFrameWindow = new TimeFrameSelectionWindow();
+            var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
             
             (DateTime? date1, DateTime? date2) dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)>
-            ((Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow);
+            (mainWindow);
           
             HistoricalStart = dateRange.date1;
             HistoricalEnd = dateRange.date2;
@@ -241,6 +242,7 @@ namespace UI.ViewModels
                 ReapplySort();
                 Debug.Log("OpenTimeFrame update completed");
             });
+            mainWindow.FindControl<FolderView>("FolderView").SetDateRange(HistoricalStart, HistoricalEnd);
         }
 
         //initial population on startup
