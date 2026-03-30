@@ -22,14 +22,7 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
-
-        var chartService = new ChartService();
-
-        var componentView = new ComponentView();
-        componentView.DataContext = new ComponentViewModel(chartService);
-
-        var Canvas = new Canvas();
-        Canvas.DataContext = new CanvasViewModel(chartService);
+        _ = ResourceService.Instance;
 
         InitializeComponent();
 
