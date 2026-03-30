@@ -37,7 +37,7 @@ while (true)
     }
     else if (input == "demo DB")
     {
-        DBInteract.ClearAll();
+        DBInteract.ClearAllProgramData();
         ProgramData testData = new ProgramData();
         testData.Date = DateTime.Now;
         

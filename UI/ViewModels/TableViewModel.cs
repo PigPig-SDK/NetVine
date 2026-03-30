@@ -8,6 +8,9 @@ using Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using UI.Views;
 
 namespace UI.ViewModels
 {
@@ -43,6 +46,9 @@ namespace UI.ViewModels
         private bool _showDisk = true;
         private bool _showNetwork = true;
 
+        private DateTime? HistoricalStart = null;
+        private DateTime? HistoricalEnd = null;
+
         // Constructor
         public TableViewModel()
         {
@@ -64,7 +70,7 @@ namespace UI.ViewModels
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
             ToggleMemoryCommand = new RelayCommand(ToggleMemory);
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
-
+            OpenTimeframeCommand = new RelayCommand(OpenTimeframe);
             PopulateTableInit();
         }
 
@@ -126,6 +132,7 @@ namespace UI.ViewModels
         public IRelayCommand ToggleMemoryCommand { get; }
         public IRelayCommand ToggleDiskCommand { get; }
         public IRelayCommand ToggleNetworkCommand { get; }
+        public IRelayCommand OpenTimeframeCommand { get; }
 
         
         // Public Methods
@@ -157,7 +164,7 @@ namespace UI.ViewModels
             Debug.Log("OnSnapshotHistorical called");
             if (LiveViewModel.IsLive || !_tableViewActive) return;
             
-            var data = DBArithmetic.HistoricalDataProducer(null, null);
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -226,6 +233,32 @@ namespace UI.ViewModels
             OnPropertyChanged(nameof(NetworkMenuText));
             OnIsVisiblePropertiesChanged();
         }
+        
+        private async void OpenTimeframe()
+        {
+            Debug.Log("OpenTimeFrame called");
+            if (LiveViewModel.IsLive || !_tableViewActive) return;
+            
+            var timeFrameWindow = new TimeFrameSelectionWindow();
+            var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
+            
+            (DateTime? date1, DateTime? date2) dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)>
+            (mainWindow);
+          
+            HistoricalStart = dateRange.date1;
+            HistoricalEnd = dateRange.date2;
+            
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(data);
+                TableRowsView.Refresh();
+                ReapplySort();
+                Debug.Log("OpenTimeFrame update completed");
+            });
+            mainWindow.FindControl<FolderView>("FolderView").SetDateRange(HistoricalStart, HistoricalEnd);
+        }
 
         //initial population on startup
         private void PopulateTableInit()
@@ -265,7 +298,7 @@ namespace UI.ViewModels
         private void OnSwitchToHistorical()
         {
             Debug.Log("OnSwitchToHistorical called");
-            var data = DBArithmetic.HistoricalDataProducer(null, null);
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
             Debug.Log($"HistoricalDataProducer returned {data?.Count ?? 0} items");
             Dispatcher.UIThread.Post(() =>
             {

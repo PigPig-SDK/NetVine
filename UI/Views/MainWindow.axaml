@@ -172,7 +172,7 @@
                         <TabItem.Header>
                             <Image Source="/Assets/folder.png" Width="24" Height="24" RenderOptions.BitmapInterpolationMode="HighQuality"/>
                         </TabItem.Header>
-                        <views:FolderView/>
+                        <views:FolderView x:Name="FolderView"/>
                     </TabItem>
                     <TabItem Padding="0" Margin="0,0,10,0" ToolTip.Tip="Networking">
                         <TabItem.Header>
