@@ -169,4 +169,9 @@ public partial class SettingsView : UserControl
     {
         if (e.Key == Avalonia.Input.Key.Enter) e.Handled = true;
     }
+
+    private void WipeDbInitialize(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        DBInteract.WipeDB();
+    }
 }

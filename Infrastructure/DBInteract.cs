@@ -131,12 +131,10 @@ public class DBInteract : DbContext
 
     }
     
-    
-    
     /// <summary>
     /// Wipes ProgramDataTable data
     /// </summary>
-    public static void ClearAll()
+    public static void ClearAllProgramData()
     {
         using (var db = new DBInteract())
         {
@@ -144,6 +142,20 @@ public class DBInteract : DbContext
             db.SaveChanges();
         }
     }
+    
+    /// <summary>
+    /// Wipes Database and resets it
+    /// </summary>
+    public static void WipeDB()
+    {
+        using (var db = new DBInteract())
+        {
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+        }
+    }
+    
+    
     
     /// <summary>
     /// Submit an entry to the DB without an existing context.
@@ -320,7 +332,6 @@ public class DBInteract : DbContext
         using (var db = new DBInteract())
         {
             //Submit our local machine as a user.
-            db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
             User localUser = new User(SystemHistory.Instance.SystemName);
             db.AddUser(localUser);

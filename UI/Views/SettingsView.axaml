@@ -4,6 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.SettingsView">
-    <TreeView x:Name="SettingsTreeView">
-    </TreeView>
+    <Grid RowDefinitions="*,Auto">
+        <TreeView x:Name="SettingsTreeView" Grid.Row="0"/>
+        
+        <Button Content="Reset Database" Grid.Row="1"
+                HorizontalAlignment="Right"
+                Margin="100"
+                Click="WipeDbInitialize"/>
+    </Grid>    
 </UserControl>
