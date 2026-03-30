@@ -17,7 +17,11 @@ public abstract class SettingInput
 
     public const int InputDistanceFromRight = 50;
 
+    public bool IsWritingActive = false;
+
     public abstract void OnEnterPressed();
+
+    public abstract System.Enum? GenericSetting { get; }
 
     public bool IsPartOfFilter(string[] filterWords)
     {
@@ -40,4 +44,12 @@ public abstract class SettingInput
 
         return false;
     }
+    /// <summary>
+    /// When a setting change occurs, should this item be updated?
+    /// </summary>
+    public abstract void BindSettingChange();
+    /// <summary>
+    /// Unbinds the item if a update occurs.
+    /// </summary>
+    public abstract void UnbindSettingChange();
 }

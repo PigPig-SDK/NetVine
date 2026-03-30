@@ -4,20 +4,58 @@ using Infrastructure;
 using Infrastructure.Networking;
 using System;
 using System.Collections.Generic;
+using UI.ViewModels;
 
 namespace UI;
 
 public partial class NetworkView : UserControl
 {
     private Dictionary<ConnectionInfo, NetworkViewConnection> _connectionViews = [];
+    private SettingInput? _portInput = null;
+    private SettingInput? _ipInput = null;
     public NetworkView()
     {
         AttachedToLogicalTree += OnEnterScope;
         DetachedFromLogicalTree += OnLeaveScope;
         InitializeComponent();
-        PopulateConnections();
-    }
 
+        _portInput = AddTextbox(SettingInt.HostPort, "Port");
+        _ipInput = AddTextbox(SettingString.HostIP, "Host IP Binding");
+        PopulateConnections();
+        UpdateHostConfig();
+        UpdateToggleButtonName();
+
+    }
+    public SettingInput? AddTextbox<T>(T setting, string watermark) where T : Enum
+    {
+        //Bind input/format textbox
+        SettingInput? input = UiSettings.GetInputField(setting);
+        if (input is not null and SettingInputField<T> inputField)
+        {
+            if (input.Input is not null and TextBox textbox)
+            {
+                textbox.UseFloatingWatermark = true;
+                textbox.Watermark = watermark;
+
+                textbox.Margin = new(0);
+                textbox.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+
+                textbox.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Avalonia.Input.Key.Enter)
+                    {
+                        input.OnEnterPressed();
+                        e.Handled = true;
+                    }
+                };
+
+                hostSettingsStackPannel.Children.Add(input.Input);
+            }
+            input.BindSettingChange();
+            input.IsWritingActive = true;
+        }
+        return input;
+    }
     private void ClientConnectionAdded(ConnectionInfo info)
     {
         PopulateConnections();//Someone to populate.
@@ -27,12 +65,36 @@ public partial class NetworkView : UserControl
     {
         ConfigManager.OnClientConnectionAdded += ClientConnectionAdded;
         ConfigManager.OnClientConnectionRemoved += ClientConnectionRemoved;
+        ConfigManager.OnSettingChanged += OnSettingChanged;
     }
 
     private void OnLeaveScope(object? sender, LogicalTreeAttachmentEventArgs e)
     {
         ConfigManager.OnClientConnectionAdded -= ClientConnectionAdded;
         ConfigManager.OnClientConnectionRemoved -= ClientConnectionRemoved;
+        ConfigManager.OnSettingChanged -= OnSettingChanged;
+    }
+
+    private void OnSettingChanged(Enum setting)
+    {
+        UpdateHostConfig();
+        UpdateToggleButtonName();
+    }
+
+    private void UpdateToggleButtonName()
+    {
+        ToggleHostButton.Content = ConfigManager.ReadSetting(SettingInt.IsHosting) == 0 ? "Start Host" : "Stop Host";
+    }
+
+    private void UpdateHostConfig()
+    {
+        string hostStatus = $"Host Alive: {NetworkManager.Instance.Host is not null}";
+        if (NetworkManager.Instance.Host is not null)
+        {
+            hostStatus += $"\nClient Count: {NetworkManager.Instance.Host.ConnectedSessions}";
+        }
+
+        HostStatusLabel.Content = hostStatus;
     }
 
     private void ClientConnectionRemoved(ConnectionInfo info)
@@ -77,5 +139,13 @@ public partial class NetworkView : UserControl
         return;
     ErrorSubmittingDisplay:
         ErrorSubmittingDisplay();
+    }
+
+    private void ToggleHostClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        int isHosting = ConfigManager.ReadSetting(SettingInt.IsHosting);
+        //Toggle.
+        isHosting = (isHosting == 0)? 1 : 0;
+        ConfigManager.WriteSetting(SettingInt.IsHosting, isHosting);
     }
 }
