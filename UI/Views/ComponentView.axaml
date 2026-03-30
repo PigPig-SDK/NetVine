@@ -15,30 +15,30 @@
     <ComboBox ItemsSource="{Binding ChartTypes}"
               SelectedItem="{Binding SelectedChartType}"
               HorizontalAlignment="Stretch" />
-    <Button HorizontalAlignment="Stretch">
-        <StackPanel>
-            <TextBlock Text="CPU" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonCPUText}" FontSize="11" Opacity="0.8" />
-        </StackPanel>
-    </Button>
-            <Button HorizontalAlignment="Stretch">
-                <StackPanel>
-                    <TextBlock Text="GPU" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ButtonGPUText}" FontSize="11" Opacity="0.8" />
-                </StackPanel>
-            </Button>
-            <Button HorizontalAlignment="Stretch">
-                <StackPanel>
-                    <TextBlock Text="RAM" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
-                </StackPanel>
-            </Button>
-            <Button HorizontalAlignment="Stretch">
-                <StackPanel>
-                    <TextBlock Text="DISK" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ButtonDISKText}" FontSize="11" Opacity="0.8" />
-                </StackPanel>
-            </Button>
+<Button HorizontalAlignment="Stretch" Command="{Binding SelectCpuCommand}">
+    <StackPanel>
+        <TextBlock Text="CPU" FontWeight="Bold" />
+        <TextBlock Text="{Binding ButtonCPUText}" FontSize="11" Opacity="0.8" />
+    </StackPanel>
+</Button>
+<Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}">
+    <StackPanel>
+        <TextBlock Text="RAM" FontWeight="Bold" />
+        <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+    </StackPanel>
+</Button>
+<Button HorizontalAlignment="Stretch" Command="{Binding SelectDiskCommand}">
+    <StackPanel>
+        <TextBlock Text="DISK" FontWeight="Bold" />
+        <TextBlock Text="{Binding ButtonDISKText}" FontSize="11" Opacity="0.8" />
+    </StackPanel>
+</Button>
+<Button HorizontalAlignment="Stretch" Command="{Binding SelectNetworkCommand}">
+    <StackPanel>
+        <TextBlock Text="Network" FontWeight="Bold" />
+        <TextBlock Text="{Binding ButtonNetworkText}" FontSize="11" Opacity="0.8" />
+    </StackPanel>
+</Button>
         </StackPanel>
     </Border>
 </UserControl>

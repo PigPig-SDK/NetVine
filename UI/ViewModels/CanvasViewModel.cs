@@ -21,6 +21,8 @@ namespace UI.ViewModels
         public List<double> DiskHistory => _resourceService.DiskHistory;
         public List<double> NetworkHistory => _resourceService.NetworkHistory;
 
+        public string SelectedResource => _chartService.SelectedResource;
+
         public CanvasViewModel(ChartService chartService, ResourceService resourceService)
         {
             _chartService = chartService;

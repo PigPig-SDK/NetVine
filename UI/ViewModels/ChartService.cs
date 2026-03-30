@@ -14,5 +14,12 @@ public class ChartService
             ChartTypeChanged?.Invoke();
         }
     }
+
+    private string _selectedResource = "CPU";
+    public string SelectedResource
+    {
+        get => _selectedResource;
+        set { _selectedResource = value; ChartTypeChanged?.Invoke(); }
+    }
     public event Action? ChartTypeChanged;
 }

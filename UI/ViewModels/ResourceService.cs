@@ -29,9 +29,9 @@ namespace UI.ViewModels
         private void OnSnapshot(List<IProgramData> data)
         {
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
-            RamUsage = data.Sum(p => p.MemoryUsage); // total MB, not %
-            DiskUsage = data.Sum(p => p.DiskUsage);  // total MB/s
-            NetworkUsage = data.Sum(p => p.NetworkUsage); // total MB/s
+            RamUsage = data.Sum(p => p.MemoryUsage);
+            DiskUsage = data.Sum(p => p.DiskUsage);
+            NetworkUsage = data.Sum(p => p.NetworkUsage);
 
             CpuHistory.Add(CpuUsage);
             RamHistory.Add(RamUsage);

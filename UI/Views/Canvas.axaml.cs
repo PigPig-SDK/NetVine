@@ -40,27 +40,31 @@ public partial class Canvas : UserControl
 
     private void DrawLineChart()
     {
-        if (_vm.CpuHistory.Count == 0) return;
+        var history = _vm.SelectedResource switch
+        {
+            "CPU" => (_vm.CpuHistory, "CPU (%)"),
+            "RAM" => (_vm.RamHistory, "RAM (MB)"),
+            "Disk" => (_vm.DiskHistory, "Disk (%)"),
+            "Network" => (_vm.NetworkHistory, "Network (%)"),
+            _ => (_vm.CpuHistory, "CPU (%)")
+        };
 
-        var cpu = CanvasPlot.Plot.Add.Signal(_vm.CpuHistory.ToArray());
-        cpu.LegendText = "CPU (%)";
-        cpu.Color = ScottPlot.Color.FromHex("#FF6B6B");
+        if (history.Item1.Count == 0) return;
 
-        var ram = CanvasPlot.Plot.Add.Signal(_vm.RamHistory.ToArray());
-        ram.LegendText = "RAM (MB)";
-        ram.Color = ScottPlot.Color.FromHex("#4ECDC4");
+        var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
+        signal.LegendText = history.Item2;
 
-        var disk = CanvasPlot.Plot.Add.Signal(_vm.DiskHistory.ToArray());
-        disk.LegendText = "Disk (MB/s)";
-        disk.Color = ScottPlot.Color.FromHex("#FFE66D");
+        // fix Y at 0-100 for percentages, auto scale for RAM in MB
+        if (_vm.SelectedResource == "RAM")
+            _canvasPlot.Plot.Axes.AutoScale();
+        else
+        {
+            _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
+            _canvasPlot.Plot.Axes.AutoScaleX();
+        }
 
-        var network = CanvasPlot.Plot.Add.Signal(_vm.NetworkHistory.ToArray());
-        network.LegendText = "Network (MB/s)";
-        network.Color = ScottPlot.Color.FromHex("#A5C882");
-
-        CanvasPlot.Plot.ShowLegend();
-        CanvasPlot.Plot.YLabel("Usage");
-        CanvasPlot.Plot.XLabel("Time (samples)");
+        _canvasPlot.Plot.YLabel(history.Item2);
+        _canvasPlot.Plot.ShowLegend();
     }
     private void DrawBarChart() { }
     private void DrawPieChart() { }
