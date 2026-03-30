@@ -54,7 +54,6 @@ public partial class Canvas : UserControl
         var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
         signal.LegendText = history.Item2;
 
-        // fix Y at 0-100 for percentages, auto scale for RAM in MB
         if (_vm.SelectedResource == "RAM")
             _canvasPlot.Plot.Axes.AutoScale();
         else
