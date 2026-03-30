@@ -70,6 +70,7 @@ namespace UI.ViewModels
 
         // Properties
 
+        public string AllMenuText => (_showCpu && _showMemory && _showDisk && _showNetwork) ? "Hide All" : "Show All";
         public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
         public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
         public string DiskMenuText => _showDisk ? "Hide Disk usage" : "Show Disk usage";
@@ -106,7 +107,21 @@ namespace UI.ViewModels
         public bool ShowMemoryHistorical => _showMemory && !LiveViewModel.IsLive;
         public bool ShowDiskHistorical => _showDisk && !LiveViewModel.IsLive;
         public bool ShowNetworkHistorical => _showNetwork && !LiveViewModel.IsLive;
-
+        
+        public IRelayCommand ToggleAllCommand => new RelayCommand(() =>
+        {
+            var newValue = !(_showCpu && _showMemory && _showDisk && _showNetwork);
+            _showCpu = newValue;
+            _showMemory = newValue;
+            _showDisk = newValue;
+            _showNetwork = newValue;
+            OnPropertyChanged(nameof(AllMenuText));
+            OnPropertyChanged(nameof(CpuMenuText));
+            OnPropertyChanged(nameof(MemoryMenuText));
+            OnPropertyChanged(nameof(DiskMenuText));
+            OnPropertyChanged(nameof(NetworkMenuText));
+            OnIsVisiblePropertiesChanged();
+        });
         public IRelayCommand ToggleCpuCommand { get; }
         public IRelayCommand ToggleMemoryCommand { get; }
         public IRelayCommand ToggleDiskCommand { get; }
