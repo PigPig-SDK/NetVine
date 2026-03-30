@@ -35,7 +35,7 @@
 </Button>
 <Button HorizontalAlignment="Stretch" Command="{Binding SelectNetworkCommand}">
     <StackPanel>
-        <TextBlock Text="Network" FontWeight="Bold" />
+        <TextBlock Text="NET" FontWeight="Bold" />
         <TextBlock Text="{Binding ButtonNetworkText}" FontSize="11" Opacity="0.8" />
     </StackPanel>
 </Button>
