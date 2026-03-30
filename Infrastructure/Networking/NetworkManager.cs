@@ -18,22 +18,70 @@ public class NetworkManager
     {
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
         _instance = new NetworkManager();
-        ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
+        ConfigManager.OnClientConnectionAdded += _instance.AddClientConnection;
+        ConfigManager.OnClientConnectionRemoved += _instance.RemoveClientConnection;
         ConfigManager.OnSettingChanged += _instance.OnSettingChanged;
     }
 
     private void OnSettingChanged(Enum setting)
     {
-        if(setting is SettingFloat settingFloat)
+        if (setting is SettingFloat settingFloat)
         {
-            if(settingFloat == SettingFloat.NetworkReconnectInterval)
+            switch (settingFloat)
             {
-                _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+                case SettingFloat.NetworkReconnectInterval:
+                    _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds((double)ConfigManager.ReadSetting(SettingFloat.NetworkReconnectInterval)));
+                    break;
             }
         }
-    }
+        else if (setting is SettingInt settingInt)
+        {
+            switch (settingInt)
+            {
+                case SettingInt.HostPort:
+                    RestartHost();
+                    break;
+                case SettingInt.IsHosting:
+                    if (ConfigManager.ReadSetting(SettingInt.IsHosting) == 0)//False
+                        DisconnectHost();
+                    else if(Host is null)//We can rehost...
+                        StartHost();
+                        break;
 
-    private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();//Lazy, but efficent.
+            }
+        }
+        else if (setting is SettingString settingString)
+        {
+            switch(settingString)
+            {
+                case SettingString.HostIP: 
+                    RestartHost(); 
+                    break;
+            }
+        }
+
+    }
+    /// <summary>
+    /// Disconnects and restarts the hosting process
+    /// </summary>
+    public void RestartHost()
+    {
+        DisconnectHost();
+        StartHost();
+    }
+    private void AddClientConnection(ConnectionInfo info) => RefreshClientConnections();
+    private void RemoveClientConnection(ConnectionInfo info)
+    {
+        IPAddress? ip = info.GetIP();
+        if(ip is null) return;
+
+        (IPAddress, int) infoTuple = (ip, info.Port);
+
+        if (!EstablishedClientConnections.ContainsKey(infoTuple)) return;
+        //Shutdown the client connection!
+        EstablishedClientConnections[infoTuple].Disconnect();
+        EstablishedClientConnections.Remove(infoTuple);
+    }
 
     private NetworkManager() 
     {
@@ -60,8 +108,10 @@ public class NetworkManager
 
     public void RefreshClientConnections()
     {
-        foreach (var connectionContext in ConfigManager.ClientConnections)
+        foreach (ConnectionInfo connectionContext in ConfigManager.ClientConnections)
         {
+            connectionContext.GetIP();
+
             IPAddress.TryParse(connectionContext.Ip, out IPAddress? ip);
             if (ip == null)
             {
@@ -96,7 +146,12 @@ public class NetworkManager
                 connectionContext.Send(bytes);
         }
     }
-
+    public void DisconnectHost()
+    {
+        Host?.DisconnectAll();
+        Host?.Dispose();
+        Host = null;
+    }
     public void Disconnect()
     {
         //Disconnect from others...
@@ -104,14 +159,12 @@ public class NetworkManager
         {
             client.DisconnectShutdown();
         }
-
-        Host?.DisconnectAll();
-        Host?.Dispose();
+        DisconnectHost();
     }
 
     ~NetworkManager()
     {
         Disconnect();
-        ConfigManager.OnClientConnectionAdded -= _instance.OnAddClientConnection;
+        ConfigManager.OnClientConnectionAdded -= _instance.AddClientConnection;
     }
 }

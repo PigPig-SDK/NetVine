@@ -11,16 +11,17 @@
                 VerticalAlignment="Center" Foreground="White">Host</Label>
         
         <!-- Hosting -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,auto">
-            <TextBox Grid.Column="0"  MinWidth="0" Watermark="Port" UseFloatingWatermark="True" Margin="10,0,10,0"/>
-		    <Button Grid.Column="1" Content="Host"  Margin="0,0,10,0" HorizontalAlignment="Center"/>	
+        <Grid Grid.Row="1" RowDefinitions="auto,auto,auto,auto">
+            <StackPanel Grid.Row="0" x:Name="hostSettingsStackPannel" HorizontalAlignment="Stretch"/>
+		    <Button Grid.Row="1" x:Name="ToggleHostButton" Click="ToggleHostClicked" Content="BeginHost"  Margin="0,0,10,0" HorizontalAlignment="Center"/>
+            <Label x:Name="HostStatusLabel" Grid.Row="2" Content="Status"/>
         </Grid>
         <!-- Connecting -->
         <Grid Grid.Row="2" RowDefinitions="auto, auto, auto">
 		    <Rectangle Grid.Row="0" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
             <Label Grid.Row="1" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
                 FontFamily="avares://NetVine/Assets#Bebas Neue"
-                VerticalAlignment="Center" Foreground="White">Connect</Label>
+                VerticalAlignment="Center" Foreground="White">Add</Label>
             <Grid Grid.Row="3" ColumnDefinitions="*,auto">
                 <TextBox Grid.Column="0"  MinWidth="0" Watermark="Ip:Port" UseFloatingWatermark="True" Margin="10,0,10,0" x:Name="AddConnectionInput"/>
 		        <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center" Click="TryAddConnection"/>	

@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Infrastructure;
+using System;
 
 namespace UI.ViewModels;
 
@@ -12,7 +12,17 @@ public class SettingInputReporter : SettingInput
         Description = discription;
     }
 
+    public override Enum? GenericSetting => null;
+
+    public override void BindSettingChange()
+    {
+    }
+
     public override void OnEnterPressed()
+    {
+    }
+
+    public override void UnbindSettingChange()
     {
     }
 }

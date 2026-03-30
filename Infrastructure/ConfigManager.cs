@@ -199,6 +199,9 @@ public class ConfigManager
     /// </summary>
     public static void AddClientConnection(ConnectionInfo connectionInfo)
     {
+        if (Instance._ClientConnections.Contains(connectionInfo))
+            return;//Don't add duplicate.
+
         Instance._ClientConnections.Add(connectionInfo);
         OnClientConnectionAdded?.Invoke(connectionInfo);
     }

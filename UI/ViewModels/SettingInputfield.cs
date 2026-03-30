@@ -3,12 +3,15 @@ using Avalonia.Input;
 using Infrastructure;
 using System;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace UI.ViewModels;
 
 public class SettingInputField<T> : SettingInput where T : Enum
 {
     public T ConfigSetting { get; set; }
+
+    public override Enum? GenericSetting => ConfigSetting;
 
     public int MaxInputSize = int.MaxValue - 1;
     public int MaxAcceptedNumericalSize = int.MaxValue;
@@ -25,10 +28,17 @@ public class SettingInputField<T> : SettingInput where T : Enum
         string inputString = ComputeInitialInputString();
 
         TextBox textbox = new TextBox { Text = inputString, Width = 120 };
+        textbox.DetachedFromLogicalTree += TextboxDetachedFromLogicalTree;
         textbox.AddHandler(InputElement.TextInputEvent, InputCatcher, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         textbox.Margin = new Avalonia.Thickness(0, 0, InputDistanceFromRight, 0);
         Input = textbox;
     }
+
+    private void TextboxDetachedFromLogicalTree(object? sender, Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs e)
+    {
+        UnbindSettingChange();
+    }
+
     private void InputCatcher(object? sender, Avalonia.Input.TextInputEventArgs e)
     {
         if (e.Text == null) return;
@@ -55,7 +65,6 @@ public class SettingInputField<T> : SettingInput where T : Enum
                 break;
         }
     }
-
     private string ComputeInitialInputString()
     {
         if (ConfigSetting is SettingInt settingInt)
@@ -84,8 +93,20 @@ public class SettingInputField<T> : SettingInput where T : Enum
         }
         else if (ConfigSetting is SettingString settingString)
             ConfigManager.WriteSetting(settingString, textOut);
+        if (IsWritingActive)
+            ConfigManager.TrySaveToFile();
+    }
 
-        ConfigManager.TrySaveToFile();
+    private void OnSettingChanged(Enum setting)
+    {
+        if(setting is T settingOfType)
+        {
+            if(settingOfType.Equals(ConfigSetting))
+            {
+                if(Input is TextBox textbox)
+                    textbox.Text = ComputeInitialInputString();
+            }
+        }
     }
 
     public override void OnEnterPressed()
@@ -96,5 +117,15 @@ public class SettingInputField<T> : SettingInput where T : Enum
         {
             TextboxSubmission(textbox);
         }
+    }
+
+    public override void BindSettingChange()
+    {
+        ConfigManager.OnSettingChanged += OnSettingChanged;
+    }
+
+    public override void UnbindSettingChange()
+    {
+        ConfigManager.OnSettingChanged -= OnSettingChanged;
     }
 }

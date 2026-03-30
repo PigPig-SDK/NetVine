@@ -1,7 +1,9 @@
 ﻿
+using System.Net;
+
 namespace Infrastructure.Networking;
 
-public class ConnectionInfo
+public record class ConnectionInfo
 {
     public string Ip { get; set; }
     public int Port { get; set; }
@@ -18,6 +20,11 @@ public class ConnectionInfo
         Port = port;
     }
 
+    public IPAddress? GetIP()
+    {
+        IPAddress.TryParse(Ip, out IPAddress? ip);
+        return ip;
+    }
     public static void TryParse(string ip, string port, out ConnectionInfo? connectionInfo)
     {
         ConnectionInfo info = new ConnectionInfo();
