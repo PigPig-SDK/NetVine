@@ -163,6 +163,7 @@ public class ConfigManager
     public static int ReadSetting(SettingInt setting) => Instance._IntSettings[setting];
     public static float ReadSetting(SettingFloat setting) => Instance._FloatSettings[setting];
     public static string ReadSetting(SettingString setting) => Instance._StringSettings[setting];
+    public static bool ReadSettingBool(SettingInt setting) => Instance._IntSettings[setting] == 1;
 
     /// <summary>
     /// Assigns the specified integer value to the given integer setting.
