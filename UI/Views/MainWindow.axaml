@@ -91,7 +91,7 @@
                VerticalAlignment="Center"
                IsVisible="{OnPlatform Default=False, Windows=True}"
                RenderOptions.BitmapInterpolationMode="HighQuality"
-               Source="/Assets/netvine.png"/>
+               Source="/Assets/netvine_tiny.png"/>
 
         <Button Grid.Column="1" Click="OnGraphClicked"
                 FontSize="24" CornerRadius="1,1,0,0"
