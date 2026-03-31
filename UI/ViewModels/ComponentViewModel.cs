@@ -10,7 +10,7 @@ namespace UI.ViewModels
     public class ComponentViewModel : INotifyPropertyChanged
     {
         private readonly ChartService _chartService;
-        private readonly ResourceService _resourceService; // was missing
+        private readonly ResourceService _resourceService;
 
         public ICommand SelectCpuCommand { get; }
         public ICommand SelectRamCommand { get; }
@@ -23,10 +23,10 @@ namespace UI.ViewModels
             _resourceService = resourceService;
             _resourceService.DataUpdated += OnDataUpdated;
 
-            SelectCpuCommand = new RelayCommand(() => _chartService.SelectedResource = "CPU");
-            SelectRamCommand = new RelayCommand(() => _chartService.SelectedResource = "RAM");
-            SelectDiskCommand = new RelayCommand(() => _chartService.SelectedResource = "Disk");
-            SelectNetworkCommand = new RelayCommand(() => _chartService.SelectedResource = "Network");
+            SelectCpuCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.CPU);
+            SelectRamCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.RAM);
+            SelectDiskCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.DISK);
+            SelectNetworkCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.NET);
         }
 
         public List<string> ChartTypes { get; } = new() { "Line", "Bar", "Pie" };
@@ -45,7 +45,7 @@ namespace UI.ViewModels
         public string ButtonCPUText => $"{_resourceService.CpuUsage:0.0}%";
         public string ButtonRAMText => $"{_resourceService.RamUsage:0.0} MB";
         public string ButtonDISKText => $"{_resourceService.DiskUsage:0.0}%";
-        public string ButtonNetworkText => $"{_resourceService.NetworkUsage:0.0}%";
+        public string ButtonNetworkText => $"{_resourceService.NetworkUsage:0.0} MB/s";
 
         private void OnDataUpdated()
         {
