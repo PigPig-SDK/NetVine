@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Infrastructure;
 using ScottPlot;
 using ScottPlot.Avalonia;
 using System.ComponentModel.Design;
@@ -57,7 +58,7 @@ public partial class Canvas : UserControl
 
         if (history.data.Count == 0) return;
 
-        var signal = CanvasPlot.Plot.Add.Signal(history.data.ToArray());
+        var signal = CanvasPlot.Plot.Add.Signal(history.data.ToArray(), ConfigManager.ReadSetting(SettingFloat.TickRate));
         signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
