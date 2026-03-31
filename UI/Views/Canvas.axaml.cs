@@ -51,7 +51,7 @@ public partial class Canvas : UserControl
         {
             ChartService.CPUChartname => (_vm.CpuHistory, "CPU (%)"),
             ChartService.RAMChartName => (_vm.RamHistory, "RAM (MB)"),
-            ChartService.DiskChartName => (_vm.DiskHistory, "Disk (%)"),
+            ChartService.DiskChartName => (_vm.DiskHistory, "Disk (MB/s)"),
             ChartService.NetworkChartName => (_vm.NetworkHistory, "Network (MB/s)"),
             _ => (_vm.CpuHistory, "CPU (%)")
         };
@@ -62,7 +62,7 @@ public partial class Canvas : UserControl
         signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
-        if (_vm.SelectedResource == ChartService.RAMChartName)
+        if (_vm.SelectedResource == ChartService.RAMChartName || _vm.SelectedResource == ChartService.DiskChartName)
             CanvasPlot.Plot.Axes.AutoScale();
         else
         {

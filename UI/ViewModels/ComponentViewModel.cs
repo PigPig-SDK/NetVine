@@ -44,7 +44,7 @@ namespace UI.ViewModels
         }
         public string ButtonCPUText => $"{_resourceService.CpuUsage:0.0}%";
         public string ButtonRAMText => $"{_resourceService.RamUsage:0.0} MB";
-        public string ButtonDISKText => $"{_resourceService.DiskUsage:0.0}%";
+        public string ButtonDISKText => $"{_resourceService.DiskUsage:0.0} MB/s";
         public string ButtonNetworkText => $"{_resourceService.NetworkUsage:0.0} MB/s";
 
         private void OnDataUpdated()
