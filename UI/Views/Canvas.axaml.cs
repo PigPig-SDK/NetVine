@@ -48,10 +48,10 @@ public partial class Canvas : UserControl
     {
         var history = _vm.SelectedResource switch
         {
-            ChartService.CPU => (_vm.CpuHistory, "CPU (%)"),
-            ChartService.RAM => (_vm.RamHistory, "RAM (MB)"),
-            ChartService.DISK => (_vm.DiskHistory, "Disk (%)"),
-            ChartService.NET => (_vm.NetworkHistory, "Network (MB/s)"),
+            ChartService.CPUChartname => (_vm.CpuHistory, "CPU (%)"),
+            ChartService.RAMChartName => (_vm.RamHistory, "RAM (MB)"),
+            ChartService.DiskChartName => (_vm.DiskHistory, "Disk (%)"),
+            ChartService.NetworkChartName => (_vm.NetworkHistory, "Network (MB/s)"),
             _ => (_vm.CpuHistory, "CPU (%)")
         };
 

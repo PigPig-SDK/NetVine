@@ -23,10 +23,10 @@ namespace UI.ViewModels
             _resourceService = resourceService;
             _resourceService.DataUpdated += OnDataUpdated;
 
-            SelectCpuCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.CPU);
-            SelectRamCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.RAM);
-            SelectDiskCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.DISK);
-            SelectNetworkCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.NET);
+            SelectCpuCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.CPUChartname);
+            SelectRamCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.RAMChartName);
+            SelectDiskCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.DiskChartName);
+            SelectNetworkCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.NetworkChartName);
         }
 
         public List<string> ChartTypes { get; } = new() { "Line", "Bar", "Pie" };

@@ -5,10 +5,10 @@ public class ChartService
 {
     public static readonly ChartService Instance = new();
 
-    public const string CPU = "CPU";
-    public const string RAM = "RAM";
-    public const string DISK = "DISK";
-    public const string NET = "NET";
+    public const string CPUChartname = "CPU";
+    public const string RAMChartName = "RAM";
+    public const string DiskChartName = "DISK";
+    public const string NetworkChartName = "NET";
 
     private string _chartType = "Line";
     public string ChartType
@@ -21,7 +21,7 @@ public class ChartService
         }
     }
 
-    private string _selectedResource = "CPU";
+    private string _selectedResource = CPUChartname;
     public string SelectedResource
     {
         get => _selectedResource;
