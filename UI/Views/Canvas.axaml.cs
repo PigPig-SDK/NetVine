@@ -22,8 +22,8 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
-
-        _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
+        // TODO: make 0 the minimum x for graph
+        // _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
         _canvasPlot.Refresh();
     }
 
