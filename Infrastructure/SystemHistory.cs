@@ -15,15 +15,15 @@ public class SystemHistory : IDisposable
     private readonly Lock _timerLock = new Lock();
     private Stopwatch _stopwatch;
 
-    public uint TotalSnapshotCount { get; private set; }
+    public uint SnapshotIterationCount { get; private set; }
     public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
 
     public string SystemName { get { return _producer.SystemName; } }
 
-    public SystemHistory(IProgramDataProducer producer, uint capacity, TimeSpan? snapshotInterval = null)
+    public SystemHistory(IProgramDataProducer producer, TimeSpan? snapshotInterval = null)
     {
         _producer = producer;
-        _tracker = new SystemTracker(producer, capacity);
+        _tracker = new SystemTracker(producer);
         _snapshotInterval = snapshotInterval ?? TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate));
         _stopwatch = Stopwatch.StartNew();
         _timer = new Timer(TakeSnapshot, null, _snapshotInterval, Timeout.InfiniteTimeSpan);
@@ -46,7 +46,7 @@ public class SystemHistory : IDisposable
         if (producer == null)
             throw new InvalidOperationException("No valid producer for your operating system exists!");
 
-        _instance = new(producer, 30, TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate)));
+        _instance = new(producer, TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate)));
     }
 
     public List<IProgramData> GetLatestPoll()
@@ -86,14 +86,15 @@ public class SystemHistory : IDisposable
         {
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
-            TotalSnapshotCount++;
-            if(TotalSnapshotCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
+            SnapshotIterationCount++;
+            if(SnapshotIterationCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
             {
                 var average = _tracker.GetAverage();
                 if (average == null) return;
 
                 if(average != null) DBInteract.Store(average);
-                TotalSnapshotCount = 0;
+                SnapshotIterationCount = 0;
+                _tracker.ClearHistory();
             }
         }
         finally

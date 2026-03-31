@@ -170,8 +170,8 @@ public class WindowsDataProducer : IProgramDataProducer
                 //Private memory of the application in allocation.
                 float mem = process.PrivateMemorySize64 / (1024f * 1024f);
 
-                float networkUsage = 
-                    (float)((networkOut.GetValueOrDefault(process.Id)  + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB/s
+                float networkUsage =
+                    (float)((networkOut.GetValueOrDefault(process.Id) + networkIn.GetValueOrDefault(process.Id)) / rate.TotalSeconds / 1_000_000.0f);//Bytes to MB/s
                 float diskUsage = 0;
                 float cpuUsage = 0;
 
@@ -197,7 +197,7 @@ public class WindowsDataProducer : IProgramDataProducer
                     if (_diskDelta.TryGetValue(process.Id, out IoCounters oldIoCounter))
                     {
                         //Compute delta for read and write transfer count (This is a ugly line of code)
-                        diskUsage = (ioCounters.Value.ReadTransferCount + ioCounters.Value.WriteTransferCount) 
+                        diskUsage = (ioCounters.Value.ReadTransferCount + ioCounters.Value.WriteTransferCount)
                                   - (oldIoCounter.ReadTransferCount + oldIoCounter.WriteTransferCount);
 
                         diskUsage = diskUsage / (float)rate.TotalSeconds / 1_000_000.0f;//Bytes to MB/s
@@ -229,10 +229,7 @@ public class WindowsDataProducer : IProgramDataProducer
                     programs[process.ProcessName].NetworkUsage += networkUsage;
                 }
             }
-            catch (Win32Exception ex)
-            {
-                Core.Debug.Log($"Access denied to process {process.ProcessName}: {ex.Message}");
-            }
+            catch (Win32Exception ex) { }//Access violation, Let it go.
             catch (InvalidOperationException ex)
             {
                 Core.Debug.Log($"Process {process.ProcessName} exited before reading: {ex.Message}");
