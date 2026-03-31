@@ -22,7 +22,7 @@ public class ProgramData : IProgramData
     public DateTime Date { get; set; }
     /// <summary>
     /// Do not store this data!
-    /// This is only used for live view
+    /// An applications ProcessID changes every time it is loaded.
     /// </summary>
     public int ProcessId { get; set; }
 
