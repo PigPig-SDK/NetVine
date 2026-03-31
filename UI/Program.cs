@@ -9,6 +9,7 @@ namespace UI;
 internal sealed class Program
 {
     public const string Version = "0.0.1";
+    public const string AppName = "Net-Vine";
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
