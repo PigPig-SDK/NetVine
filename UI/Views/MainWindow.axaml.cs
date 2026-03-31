@@ -22,6 +22,8 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        _ = ResourceService.Instance;
+
         InitializeComponent();
 
         //_tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton}, { MainWindowViewModel.TableView,TableButton } }; old code from merge conflict
