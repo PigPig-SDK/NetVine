@@ -9,7 +9,6 @@ namespace UI;
 public partial class Canvas : UserControl
 {
     private readonly CanvasViewModel _vm;
-    private AvaPlot _canvasPlot;
 
     public Canvas()
     {
@@ -17,21 +16,22 @@ public partial class Canvas : UserControl
         _vm = new CanvasViewModel(ChartService.Instance, ResourceService.Instance);
         DataContext = _vm;
         _vm.ChartUpdateRequested += DrawChart;
-        _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
-        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
-        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
-        _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
-        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+        CanvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
+        CanvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
+        CanvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
+        CanvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
+        CanvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
         // TODO: make 0 the minimum x for graph
         // _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
-        _canvasPlot.Refresh();
+        CanvasPlot.Refresh();
+        CanvasPlot.UserInputProcessor.Disable();
     }
 
     private void DrawChart()
     {
         Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
-            _canvasPlot.Plot.Clear();
+            CanvasPlot.Plot.Clear();
 
             switch (_vm.CurrentChartType)
             {
@@ -40,7 +40,7 @@ public partial class Canvas : UserControl
                 case "Pie": DrawPieChart(); break;
             }
 
-            _canvasPlot.Refresh();
+            CanvasPlot.Refresh();
         });
     }
 
@@ -57,20 +57,20 @@ public partial class Canvas : UserControl
 
         if (history.Item1.Count == 0) return;
 
-        var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
+        var signal = CanvasPlot.Plot.Add.Signal(history.Item1.ToArray());
         signal.LegendText = history.Item2;
         signal.Color = ScottPlot.Colors.White;
 
         if (_vm.SelectedResource == ChartService.RAMChartName)
-            _canvasPlot.Plot.Axes.AutoScale();
+            CanvasPlot.Plot.Axes.AutoScale();
         else
         {
-            _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
-            _canvasPlot.Plot.Axes.AutoScaleX();
+            CanvasPlot.Plot.Axes.SetLimitsY(0, 100);
+            CanvasPlot.Plot.Axes.AutoScaleX();
         }
 
-        _canvasPlot.Plot.YLabel(history.Item2);
-        _canvasPlot.Plot.ShowLegend();
+        CanvasPlot.Plot.YLabel(history.Item2);
+        CanvasPlot.Plot.ShowLegend();
     }
     private void DrawBarChart() { }
     private void DrawPieChart() { }
