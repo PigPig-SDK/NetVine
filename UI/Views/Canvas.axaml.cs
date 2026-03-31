@@ -18,6 +18,10 @@ public partial class Canvas : UserControl
         DataContext = _vm;
         _vm.ChartUpdateRequested += DrawChart;
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
+        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
+        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
+        _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
+        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
         _canvasPlot.Refresh();
     }
 
@@ -53,6 +57,7 @@ public partial class Canvas : UserControl
 
         var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
         signal.LegendText = history.Item2;
+        signal.Color = ScottPlot.Colors.White;
 
         if (_vm.SelectedResource == "RAM")
             _canvasPlot.Plot.Axes.AutoScale();
