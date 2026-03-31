@@ -1,12 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Infrastructure;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using UI.ViewModels;
-using YamlDotNet.Core.Events;
 
 namespace UI.Views;
 
@@ -15,17 +11,14 @@ public partial class MainWindow : Window
 {
     private Dictionary<int, Button> _tabBarMapping;
 
-    //Not an ENUM, these values respond to the tab of the CanvasTabControl.
-    public const int GraphView = 0;
-    public const int TableView = 1;
-    public const int SettingsView = 2;
-
     public MainWindow()
     {
         InitializeComponent();
 
-        //_tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton}, { MainWindowViewModel.TableView,TableButton } }; old code from merge conflict
-        _tabBarMapping = new Dictionary<int, Button>() { { GraphView, GraphButton }, { TableView, TableButton }, { SettingsView, SettingsButton } };
+        _tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton},
+            { MainWindowViewModel.TableView,TableButton },
+            { MainWindowViewModel.SettingView, SettingsButton },
+            { MainWindowViewModel.HomeView, HomeButton } }; 
 
         Width = ConfigManager.ReadSetting(SettingInt.WindowWidth);
         Height = ConfigManager.ReadSetting(SettingInt.WindowHeight);
@@ -82,13 +75,16 @@ public partial class MainWindow : Window
     }
     private void OnSettingsClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        CanvasTabControl.SelectedIndex = SettingsView;
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.SettingView;
     }
-
+    private void OnDudeClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.HomeView;
+    }
     private void SetTabSelected(int tab)
     {
-        if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
-           MainWindowViewModel.RaiseTabChanged(tab); //invokes OnTabChanged
+        if (tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
+            MainWindowViewModel.RaiseTabChanged(tab); //invokes OnTabChanged
 
         MainWindowViewModel.ActiveTab = tab;
 
@@ -113,8 +109,8 @@ public partial class MainWindow : Window
 
         switch (tab)
         {
-            case TableView:
-            case SettingsView:
+            case MainWindowViewModel.TableView:
+            case MainWindowViewModel.SettingView:
                 SearchBoxPanel.IsVisible = true;
                 break;
             default:

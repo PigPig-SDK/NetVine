@@ -83,15 +83,22 @@
           HorizontalAlignment="Stretch"
           ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto">
 
-        <Image x:Name="icon"
-               Grid.Column="0"
-               Width="36" Height="36"
-               Margin="4,0"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               IsVisible="{OnPlatform Default=False, Windows=True}"
-               RenderOptions.BitmapInterpolationMode="HighQuality"
-               Source="/Assets/netvine_tiny.png"/>
+        <Button Grid.Column="0"
+                Width="36" Height="36"
+                Margin="4,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{OnPlatform Default=False, Windows=True}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                x:Name="HomeButton"
+                Click="OnDudeClicked">
+            <Image x:Name="icon"
+                   Width="36" Height="36"
+                   RenderOptions.BitmapInterpolationMode="HighQuality"
+                   Source="/Assets/netvine_tiny.png"/>
+        </Button>
 
         <Button Grid.Column="1" Click="OnGraphClicked"
                 FontSize="24" CornerRadius="1,1,0,0"
@@ -223,6 +230,9 @@
                 </TabItem>
                 <TabItem Header="SettingsView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
                     <views:SettingsView />
+                </TabItem>
+                <TabItem Header="SettingsView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                    <views:HomeView />
                 </TabItem>
             </TabControl>
         </Grid>
