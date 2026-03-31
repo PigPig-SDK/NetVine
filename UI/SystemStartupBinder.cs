@@ -13,7 +13,7 @@ public class SystemStartupBinder
     public static void Setup()
     {
         ExecuteConfiguration();
-        //ConfigManager.OnSettingChanged += OnSettingUpdated;
+        ConfigManager.OnSettingChanged += OnSettingUpdated;
     }
 
     private static void OnSettingUpdated(Enum setting)
