@@ -20,6 +20,9 @@ public class SetLiveViewPayload : IPacketPayload
         if (isServer) return;//Do not run on server.
 
         //Start push operations
-        NetworkLiveDataManager.Instance.PushHostSet = IsLiveViewEnabled;
+        if(IsLiveViewEnabled)
+            NetworkLiveDataManager.Instance.PushHostSet.Add(id);
+        else
+            NetworkLiveDataManager.Instance.PushHostSet.Remove(id);
     }
 }
