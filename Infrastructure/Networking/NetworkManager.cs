@@ -42,7 +42,7 @@ public class NetworkManager
                     RestartHost();
                     break;
                 case SettingInt.IsHosting:
-                    if (ConfigManager.ReadSetting(SettingInt.IsHosting) == 0)//False
+                    if (!ConfigManager.ReadSettingBool(SettingInt.IsHosting))
                         DisconnectHost();
                     else if(Host is null)//We can rehost...
                         StartHost();
@@ -98,7 +98,7 @@ public class NetworkManager
         if(Host != null) throw new InvalidOperationException($"Cannot host while host is already established!");
 
         //Don't host!
-        if(ConfigManager.ReadSetting(SettingInt.IsHosting) == 0) return;
+        if(!ConfigManager.ReadSettingBool(SettingInt.IsHosting)) return;
 
         Host = new Host(IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
         Host.Start();

@@ -83,7 +83,7 @@ public partial class NetworkView : UserControl
 
     private void UpdateToggleButtonName()
     {
-        ToggleHostButton.Content = ConfigManager.ReadSetting(SettingInt.IsHosting) == 0 ? "Start Host" : "Stop Host";
+        ToggleHostButton.Content = ConfigManager.ReadSettingBool(SettingInt.IsHosting) == false ? "Start Host" : "Stop Host";
     }
 
     private void UpdateHostConfig()

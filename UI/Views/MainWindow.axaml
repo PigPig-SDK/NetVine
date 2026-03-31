@@ -10,10 +10,10 @@
         TransparencyLevelHint="AcrylicBlur"
         Background="#662D2D30"
         xmlns:views="clr-namespace:UI"
+        xmlns:ui="using:UI"
         ExtendClientAreaTitleBarHeightHint="{OnPlatform Default=-1, Windows=38}"
         ExtendClientAreaToDecorationsHint="{OnPlatform Default=False, Windows=True}"
-        Title="Net-Vine">
-
+        Title="{x:Static ui:Program.AppName}">
 
     <!-- Styles -->
     <Window.Styles>

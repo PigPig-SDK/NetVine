@@ -41,7 +41,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        if (ConfigManager.ReadSetting(SettingInt.MinimizeOnClose) == 1)
+        if (ConfigManager.ReadSettingBool(SettingInt.MinimizeOnClose))
         {
             e.Cancel = true;
             Hide();
