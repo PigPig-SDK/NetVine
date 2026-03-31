@@ -40,9 +40,7 @@ namespace UI.Views
 
         private void Exit(object? sender, RoutedEventArgs e)
         {
-            (DateTime? start, DateTime? end) noTimeSelected = (null, null);
-            
-            Close(noTimeSelected);
+            Close(null);
         }
     }
 }

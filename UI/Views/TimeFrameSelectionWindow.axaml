@@ -3,6 +3,7 @@
         x:Class="UI.Views.TimeFrameSelectionWindow"
         Width="375"
         Height="300"
+        CanResize="False"
         Title="Select Timeframe">
 
     <StackPanel>
