@@ -46,7 +46,7 @@ public partial class Canvas : UserControl
 
     private void DrawLineChart()
     {
-        var history = _vm.SelectedResource switch
+        (System.Collections.Generic.List<double> data, string title) history = _vm.SelectedResource switch
         {
             ChartService.CPUChartname => (_vm.CpuHistory, "CPU (%)"),
             ChartService.RAMChartName => (_vm.RamHistory, "RAM (MB)"),
@@ -55,10 +55,10 @@ public partial class Canvas : UserControl
             _ => (_vm.CpuHistory, "CPU (%)")
         };
 
-        if (history.Item1.Count == 0) return;
+        if (history.data.Count == 0) return;
 
-        var signal = CanvasPlot.Plot.Add.Signal(history.Item1.ToArray());
-        signal.LegendText = history.Item2;
+        var signal = CanvasPlot.Plot.Add.Signal(history.data.ToArray());
+        signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
         if (_vm.SelectedResource == ChartService.RAMChartName)
@@ -69,7 +69,7 @@ public partial class Canvas : UserControl
             CanvasPlot.Plot.Axes.AutoScaleX();
         }
 
-        CanvasPlot.Plot.YLabel(history.Item2);
+        CanvasPlot.Plot.YLabel(history.title);
         CanvasPlot.Plot.ShowLegend();
     }
     private void DrawBarChart() { }
