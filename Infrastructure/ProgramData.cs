@@ -20,7 +20,10 @@ public class ProgramData : IProgramData
     public float Timespan { get; set; }
     [ProtoMember(8)]
     public DateTime Date { get; set; }
-    [ProtoMember(9)]
+    /// <summary>
+    /// Do not store this data!
+    /// This is only used for live view
+    /// </summary>
     public int ProcessId { get; set; }
 
 }
