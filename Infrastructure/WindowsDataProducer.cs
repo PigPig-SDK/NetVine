@@ -211,7 +211,7 @@ public class WindowsDataProducer : IProgramDataProducer
                 if (!programs.ContainsKey(process.ProcessName))
                     programs.TryAdd(process.ProcessName, new ProgramData
                     {
-                        SystemName = Environment.MachineName,
+                        SystemName = SystemName,
                         ProcessName = process.ProcessName,
                         MemoryUsage = mem,
                         CpuUsage = cpuUsage,
