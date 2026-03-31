@@ -61,7 +61,7 @@ public partial class Canvas : UserControl
         signal.LegendText = history.Item2;
         signal.Color = ScottPlot.Colors.White;
 
-        if (_vm.SelectedResource == "RAM")
+        if (_vm.SelectedResource == ChartService.RAMChartName)
             _canvasPlot.Plot.Axes.AutoScale();
         else
         {
