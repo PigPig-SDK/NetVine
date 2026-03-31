@@ -16,6 +16,7 @@ public partial class FolderView : UserControl
         InitializeComponent();
         AttachedToVisualTree += OnAttached;
         DetachedFromLogicalTree += OnLeaveScope;
+        SetDateRange(null, null);
     }
 
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)

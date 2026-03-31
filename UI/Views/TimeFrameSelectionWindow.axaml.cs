@@ -6,15 +6,28 @@ namespace UI.Views
 {
     public partial class TimeFrameSelectionWindow : Window
     {
+        private static  DateTime? HistoricalStartInternal { get; set; }
+        
+        private static DateTime? HistoricalEndInternal { get; set; }
         public TimeFrameSelectionWindow()
         {
             InitializeComponent();
-            
-            Date1Selector.SelectedDate = DateTime.Now.Date;
-            Date2Selector.SelectedDate = DateTime.Now.Date;
-            
-            Time1Selector.SelectedTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(10));
-            Time2Selector.SelectedTime = DateTime.Now.TimeOfDay.Add(TimeSpan.FromMinutes(10));;
+
+            if (!HistoricalStartInternal.HasValue && !HistoricalEndInternal.HasValue)
+            {
+                Date1Selector.SelectedDate = DateTime.Now.Date;
+                Date2Selector.SelectedDate = DateTime.Now.Date;
+                Time1Selector.SelectedTime = DateTime.Now.TimeOfDay.Subtract(TimeSpan.FromMinutes(10));
+                Time2Selector.SelectedTime = DateTime.Now.TimeOfDay.Add(TimeSpan.FromMinutes(10));    
+            }
+            else
+            {
+                Date1Selector.SelectedDate = HistoricalStartInternal?.Date;
+                Date2Selector.SelectedDate = HistoricalEndInternal?.Date;
+                Time1Selector.SelectedTime = HistoricalStartInternal?.TimeOfDay;
+                Time2Selector.SelectedTime = HistoricalEndInternal?.TimeOfDay;
+                
+            }
             
         }
 
@@ -23,6 +36,9 @@ namespace UI.Views
            
             DateTime? selectedStart = Date1Selector.SelectedDate?.Date + Time1Selector.SelectedTime;
             DateTime? selectedEnd = Date2Selector.SelectedDate?.Date + Time2Selector.SelectedTime;
+            
+            HistoricalStartInternal = selectedStart;
+            HistoricalEndInternal = selectedEnd;
             
             Close((selectedStart, selectedEnd));
         }
