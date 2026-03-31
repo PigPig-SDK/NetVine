@@ -114,7 +114,7 @@ namespace UI.ViewModels
             TableRowsView = new DataGridCollectionView(_tableData.TableRows);
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
-            _tableViewActive = lastActiveTab == 1 ? true : false;
+            _tableViewActive = lastActiveTab == MainWindowViewModel.TableView ? true : false;
 
             //Event Subscriptions
             MainWindowViewModel.OnTabChanged += OnTabChanged;
