@@ -47,7 +47,7 @@ public class NetworkDataManager
     }
     private void OnDBSnapshot(List<ProgramData> programs, bool isDataLocal)
     {
-        if(isDataLocal) return;//Don't push data to host if we are the one who added it to the database.
+        if(!isDataLocal) return;//Only submit our unique data.
 
         ProgramDataPayload programdata = new() { IsForDatabase = true, ProgramDataArray = programs.ToArray() };
         byte[] packetBytes = Packet.CreatePacket(programdata).ToBytes();
