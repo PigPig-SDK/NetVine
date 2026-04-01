@@ -17,6 +17,7 @@ public partial class FolderView : UserControl
         InitializeComponent();
         AttachedToVisualTree += OnAttached;
         DetachedFromLogicalTree += OnLeaveScope;
+        SetDateRange(null, null);
     }
 
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
@@ -85,5 +86,13 @@ public partial class FolderView : UserControl
     {
         LiveViewModel.IsLive = false;
         NetworkDataManager.Instance.HostSendLivePayload(false);
+    }
+    
+    public void SetDateRange(DateTime? date1, DateTime? date2)
+    {
+        String date1String = date1?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
+        String date2String = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
+        
+        DateRange.Text = date1String + " - \n" + date2String;
     }
 }

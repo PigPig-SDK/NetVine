@@ -23,6 +23,8 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        _ = ResourceService.Instance;
+
         InitializeComponent();
 
         //_tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton}, { MainWindowViewModel.TableView,TableButton } }; old code from merge conflict
@@ -55,7 +57,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        if (ConfigManager.ReadSetting(SettingInt.MinimizeOnClose) == 1)
+        if (ConfigManager.ReadSettingBool(SettingInt.MinimizeOnClose))
         {
             e.Cancel = true;
             Hide();

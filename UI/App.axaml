@@ -34,5 +34,13 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+        <Style Selector="TextBox#SearchBoxInput">
+            <Setter Property="BorderBrush" Value="#A5C882" />
+        </Style>
+
+        <Style Selector="TextBox#SearchBoxInput:focus">
+            <Setter Property="BorderBrush" Value="#A5C882" />
+        </Style>
     </Application.Styles>
 </Application>

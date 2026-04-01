@@ -10,6 +10,10 @@ public interface IProgramDataHistorical
     /// The name of the process
     /// </summary>
     public string ProcessName { get; set; }
+    /// <summary>
+    /// The name of the process
+    /// </summary>
+    public string TimeFrame { get; set; }
     
     
     /// <summary>

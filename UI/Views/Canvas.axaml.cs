@@ -1,25 +1,78 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Infrastructure;
 using ScottPlot;
 using ScottPlot.Avalonia;
+using System.ComponentModel.Design;
 using UI.ViewModels;
+
 namespace UI;
 
 public partial class Canvas : UserControl
 {
+    private readonly CanvasViewModel _vm;
+
     public Canvas()
     {
         InitializeComponent();
-        DataContext = new CanvasViewModel();
-
-        double[] dataX = new double[] {};
-        double[] dataY = new double[] {};
-
-        AvaPlot LineGraph = this.Find<AvaPlot>("LineGraph");
-        LineGraph.Plot.Add.Scatter(dataX, dataY);
-        LineGraph.Plot.Axes.Left.Label.Text = "Vertical Axis Label";
-        LineGraph.Plot.Axes.Bottom.Label.Text = "Horizontal Axis Label";
-        LineGraph.Refresh();
+        _vm = new CanvasViewModel(ChartService.Instance, ResourceService.Instance);
+        DataContext = _vm;
+        _vm.ChartUpdateRequested += DrawChart;
+        CanvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
+        CanvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
+        CanvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
+        CanvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
+        CanvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+        // TODO: make 0 the minimum x for graph
+        // _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
+        CanvasPlot.Refresh();
+        CanvasPlot.UserInputProcessor.Disable();
     }
+
+    private void DrawChart()
+    {
+        Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            CanvasPlot.Plot.Clear();
+
+            switch (_vm.CurrentChartType)
+            {
+                case "Line": DrawLineChart(); break;
+                case "Bar": DrawBarChart(); break;
+                case "Pie": DrawPieChart(); break;
+            }
+
+            CanvasPlot.Refresh();
+        });
+    }
+
+    private void DrawLineChart()
+    {
+        (System.Collections.Generic.List<double> data, string title) history = _vm.SelectedResource switch
+        {
+            ChartService.CPUChartname => (_vm.CpuHistory, "CPU (%)"),
+            ChartService.RAMChartName => (_vm.RamHistory, "RAM (MB)"),
+            ChartService.DiskChartName => (_vm.DiskHistory, "Disk (MB/s)"),
+            ChartService.NetworkChartName => (_vm.NetworkHistory, "Network (MB/s)"),
+            _ => (_vm.CpuHistory, "CPU (%)")
+        };
+
+        if (history.data.Count == 0) return;
+
+        var signal = CanvasPlot.Plot.Add.Signal(history.data.ToArray(), ConfigManager.ReadSetting(SettingFloat.TickRate));
+        signal.LegendText = history.title;
+        signal.Color = ScottPlot.Colors.White;
+
+        if (_vm.SelectedResource == ChartService.RAMChartName || _vm.SelectedResource == ChartService.DiskChartName || _vm.SelectedResource == ChartService.NetworkChartName)
+            CanvasPlot.Plot.Axes.AutoScale();
+        else
+        {
+            CanvasPlot.Plot.Axes.SetLimitsY(0, 100);
+            CanvasPlot.Plot.Axes.AutoScaleX();
+        }
+
+        CanvasPlot.Plot.YLabel(history.title);
+        CanvasPlot.Plot.ShowLegend();
+    }
+    private void DrawBarChart() { }
+    private void DrawPieChart() { }
 }

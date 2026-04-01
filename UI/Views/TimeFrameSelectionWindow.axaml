@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="UI.Views.TimeFrameSelectionWindow"
+        Width="375"
+        Height="300"
+        CanResize="False"
+        Title="Select Timeframe">
+
+    <StackPanel>
+        
+        <Border BorderThickness="1"
+                CornerRadius="5"
+                Padding="10"
+                BorderBrush="Gray">
+            
+            <StackPanel Spacing="8">
+                <TextBlock Text="Select Start Date:"/>
+                <DatePicker x:Name="Date1Selector"/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <TimePicker Grid.Column="0"
+                                x:Name="Time1Selector"
+                                ClockIdentifier="24HourClock"
+                                MinuteIncrement="1"/>
+
+                    <Button Grid.Column="1"
+                            Content="Set Empty"
+                            Click="EmptyDate1"/>
+                </Grid>    
+            </StackPanel>    
+        </Border>    
+        
+        <Border BorderThickness="1"
+                CornerRadius="5"
+                Padding="10"
+                BorderBrush="Gray">
+            
+            <StackPanel Spacing="8">
+                <TextBlock Text="Select End Date:"/>
+                <DatePicker x:Name="Date2Selector"/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="13">
+                    <TimePicker Grid.Column="0"
+                                x:Name="Time2Selector"
+                                ClockIdentifier="24HourClock"
+                                MinuteIncrement="1"/>
+
+                    <Button Grid.Column="1"
+                            Content="Set Empty"
+                            Click="EmptyDate2"/>
+                </Grid>   
+            </StackPanel>   
+        </Border> 
+        
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,10,0">
+            <Button Content="Exit" Click="Exit"/>
+            <Button Content="Select" Click="Select"/>
+        </StackPanel>
+            
+        <TextBlock Text="Empty dates go to infinity."
+                   Opacity="1"
+                   FontSize="15"
+                   Margin="10,10,0,0"/>
+        
+    </StackPanel>    
+</Window>

@@ -8,13 +8,14 @@ using Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using UI.Views;
 
 namespace UI.ViewModels
 {
     public class TableViewModel : ViewModelBase
     {
-
-
         // Fields
         private static readonly Dictionary<string, string> _headerToProperty = new()
         {
@@ -43,33 +44,10 @@ namespace UI.ViewModels
         private bool _showDisk = true;
         private bool _showNetwork = true;
 
-        // Constructor
-        public TableViewModel()
-        {
-            _tableData = new TableDataManager();
-            TableRowsView = new DataGridCollectionView(_tableData.TableRows);
-
-            var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
-            _tableViewActive = lastActiveTab == 1 ? true : false;
-
-            //Event Subscriptions
-            MainWindowViewModel.OnTabChanged += OnTabChanged;
-            LiveViewModel.ViewChangedEvent += ViewChanged;
-            SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-            DBInteract.OnDataAdded += OnSnapshotHistorical;
-            MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
-
-            //Commands
-            ToggleCpuCommand = new RelayCommand(ToggleCpu);
-            ToggleDiskCommand = new RelayCommand(ToggleDisk);
-            ToggleMemoryCommand = new RelayCommand(ToggleMemory);
-            ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
-
-            PopulateTableInit();
-        }
+        private DateTime? HistoricalStart = null;
+        private DateTime? HistoricalEnd = null;
 
         // Properties
-
         public string AllMenuText => (_showCpu && _showMemory && _showDisk && _showNetwork) ? "Hide All" : "Show All";
         public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
         public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
@@ -97,7 +75,6 @@ namespace UI.ViewModels
         
 
         // Context menu properties
-        
         public bool ShowCpuLive => _showCpu && LiveViewModel.IsLive;
         public bool ShowMemoryLive => _showMemory && LiveViewModel.IsLive;
         public bool ShowDiskLive => _showDisk && LiveViewModel.IsLive;
@@ -126,8 +103,35 @@ namespace UI.ViewModels
         public IRelayCommand ToggleMemoryCommand { get; }
         public IRelayCommand ToggleDiskCommand { get; }
         public IRelayCommand ToggleNetworkCommand { get; }
+        public IRelayCommand OpenTimeframeCommand { get; }
 
-        
+
+
+        // Constructor
+        public TableViewModel()
+        {
+            _tableData = new TableDataManager();
+            TableRowsView = new DataGridCollectionView(_tableData.TableRows);
+
+            var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
+            _tableViewActive = lastActiveTab == MainWindowViewModel.TableView ? true : false;
+
+            //Event Subscriptions
+            MainWindowViewModel.OnTabChanged += OnTabChanged;
+            LiveViewModel.ViewChangedEvent += ViewChanged;
+            SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+            DBInteract.OnDataAdded += OnSnapshotHistorical;
+            MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
+
+            //Commands
+            ToggleCpuCommand = new RelayCommand(ToggleCpu);
+            ToggleDiskCommand = new RelayCommand(ToggleDisk);
+            ToggleMemoryCommand = new RelayCommand(ToggleMemory);
+            ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
+            OpenTimeframeCommand = new RelayCommand(OpenTimeframe);
+            PopulateTableInit();
+        }
+
         // Public Methods
 
         public void OnSearchKeyStroke(string? search)
@@ -157,7 +161,7 @@ namespace UI.ViewModels
             Debug.Log("OnSnapshotHistorical called");
             if (LiveViewModel.IsLive || !_tableViewActive) return;
             
-            var data = DBArithmetic.HistoricalDataProducer(null, null);
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -167,9 +171,6 @@ namespace UI.ViewModels
                 Debug.Log("OnSnapshot historical update completed");
             });
         }
-
-
-
         public void SetSort(string? header, bool isAscending)
         {
             if (header == null || !_headerToProperty.TryGetValue(header, out var path)) return;
@@ -181,7 +182,6 @@ namespace UI.ViewModels
         }
 
         // Private Methods
-
         private void OnIsVisiblePropertiesChanged()
         {
             OnPropertyChanged(nameof(ShowLive));
@@ -198,7 +198,6 @@ namespace UI.ViewModels
         }
 
         //commands for context menu
-
         private void ToggleCpu()
         {
             _showCpu = !_showCpu;
@@ -226,6 +225,38 @@ namespace UI.ViewModels
             OnPropertyChanged(nameof(NetworkMenuText));
             OnIsVisiblePropertiesChanged();
         }
+        
+        private async void OpenTimeframe()
+        {
+            Debug.Log("OpenTimeFrame called");
+            if (LiveViewModel.IsLive || !_tableViewActive) return;
+            
+            var timeFrameWindow = new TimeFrameSelectionWindow();
+            var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
+            
+            (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
+            (mainWindow);
+            
+            if (!dateRange.HasValue)
+            {
+                return;
+            }
+            
+            Console.WriteLine(dateRange);
+            HistoricalStart = dateRange.Value.date1;
+            HistoricalEnd = dateRange.Value.date2;
+            
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(data);
+                TableRowsView.Refresh();
+                ReapplySort();
+                Debug.Log("OpenTimeFrame update completed");
+            });
+            mainWindow.FindControl<FolderView>("FolderView").SetDateRange(HistoricalStart, HistoricalEnd);
+        }
 
         //initial population on startup
         private void PopulateTableInit()
@@ -235,12 +266,12 @@ namespace UI.ViewModels
             OnSwitchToHistorical();
         }
 
-        private void ViewChanged(bool b)
+        private void ViewChanged(bool isLive)
         {
-            Debug.Log($"ViewChanged fired, isLive={b}");
+            Debug.Log($"ViewChanged fired, isLive={isLive}");
             Debug.Log($"Printing Recieved Data to a file");
 
-            if (b)
+            if (isLive)
                 OnSwitchToLive();
             else
                 OnSwitchToHistorical();
@@ -264,9 +295,7 @@ namespace UI.ViewModels
 
         private void OnSwitchToHistorical()
         {
-            Debug.Log("OnSwitchToHistorical called");
-            var data = DBArithmetic.HistoricalDataProducer(null, null);
-            Debug.Log($"HistoricalDataProducer returned {data?.Count ?? 0} items");
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
             Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data!);
@@ -279,23 +308,18 @@ namespace UI.ViewModels
 
         private void OnTabChanged(int tab)
         {
-            Debug.Log($"Tab changed to tab {tab}");
-
-            if (tab == 1)
+            if (tab == MainWindowViewModel.TableView)
             {
                 _tableViewActive = true;
                 //resubscribe to events
-                Debug.Log("Table events subscribed");
                 LiveViewModel.ViewChangedEvent += ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnDataAdded += OnSnapshotHistorical;
             }
-
             else
             {
                 _tableViewActive = false;
                 //unsubscribe from events
-                Debug.Log("Table events unsubscribed");
                 LiveViewModel.ViewChangedEvent -= ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnDataAdded -= OnSnapshotHistorical;

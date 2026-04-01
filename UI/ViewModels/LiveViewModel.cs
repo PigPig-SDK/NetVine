@@ -4,7 +4,7 @@ namespace UI.ViewModels;
 
 public static class LiveViewModel
 {
-    private static bool _isLive;
+    private static bool _isLive = true;
     public static bool IsLive { get => _isLive; set 
         {
             _isLive = value;

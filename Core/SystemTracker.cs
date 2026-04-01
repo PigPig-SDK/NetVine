@@ -21,15 +21,11 @@ public class SystemTracker
     /// A property for reading the history directly.
     /// </summary>
     public IReadOnlyCollection<List<IProgramData>> History => Data;
-    /// <summary>
-    /// Maximum number of snapshots
-    /// </summary>
-    public uint Capacity { get; set; }
 
-    public SystemTracker(IProgramDataProducer programDataProducer, uint capacity)
+
+    public SystemTracker(IProgramDataProducer programDataProducer)
     {
         ProgramDataProducer = programDataProducer;
-        Capacity = capacity;
     }
     /// <summary>
     /// Gives a snapshot of the
@@ -104,10 +100,12 @@ public class SystemTracker
     {
         List<IProgramData> programData = [.. ProgramDataProducer.Produce(rate)];
 
-        //Make room for new data.
-        if (Data.Count >= Capacity) Data.RemoveLast();
-
         Data.AddFirst(programData);
         return programData;
+    }
+
+    public void ClearHistory()
+    {
+        Data.Clear();
     }
 }

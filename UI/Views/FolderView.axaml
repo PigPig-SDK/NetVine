@@ -14,12 +14,13 @@
             <StackPanel x:Name="ScrollView">
             </StackPanel>
         </ScrollViewer>
-        <Grid Grid.Row="3" RowDefinitions="auto,auto">
+        <Grid Grid.Row="3" RowDefinitions="auto,auto,auto">
             <!-- Slight padding. -->
-            <Rectangle Grid.Row="0" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
-            <Grid Grid.Row="1" RowDefinitions="*,*,*,*">
+            <TextBlock Grid.Row="0" x:Name="DateRange" Text="" Margin="8,4,8,4"/>
+            <Rectangle Grid.Row="1" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
+            <Grid Grid.Row="2" RowDefinitions="*,*,*,*">
                 <!-- Live toggle -->
-                <CheckBox Checked="LiveViewChecked" Grid.Row="1" Unchecked="LiveViewUnchecked" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Toggle the database viewing for only live data">
+                <CheckBox Checked="LiveViewChecked" IsChecked="true" Grid.Row="1" Unchecked="LiveViewUnchecked" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Toggle the database viewing for only live data">
                     <CheckBox.Template>
                         <ControlTemplate>
                             <Border Background="Transparent"

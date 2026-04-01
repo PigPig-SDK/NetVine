@@ -1,59 +1,61 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Input;
+using UI.ViewModels;
 
 namespace UI.ViewModels
 {
     public class ComponentViewModel : INotifyPropertyChanged
     {
-        //whatever value the graph last received, update these with that value
-        private string CPUtext = "0.0%";
-        private string GPUtext = "0.0%";
-        private string RAMtext = "0.0%";
-        private string DISKtext = "0.0%";
+        private readonly ChartService _chartService;
+        private readonly ResourceService _resourceService;
 
-        public string ButtonCPUText
+        public ICommand SelectCpuCommand { get; }
+        public ICommand SelectRamCommand { get; }
+        public ICommand SelectDiskCommand { get; }
+        public ICommand SelectNetworkCommand { get; }
+
+        public ComponentViewModel(ChartService chartService, ResourceService resourceService)
         {
-            get => CPUtext;
-            set
-            {
-                CPUtext = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonCPUText)));
-            }
-        }
-        public string ButtonGPUText
-        {
-            get => GPUtext;
-            set
-            {
-                GPUtext = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonGPUText)));
-            }
-        }
-        public string ButtonRAMText
-        {
-            get => RAMtext;
-            set
-            {
-                RAMtext = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonRAMText)));
-            }
-        }
-        public string ButtonDISKText
-        {
-            get => DISKtext;
-            set
-            {
-                DISKtext = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonDISKText)));
-            }
+            _chartService = chartService;
+            _resourceService = resourceService;
+            _resourceService.DataUpdated += OnDataUpdated;
+
+            SelectCpuCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.CPUChartname);
+            SelectRamCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.RAMChartName);
+            SelectDiskCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.DiskChartName);
+            SelectNetworkCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.NetworkChartName);
         }
 
+        public List<string> ChartTypes { get; } = new() { "Line", "Bar", "Pie" };
 
+        private string _selectedChartType = "Line";
+        public string SelectedChartType
+        {
+            get => _selectedChartType;
+            set
+            {
+                _selectedChartType = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedChartType)));
+                _chartService.ChartType = value;
+            }
+        }
+        public string ButtonCPUText => $"{_resourceService.CpuUsage:0.0}%";
+        public string ButtonRAMText => $"{_resourceService.RamUsage:0.0} MB";
+        public string ButtonDISKText => $"{_resourceService.DiskUsage:0.0} MB/s";
+        public string ButtonNetworkText => $"{_resourceService.NetworkUsage:0.0} MB/s";
+
+        private void OnDataUpdated()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonCPUText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonRAMText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonDISKText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonNetworkText)));
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 }
+

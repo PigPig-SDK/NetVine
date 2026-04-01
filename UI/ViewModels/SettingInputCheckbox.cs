@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using Infrastructure;
 using System;
 
@@ -21,8 +22,14 @@ public class SettingInputCheckbox : SettingInput
         checkbox.Margin = new Avalonia.Thickness(0, 0, InputDistanceFromRight, 0);
         //Subscribe after change. Thank you.
         checkbox.IsCheckedChanged += CheckboxSubmission;
+        checkbox.DetachedFromLogicalTree += TextboxDetachedFromLogicalTree;
         Input = checkbox;
         UpdateCheckbox();
+    }
+
+    private void TextboxDetachedFromLogicalTree(object? sender, LogicalTreeAttachmentEventArgs e)
+    {
+        UnbindSettingChange();
     }
 
     private void UpdateCheckbox()
