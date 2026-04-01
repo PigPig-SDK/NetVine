@@ -41,7 +41,10 @@ public class NetworkDataManager
         DBInteract.OnProgramListAdded += OnDBSnapshot;
         NetworkManager.Instance.OnDisconnectFromHost += OnHostDisconnect;
     }
-
+    ~NetworkDataManager()
+    {
+        SystemHistory.Instance.OnSnapshotTaken -= OnProgramShapshot;
+    }
     private void OnDBSnapshot(List<ProgramData> programs, bool isDataLocal)
     {
         if(isDataLocal) return;//Don't push data to host if we are the one who added it to the database.
@@ -50,16 +53,6 @@ public class NetworkDataManager
         byte[] packetBytes = Packet.CreatePacket(programdata).ToBytes();
 
         NetworkManager.Instance.SendToAllHosts(packetBytes);
-    }
-
-    private void OnHostDisconnect(Guid info)
-    {
-        LivePushHostSet.Remove(info);
-    }
-
-    ~NetworkDataManager()
-    {
-        SystemHistory.Instance.OnSnapshotTaken -= OnProgramShapshot;
     }
     private void OnProgramShapshot(List<IProgramData> list)
     {
@@ -70,6 +63,10 @@ public class NetworkDataManager
             byte[] packetBytes = Packet.CreatePacket(programdata).ToBytes();
             NetworkManager.Instance.SendToId(pushInfoForHost, packetBytes);
         }
+    }
+    private void OnHostDisconnect(Guid info)
+    {
+        LivePushHostSet.Remove(info);
     }
     public void LiveDataRecieved(ProgramData[] data)
     {
