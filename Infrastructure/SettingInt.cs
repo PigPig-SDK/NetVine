@@ -14,5 +14,6 @@ public enum SettingInt
     WindowHeight,
     AutoEstablishConnection,
     LoadOnStartup,
-    MinimizeOnClose
+    MinimizeOnClose,
+    StartMinimized
 };

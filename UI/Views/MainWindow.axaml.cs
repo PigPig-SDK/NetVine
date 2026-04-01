@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Infrastructure;
+using Infrastructure.Networking;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,6 +20,8 @@ public partial class MainWindow : Window
     public const int GraphView = 0;
     public const int TableView = 1;
     public const int SettingsView = 2;
+
+    public bool IsInitialized = false;
 
     public MainWindow()
     {
@@ -39,6 +42,26 @@ public partial class MainWindow : Window
         SetTabSelected(CanvasTabControl.SelectedIndex);
 
         this.KeyDown += OnKeyDown;
+
+        Opened += OnOpenedEvent;
+        Closing += OnCloseEvent;
+    }
+
+    private void OnOpenedEvent(object? sender, EventArgs e)
+    {
+        NetworkDataManager.Instance.HostSendLivePayload(LiveViewModel.IsLive);
+
+        if (!IsInitialized && ConfigManager.ReadSettingBool(SettingInt.StartMinimized))
+        {
+            ShowInTaskbar = false;
+            Hide();
+        }
+        IsInitialized = true;
+    }
+
+    private void OnCloseEvent(object? sender, WindowClosingEventArgs e)
+    {
+        NetworkDataManager.Instance.HostSendLivePayload(false);
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)

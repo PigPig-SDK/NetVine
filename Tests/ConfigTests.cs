@@ -1,6 +1,5 @@
-﻿using Infrastructure;
-using YamlDotNet.Serialization;
-
+﻿
+using Infrastructure;
 namespace NetVine.Tests;
 
 public class ConfigManagerTests : IDisposable

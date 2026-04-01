@@ -4,42 +4,26 @@ using ProtoBuf;
 [ProtoContract]
 public class ProgramData : IProgramData
 {
-
-    [ProtoMember(1)] private string _systemName;
-    [ProtoMember(2)] private string _processName;
-    
+    [ProtoMember(1)]
+    public string SystemName { get; set; } = string.Empty;
     [ProtoMember(2)]
-    private float _cpuUsage, _diskUsage, _networkUsage, _memoryUsage, _timespan;
-    
+    public string ProcessName { get; set; } = string.Empty;
     [ProtoMember(3)]
-    private DateTime _date;
-    
+    public float CpuUsage { get; set; }
     [ProtoMember(4)]
-    public string SystemName { get => _systemName; set => _systemName = value; }
-    
+    public float DiskUsage { get; set; }
     [ProtoMember(5)]
-    public string ProcessName { get => _processName; set => _processName = value; }
-    
+    public float NetworkUsage { get; set; }
     [ProtoMember(6)]
-    public float CpuUsage { get => _cpuUsage; set => _cpuUsage = value; }
-    
+    public float MemoryUsage { get; set; }
     [ProtoMember(7)]
-    public float DiskUsage { get => _diskUsage; set => _diskUsage = value; }
-    
+    public float Timespan { get; set; }
     [ProtoMember(8)]
-    public float NetworkUsage { get => _networkUsage; set => _networkUsage = value; }
-    
-    [ProtoMember(9)]
-    public float MemoryUsage { get => _memoryUsage; set => _memoryUsage = value; }
-
-    [ProtoMember(10)]
-    public float Timespan { get => _timespan; set => _timespan = value; }
-    
-    [ProtoMember(11)]
-    public DateTime Date { get => _date; set => _date = value; }
-    
-    [ProtoMember(12)]
+    public DateTime Date { get; set; }
+    /// <summary>
+    /// Do not store this data!
+    /// An applications ProcessID changes every time it is loaded.
+    /// </summary>
     public int ProcessId { get; set; }
-    
-    
+
 }

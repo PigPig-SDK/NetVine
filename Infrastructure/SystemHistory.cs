@@ -92,7 +92,7 @@ public class SystemHistory : IDisposable
                 var average = _tracker.GetAverage();
                 if (average == null) return;
 
-                if(average != null) DBInteract.Store(average);
+                if (average != null) DBInteract.Store(average.Cast<ProgramData>(), true);
                 SnapshotIterationCount = 0;
                 _tracker.ClearHistory();
             }

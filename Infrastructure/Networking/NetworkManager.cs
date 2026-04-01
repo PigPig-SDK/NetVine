@@ -14,6 +14,11 @@ public class NetworkManager
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
     public Host? Host { get; private set; }
 
+    /// <summary>
+    /// Called when a client loses their connection with the host.
+    /// </summary>
+    public Action<Guid> OnDisconnectFromHost;
+
     public static void SetupInstance()
     {
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
@@ -135,7 +140,13 @@ public class NetworkManager
             }
         }
     }
-
+    public void SendToAllHosts(byte[] bytes)
+    {
+        foreach (Client connectionContext in EstablishedClientConnections.Values)
+        {
+            connectionContext.Send(bytes);
+        }
+    } 
     public void SendToId(Guid id, byte[] bytes)
     {
         var session = Host?.FindSession(id)?.Send(bytes);

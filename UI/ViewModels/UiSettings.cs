@@ -19,6 +19,12 @@ public static class UiSettings
                 "This is your current netvine version.",
                 "version", "app", "application"),
 
+
+            new SettingInputCheckbox($"Start minimized",
+                "Should netvine start minimized",
+                SettingInt.StartMinimized,
+                "load", "startup", "app", "application"),
+
             new SettingInputCheckbox($"Minimize on close",
                 "When you close net-vine, should it remain silent in the background?",
                 SettingInt.MinimizeOnClose,
@@ -29,6 +35,7 @@ public static class UiSettings
                 SettingInt.LoadOnStartup,
                 "load", "startup", "app", "application"),
             ]),
+
 
         new SettingGroup ("Network",[
             new SettingInputField<SettingInt>("Port for host",
