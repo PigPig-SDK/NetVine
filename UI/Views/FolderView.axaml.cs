@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using Core;
 using Infrastructure;
+using Infrastructure.Networking;
 using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
@@ -77,10 +78,12 @@ public partial class FolderView : UserControl
     private void LiveViewChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         LiveViewModel.IsLive = true;
+        NetworkDataManager.Instance.HostSendLivePayload(true);
     }
 
     private void LiveViewUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         LiveViewModel.IsLive = false;
+        NetworkDataManager.Instance.HostSendLivePayload(false);
     }
 }

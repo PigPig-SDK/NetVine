@@ -8,11 +8,12 @@ public class SetLiveViewPayload : IPacketPayload
     public PacketType PacketType => PacketType.InitiateLiveView;
 
     [ProtoMember(1)]
-    public bool IsLiveViewEnabled { get; set; }
+    public bool IsLive { get; set; }
 
+    public SetLiveViewPayload() { }
     public SetLiveViewPayload(bool isLiveViewEnabled)
     {
-        IsLiveViewEnabled = isLiveViewEnabled;
+        IsLive = isLiveViewEnabled;
     }
 
     public void Execute(bool isServer, Guid id)
@@ -20,9 +21,9 @@ public class SetLiveViewPayload : IPacketPayload
         if (isServer) return;//Do not run on server.
 
         //Start push operations
-        if(IsLiveViewEnabled)
-            NetworkLiveDataManager.Instance.PushHostSet.Add(id);
+        if(IsLive)
+            NetworkDataManager.Instance.LivePushHostSet.Add(id);
         else
-            NetworkLiveDataManager.Instance.PushHostSet.Remove(id);
+            NetworkDataManager.Instance.LivePushHostSet.Remove(id);
     }
 }

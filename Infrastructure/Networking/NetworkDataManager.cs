@@ -3,11 +3,13 @@ using Infrastructure.Networking.Packets;
 
 namespace Infrastructure.Networking;
 
-public class NetworkLiveDataManager
+public class NetworkDataManager
 {
-    public static NetworkLiveDataManager? _instance = null;
+    public static NetworkDataManager? _instance = null;
     public event Action<ProgramData[]>? OnLiveDataRecieved;
-    public static NetworkLiveDataManager Instance {
+    public HashSet<Guid> LivePushHostSet = [];
+    public bool IsHostExpectingLiveData = false;
+    public static NetworkDataManager Instance {
         get
         {
             if(_instance is null) throw new InvalidOperationException($"Call {nameof(SetupInstance)} before accessing instance!!");
@@ -18,14 +20,21 @@ public class NetworkLiveDataManager
             _instance = value; 
         } 
     }
-    public HashSet<Guid> PushHostSet = [];
+    public void HostSendLivePayload(bool isLive)
+    {
+        Host? host = NetworkManager.Instance.Host;
+        if (host is null) return;
 
+        SetLiveViewPayload setLiveViewPayload = new(isLive);
+        Packet packet = Packet.CreatePacket(setLiveViewPayload);
+        host?.Multicast(packet.ToBytes());
+    }
     public static void SetupInstance()
     {
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
-        Instance = new NetworkLiveDataManager();
+        Instance = new NetworkDataManager();
     }
-    public NetworkLiveDataManager()
+    public NetworkDataManager()
     {
         SystemHistory.Instance.OnSnapshotTaken += OnProgramShapshot;
         NetworkManager.Instance.OnDisconnectFromHost += OnHostDisconnect;
@@ -33,30 +42,38 @@ public class NetworkLiveDataManager
 
     private void OnHostDisconnect(Guid info)
     {
-        if(PushHostSet.Contains(info)) PushHostSet.Remove(info);
+        LivePushHostSet.Remove(info);
     }
 
-    ~NetworkLiveDataManager()
+    ~NetworkDataManager()
     {
         SystemHistory.Instance.OnSnapshotTaken -= OnProgramShapshot;
     }
     private void OnProgramShapshot(List<IProgramData> list)
     {
-        foreach (Guid pushInfoForHost in PushHostSet)
+        //When we take a snapshot, push the data to the host.
+        foreach (Guid pushInfoForHost in LivePushHostSet)
         {
-            Debug.Log("TODO: Create a way to push data to our host!");
-            //var packetBytes = Packet.CreatePacket(new LiveViewDataPayload(list)).ToBytes();
-            byte[] packetBytes = Packet.CreatePacket(new StringPayload("Conceptually sent latest snapshot.")).ToBytes();
+            ProgramDataPayload programdata = new() { IsForDatabase = false, ProgramDataArray = list.Cast<ProgramData>().ToArray() };
+            byte[] packetBytes = Packet.CreatePacket(programdata).ToBytes();
             NetworkManager.Instance.SendToId(pushInfoForHost, packetBytes);
         }
 
     }
     public void LiveDataRecieved(ProgramData[] data)
     {
+        //Remind user we are not in the mood.
+        if (IsHostExpectingLiveData == false)
+        {
+            HostUpdatePushStatus(false);
+            return;
+        }
+
         OnLiveDataRecieved?.Invoke(data);
     }
     public void HostUpdatePushStatus(bool shouldPush)
     {
+        IsHostExpectingLiveData = shouldPush;
         var packetBytes = Packet.CreatePacket(new SetLiveViewPayload(shouldPush)).ToBytes();
         NetworkManager.Instance.Host?.Multicast(packetBytes);
     }

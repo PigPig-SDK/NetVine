@@ -16,9 +16,9 @@ public class ProgramDataPayload : IPacketPayload
     {
         if (!isServer) throw new InvalidOperationException("Cannot execute on client! There is a critical error somewhere in your code!");
 
-        if(IsForDatabase)
+        if (IsForDatabase)
             DBInteract.Store(ProgramDataArray);
         else
-            NetworkLiveDataManager.Instance.LiveDataRecieved(ProgramDataArray);
+            NetworkDataManager.Instance.LiveDataRecieved(ProgramDataArray);
     }
 }

@@ -75,6 +75,8 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            if(desktop.MainWindow is not null)
+                desktop.MainWindow.Topmost = true;
             desktop.MainWindow?.Show();
             desktop.MainWindow?.Activate();
         }

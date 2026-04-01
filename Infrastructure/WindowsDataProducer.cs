@@ -109,7 +109,6 @@ public class WindowsDataProducer : IProgramDataProducer
             return false;
         }
     }
-
     /// <summary>
     /// Writes the given "dataInfo" to its respective dictionary.
     /// </summary>
@@ -231,7 +230,6 @@ public class WindowsDataProducer : IProgramDataProducer
             }
             catch (Win32Exception ex)
             {
-                Core.Debug.Log($"Access denied to process {process.ProcessName}: {ex.Message}");
             }
             catch (InvalidOperationException ex)
             {
