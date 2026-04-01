@@ -234,11 +234,17 @@ namespace UI.ViewModels
             var timeFrameWindow = new TimeFrameSelectionWindow();
             var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
             
-            (DateTime? date1, DateTime? date2) dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)>
+            (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
             (mainWindow);
-          
-            HistoricalStart = dateRange.date1;
-            HistoricalEnd = dateRange.date2;
+            
+            if (!dateRange.HasValue)
+            {
+                return;
+            }
+            
+            Console.WriteLine(dateRange);
+            HistoricalStart = dateRange.Value.date1;
+            HistoricalEnd = dateRange.Value.date2;
             
             var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
 

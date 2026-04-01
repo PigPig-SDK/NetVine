@@ -6,6 +6,8 @@ public class ProgramDataHistorical : IProgramDataHistorical
 {
     public string SystemName { get; set; }
     public string ProcessName { get; set; }
+    
+    public string TimeFrame { get; set; }
     public float CpuUsageAvg { get; set; }
     public float DiskUsageAvg { get; set; }
     public float NetworkUsageAvg { get; set; }
