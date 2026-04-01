@@ -120,7 +120,7 @@ namespace UI.ViewModels
             MainWindowViewModel.OnTabChanged += OnTabChanged;
             LiveViewModel.ViewChangedEvent += ViewChanged;
             SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-            DBInteract.OnDataAdded += OnSnapshotHistorical;
+            DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
 
             //Commands
@@ -130,6 +130,22 @@ namespace UI.ViewModels
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
             OpenTimeframeCommand = new RelayCommand(OpenTimeframe);
             PopulateTableInit();
+        }
+
+        private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
+        {
+            Debug.Log("OnSnapshotHistorical called");
+            if (LiveViewModel.IsLive || !_tableViewActive) return;
+
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(data);
+                TableRowsView.Refresh();
+                ReapplySort();
+                Debug.Log("OnSnapshot historical update completed");
+            });
         }
 
         // Public Methods
@@ -151,24 +167,6 @@ namespace UI.ViewModels
                 TableRowsView.Refresh();
                 ReapplySort();
                 Debug.Log("OnSnapShotLive update completed");
-            });
-        }
-
-
-
-        public void OnSnapshotHistorical()
-        {
-            Debug.Log("OnSnapshotHistorical called");
-            if (LiveViewModel.IsLive || !_tableViewActive) return;
-            
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
-
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                _tableData.UpdateHistoricalData(data);
-                TableRowsView.Refresh();
-                ReapplySort();
-                Debug.Log("OnSnapshot historical update completed");
             });
         }
         public void SetSort(string? header, bool isAscending)
@@ -314,7 +312,7 @@ namespace UI.ViewModels
                 //resubscribe to events
                 LiveViewModel.ViewChangedEvent += ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-                DBInteract.OnDataAdded += OnSnapshotHistorical;
+                DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             }
             else
             {
@@ -322,7 +320,7 @@ namespace UI.ViewModels
                 //unsubscribe from events
                 LiveViewModel.ViewChangedEvent -= ViewChanged;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
-                DBInteract.OnDataAdded -= OnSnapshotHistorical;
+                DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
             }
 
         }

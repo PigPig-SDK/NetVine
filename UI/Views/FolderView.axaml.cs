@@ -23,7 +23,7 @@ public partial class FolderView : UserControl
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
         UpdateUsersLate();
-        DBInteract.OnDataAdded += UpdateUsersLate;
+        DBInteract.OnProgramAdded += UpdateUsersLate;
         ConnectedUserInfo.OnUserConnectionModified += OnUserModified;
     }
 
@@ -41,7 +41,7 @@ public partial class FolderView : UserControl
     /// <param name="__">Discarded</param>
     private void OnLeaveScope(object? _, Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs __)
     {
-        DBInteract.OnDataAdded -= UpdateUsersLate;
+        DBInteract.OnProgramAdded -= UpdateUsersLate;
         ConnectedUserInfo.OnUserConnectionModified -= OnUserModified;
     }
 

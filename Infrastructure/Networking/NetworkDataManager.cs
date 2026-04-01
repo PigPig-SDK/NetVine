@@ -1,5 +1,6 @@
 ﻿using Core;
 using Infrastructure.Networking.Packets;
+using System.Collections.Generic;
 
 namespace Infrastructure.Networking;
 
@@ -37,7 +38,18 @@ public class NetworkDataManager
     public NetworkDataManager()
     {
         SystemHistory.Instance.OnSnapshotTaken += OnProgramShapshot;
+        DBInteract.OnProgramListAdded += OnDBSnapshot;
         NetworkManager.Instance.OnDisconnectFromHost += OnHostDisconnect;
+    }
+
+    private void OnDBSnapshot(List<ProgramData> programs, bool isDataLocal)
+    {
+        if(isDataLocal) return;//Don't push data to host if we are the one who added it to the database.
+
+        ProgramDataPayload programdata = new() { IsForDatabase = true, ProgramDataArray = programs.ToArray() };
+        byte[] packetBytes = Packet.CreatePacket(programdata).ToBytes();
+
+        NetworkManager.Instance.SendToAllHosts(packetBytes);
     }
 
     private void OnHostDisconnect(Guid info)
@@ -58,7 +70,6 @@ public class NetworkDataManager
             byte[] packetBytes = Packet.CreatePacket(programdata).ToBytes();
             NetworkManager.Instance.SendToId(pushInfoForHost, packetBytes);
         }
-
     }
     public void LiveDataRecieved(ProgramData[] data)
     {

@@ -140,7 +140,13 @@ public class NetworkManager
             }
         }
     }
-
+    public void SendToAllHosts(byte[] bytes)
+    {
+        foreach (Client connectionContext in EstablishedClientConnections.Values)
+        {
+            connectionContext.Send(bytes);
+        }
+    } 
     public void SendToId(Guid id, byte[] bytes)
     {
         var session = Host?.FindSession(id)?.Send(bytes);
