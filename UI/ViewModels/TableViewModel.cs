@@ -134,7 +134,6 @@ namespace UI.ViewModels
 
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
-            Debug.Log("OnSnapshotHistorical called");
             if (LiveViewModel.IsLive || !_tableViewActive) return;
 
             var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
@@ -157,8 +156,6 @@ namespace UI.ViewModels
         }
         public void OnSnapshotLive(List<IProgramData> data)
         {
-            Debug.Log("OnSnapShotLive called");
-
             if (!LiveViewModel.IsLive || !_tableViewActive) return;
             
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -166,7 +163,6 @@ namespace UI.ViewModels
                 _tableData.UpdateLiveData(data);
                 TableRowsView.Refresh();
                 ReapplySort();
-                Debug.Log("OnSnapShotLive update completed");
             });
         }
         public void SetSort(string? header, bool isAscending)
