@@ -6,6 +6,7 @@ namespace Infrastructure.Networking;
 public class NetworkLiveDataManager
 {
     public static NetworkLiveDataManager? _instance = null;
+    public event Action<ProgramData[]>? OnLiveDataRecieved;
     public static NetworkLiveDataManager Instance {
         get
         {
@@ -49,6 +50,10 @@ public class NetworkLiveDataManager
             NetworkManager.Instance.SendToId(pushInfoForHost, packetBytes);
         }
 
+    }
+    public void LiveDataRecieved(ProgramData[] data)
+    {
+        OnLiveDataRecieved?.Invoke(data);
     }
     public void HostUpdatePushStatus(bool shouldPush)
     {

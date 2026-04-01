@@ -16,9 +16,9 @@ public class ProgramDataPayload : IPacketPayload
     {
         if (!isServer) throw new InvalidOperationException("Cannot execute on client! There is a critical error somewhere in your code!");
 
-        foreach(var data in ProgramDataArray)
-        {
-            Console.WriteLine($"Program Name: {data.ProcessName} | User: {data.SystemName}");
-        }
+        if(IsForDatabase)
+            DBInteract.Store(ProgramDataArray);
+        else
+            NetworkLiveDataManager.Instance.LiveDataRecieved(ProgramDataArray);
     }
 }
