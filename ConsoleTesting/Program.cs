@@ -3,7 +3,7 @@ using Core;
 using Infrastructure;
 using System.Diagnostics;
 
-SystemHistory history = new(new WindowsDataProducer(), 10, TimeSpan.FromSeconds(1));
+SystemHistory history = new(new WindowsDataProducer(), TimeSpan.FromSeconds(1));
 HashSet<string> trackedProcesses = new();
 history.OnSnapshotTaken = (data) =>
 {
