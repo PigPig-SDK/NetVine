@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Core;
 using ScottPlot;
 using ScottPlot.Avalonia;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
 using UI.ViewModels;
@@ -12,6 +13,11 @@ public partial class Canvas : UserControl
 {
     private readonly CanvasViewModel _vm;
     private AvaPlot _canvasPlot;
+
+    //add to settings
+    int topcount = 10;
+
+
 
     public Canvas()
     {
@@ -25,6 +31,8 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         // TODO: make 0 the minimum x for graph
         // _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
+
+
         _canvasPlot.Refresh();
     }
 
@@ -41,6 +49,8 @@ public partial class Canvas : UserControl
                 case "Bar": DrawBarChart(); break;
                 case "Pie": DrawPieChart(); break;
             }
+
+
 
             _canvasPlot.Refresh();
         });
@@ -81,7 +91,9 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.YLabel(history.Item2);
         _canvasPlot.Plot.ShowLegend();
     }
-    private void DrawBarChart() { }
+    private void DrawBarChart() {
+
+    }
     private void DrawPieChart() {
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(1);
         _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
@@ -91,19 +103,9 @@ public partial class Canvas : UserControl
         
         if (_vm.LatestSnapshot.Count == 0) return;
 
-        var ordered = _vm.SelectedResource switch
-        {
-            ChartService.CPU => _vm.LatestSnapshot.OrderByDescending(p => p.CpuUsage),
-            ChartService.RAM => _vm.LatestSnapshot.OrderByDescending(p => p.MemoryUsage),
-            ChartService.DISK => _vm.LatestSnapshot.OrderByDescending(p => p.DiskUsage),
-            ChartService.NET => _vm.LatestSnapshot.OrderByDescending(p => p.NetworkUsage),
-            _ => _vm.LatestSnapshot.OrderByDescending(p => p.CpuUsage)
-        };
-        int topcount = 10;
-        var pietop = ordered
-            .Take(topcount)
-            .Where(p => GetValue(p) > 0)
-            .ToList();
+        var pietop = GetTopProcesses();
+        if (pietop.Count == 0) return;
+
 
         if (pietop.Count == 0) return;
 
@@ -117,6 +119,7 @@ public partial class Canvas : UserControl
             pie.Slices[i].LegendText = $"{pietop[i].ProcessName} ({GetValue(pietop[i]):0.0})";
         }
 
+        
         _canvasPlot.Plot.ShowLegend();
         _canvasPlot.Plot.Axes.AutoScale();
     }
@@ -128,4 +131,16 @@ public partial class Canvas : UserControl
         ChartService.NET => p.NetworkUsage,
         _ => p.CpuUsage
     };
+
+    private List<IProgramData> GetTopProcesses()
+    {
+        if (_vm.LatestSnapshot.Count == 0) return new();
+
+        return _vm.LatestSnapshot
+            .OrderByDescending(p => GetValue(p))
+            .Take(topcount)
+            .Where(p => GetValue(p) > 0)
+            .ToList();
     }
+
+}
