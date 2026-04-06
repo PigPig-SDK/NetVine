@@ -19,6 +19,8 @@ namespace UI.ViewModels
         public List<double> DiskHistory { get; } = new();
         public List<double> NetworkHistory { get; } = new();
 
+        public List<IProgramData> LatestSnapshot { get; private set; } = new();
+
         public event Action? DataUpdated;
 
         private ResourceService()
@@ -28,6 +30,7 @@ namespace UI.ViewModels
 
         private void OnSnapshot(List<IProgramData> data)
         {
+            LatestSnapshot = data;
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
             RamUsage = data.Sum(p => p.MemoryUsage);
             DiskUsage = data.Sum(p => p.DiskUsage);

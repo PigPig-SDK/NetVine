@@ -1,7 +1,9 @@
 using Avalonia.Controls;
+using Core;
 using ScottPlot;
 using ScottPlot.Avalonia;
 using System.ComponentModel.Design;
+using System.Linq;
 using UI.ViewModels;
 
 namespace UI;
@@ -21,7 +23,6 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
         _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
-        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
         // TODO: make 0 the minimum x for graph
         // _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
         _canvasPlot.Refresh();
@@ -48,20 +49,21 @@ public partial class Canvas : UserControl
     {
         var history = _vm.SelectedResource switch
         {
-            ChartService.CPUChartname => (_vm.CpuHistory, "CPU (%)"),
-            ChartService.RAMChartName => (_vm.RamHistory, "RAM (MB)"),
-            ChartService.DiskChartName => (_vm.DiskHistory, "Disk (%)"),
-            ChartService.NetworkChartName => (_vm.NetworkHistory, "Network (MB/s)"),
+            ChartService.CPU => (_vm.CpuHistory, "CPU (%)"),
+            ChartService.RAM => (_vm.RamHistory, "RAM (MB)"),
+            ChartService.DISK => (_vm.DiskHistory, "Disk (%)"),
+            ChartService.NET => (_vm.NetworkHistory, "Network (MB/s)"),
             _ => (_vm.CpuHistory, "CPU (%)")
         };
 
         if (history.Item1.Count == 0) return;
 
+        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
         var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
         signal.LegendText = history.Item2;
         signal.Color = ScottPlot.Colors.White;
 
-        if (_vm.SelectedResource == ChartService.RAMChartName)
+        if (_vm.SelectedResource == ChartService.RAM)
             _canvasPlot.Plot.Axes.AutoScale();
         else
         {
@@ -73,5 +75,46 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.ShowLegend();
     }
     private void DrawBarChart() { }
-    private void DrawPieChart() { }
-}
+    private void DrawPieChart() {
+        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(1);
+        if (_vm.LatestSnapshot.Count == 0) return;
+
+        // Select and sort by the appropriate resource
+        var ordered = _vm.SelectedResource switch
+        {
+            ChartService.CPU => _vm.LatestSnapshot.OrderByDescending(p => p.CpuUsage),
+            ChartService.RAM => _vm.LatestSnapshot.OrderByDescending(p => p.MemoryUsage),
+            ChartService.DISK => _vm.LatestSnapshot.OrderByDescending(p => p.DiskUsage),
+            ChartService.NET => _vm.LatestSnapshot.OrderByDescending(p => p.NetworkUsage),
+            _ => _vm.LatestSnapshot.OrderByDescending(p => p.CpuUsage)
+        };
+        int topcount = 10;
+        var pietop = ordered
+            .Take(topcount)
+            .Where(p => GetValue(p) > 0)
+            .ToList();
+
+        if (pietop.Count == 0) return;
+
+        double[] values = pietop.Select(p => (double)GetValue(p)).ToArray();
+
+        var pie = _canvasPlot!.Plot.Add.Pie(values);
+
+        for (int i = 0; i < pietop.Count; i++)
+        {
+            pie.Slices[i].Label = "";
+            pie.Slices[i].LegendText = $"{pietop[i].ProcessName} ({GetValue(pietop[i]):0.0})";
+        }
+
+        _canvasPlot.Plot.ShowLegend();
+        _canvasPlot.Plot.Axes.AutoScale();
+    }
+    private float GetValue(IProgramData p) => _vm.SelectedResource switch
+    {
+        ChartService.CPU => p.CpuUsage,
+        ChartService.RAM => p.MemoryUsage,
+        ChartService.DISK => p.DiskUsage,
+        ChartService.NET => p.NetworkUsage,
+        _ => p.CpuUsage
+    };
+    }

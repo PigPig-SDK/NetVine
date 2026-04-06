@@ -1,0 +1,15 @@
+﻿* Add cap to live graph plot points. Can use a default of 100, then explore other options/add setting to change cap. (linkedlist?)
+
+* Efficient graph redrawing. Ensure that graphs don't fully redraw when a new plot point is added, only redraw when resource changes.
+
+* Pie option. Add a pie chart that shows which processes are using the most of a given resource.
+
+* Cap on pie chart. By default, only show the top 10 processes for a given resource. Explore options/setting to change later.
+
+* Probe rate. If user changes probe rate, the graph should also modify its probe rate. 
+
+* Graph DISK in mb/sec
+
+* do an efficiency pass before doing pie. then do another efficiency pass after doing pie. 
+
+* 
