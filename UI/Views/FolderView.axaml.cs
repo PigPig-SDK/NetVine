@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using Core;
 using Infrastructure;
+using Infrastructure.Networking;
 using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ public partial class FolderView : UserControl
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
         UpdateUsersLate();
-        DBInteract.OnDataAdded += UpdateUsersLate;
+        DBInteract.OnProgramAdded += UpdateUsersLate;
         ConnectedUserInfo.OnUserConnectionModified += OnUserModified;
     }
 
@@ -42,7 +43,7 @@ public partial class FolderView : UserControl
     /// <param name="__">Discarded</param>
     private void OnLeaveScope(object? _, Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs __)
     {
-        DBInteract.OnDataAdded -= UpdateUsersLate;
+        DBInteract.OnProgramAdded -= UpdateUsersLate;
         ConnectedUserInfo.OnUserConnectionModified -= OnUserModified;
     }
 
@@ -83,12 +84,14 @@ public partial class FolderView : UserControl
         CombinationBox.IsChecked = false;
         CombinationBox.IsEnabled = false;
         
+        NetworkDataManager.Instance.HostSendLivePayload(true);
     }
 
     private void LiveViewUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         LiveViewModel.IsLive = false;
         CombinationBox.IsEnabled = true;
+        NetworkDataManager.Instance.HostSendLivePayload(false);
     }
     
     private void CombinationChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

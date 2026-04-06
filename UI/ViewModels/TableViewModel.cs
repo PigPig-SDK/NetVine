@@ -121,7 +121,7 @@ namespace UI.ViewModels
             LiveViewModel.ViewChangedEvent += ViewChangedLive;
             CombinationModel.ViewChangedEvent += ViewChangedCombination;
             SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-            DBInteract.OnDataAdded += OnSnapshotHistorical;
+            DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
 
             //Commands
@@ -133,6 +133,21 @@ namespace UI.ViewModels
             PopulateTableInit();
         }
 
+        private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
+        {
+            if (LiveViewModel.IsLive || !_tableViewActive) return;
+
+            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(data);
+                TableRowsView.Refresh();
+                ReapplySort();
+                Debug.Log("OnSnapshot historical update completed");
+            });
+        }
+
         // Public Methods
 
         public void OnSearchKeyStroke(string? search)
@@ -142,25 +157,7 @@ namespace UI.ViewModels
         }
         public void OnSnapshotLive(List<IProgramData> data)
         {
-            Debug.Log("OnSnapShotLive called");
-
             if (!LiveViewModel.IsLive || !_tableViewActive) return;
-            
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                _tableData.UpdateLiveData(data);
-                TableRowsView.Refresh();
-                ReapplySort();
-                Debug.Log("OnSnapShotLive update completed");
-            });
-        }
-
-
-
-        public void OnSnapshotHistorical()
-        {
-            Debug.Log("OnSnapshotHistorical called");
-            if (LiveViewModel.IsLive || !_tableViewActive) return;
             
             var data = CombinationModel.IsCombination ?
                 DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
@@ -168,10 +165,9 @@ namespace UI.ViewModels
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                _tableData.UpdateHistoricalData(data);
+                _tableData.UpdateLiveData(data);
                 TableRowsView.Refresh();
                 ReapplySort();
-                Debug.Log("OnSnapshot historical update completed");
             });
         }
         public void SetSort(string? header, bool isAscending)
@@ -323,7 +319,7 @@ namespace UI.ViewModels
                 LiveViewModel.ViewChangedEvent += ViewChangedLive;
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-                DBInteract.OnDataAdded += OnSnapshotHistorical;
+                DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             }
             else
             {
@@ -332,7 +328,7 @@ namespace UI.ViewModels
                 LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
-                DBInteract.OnDataAdded -= OnSnapshotHistorical;
+                DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
             }
 
         }

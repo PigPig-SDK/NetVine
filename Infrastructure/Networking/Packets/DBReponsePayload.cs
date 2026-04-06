@@ -23,7 +23,7 @@ public class DBResponsePayload : IPacketPayload
     
     public void Execute(bool isServer, Guid id)
     {
-        DBInteract.Store(DBSection);
+        DBInteract.Store(DBSection, false);
     }
     
 }

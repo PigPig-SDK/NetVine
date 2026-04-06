@@ -29,6 +29,9 @@ internal sealed class Program
         // Setup network manager
         NetworkManager.SetupInstance();
 
+        //Setup live data manager
+        NetworkDataManager.SetupInstance();
+      
         //OS startup binding configuration
         SystemStartupBinder.Setup();
 
