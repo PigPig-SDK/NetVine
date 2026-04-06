@@ -34,6 +34,7 @@ public partial class Canvas : UserControl
         {
             _canvasPlot.Plot.Clear();
 
+            _canvasPlot.Plot.YLabel("");
             switch (_vm.CurrentChartType)
             {
                 case "Line": DrawLineChart(); break;
@@ -47,6 +48,12 @@ public partial class Canvas : UserControl
 
     private void DrawLineChart()
     {
+        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+        _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = true;
+        _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = true;
+        _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 2;
+        _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 2;
+
         var history = _vm.SelectedResource switch
         {
             ChartService.CPU => (_vm.CpuHistory, "CPU (%)"),
@@ -58,7 +65,7 @@ public partial class Canvas : UserControl
 
         if (history.Item1.Count == 0) return;
 
-        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+
         var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
         signal.LegendText = history.Item2;
         signal.Color = ScottPlot.Colors.White;
@@ -77,9 +84,13 @@ public partial class Canvas : UserControl
     private void DrawBarChart() { }
     private void DrawPieChart() {
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(1);
+        _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
+        _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
+        _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
+        _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
+        
         if (_vm.LatestSnapshot.Count == 0) return;
 
-        // Select and sort by the appropriate resource
         var ordered = _vm.SelectedResource switch
         {
             ChartService.CPU => _vm.LatestSnapshot.OrderByDescending(p => p.CpuUsage),
