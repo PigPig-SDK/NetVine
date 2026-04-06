@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.FolderView">
+    
     <Grid RowDefinitions="auto,auto,*,auto">
         <Label Grid.Column="0" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
                 FontFamily="avares://NetVine/Assets#Bebas Neue"
@@ -16,11 +17,51 @@
         </ScrollViewer>
         <Grid Grid.Row="3" RowDefinitions="auto,auto,auto">
             <!-- Slight padding. -->
-            <TextBlock Grid.Row="0" x:Name="DateRange" Text="" Margin="8,4,8,4"/>
+            
+            <StackPanel Grid.Row="0">
+                <TextBlock x:Name="Date1Text" HorizontalAlignment="Center"/>
+                <TextBlock Text="-" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="Date2Text" HorizontalAlignment="Center"/>
+            </StackPanel>
             <Rectangle Grid.Row="1" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
-            <Grid Grid.Row="2" RowDefinitions="*,*,*,*">
+            <Grid Grid.Row="2" ColumnDefinitions="*, *" RowDefinitions="*">
                 <!-- Live toggle -->
-                <CheckBox Checked="LiveViewChecked" IsChecked="true" Grid.Row="1" Unchecked="LiveViewUnchecked" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Toggle the database viewing for only live data">
+                <CheckBox x:Name="CombinationBox" Checked="CombinationChecked" Grid.Column="0" Unchecked="CombinationUnchecked" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Toggle combination of multiple computers data sets">
+                    <CheckBox.Template>
+                        <ControlTemplate>
+                            <Border Background="Transparent"
+                                    BorderBrush="#888888"
+                                    BorderThickness="2"
+                                    CornerRadius="8"
+                                    Padding="8,8">
+                                <Border.Styles>
+                                    <Style Selector=":pointerover > Border">
+                                        <Setter Property="Background" Value="#22ffffff"/>
+                                    </Style>
+                                </Border.Styles>
+                                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                                    <!-- Custom sprite checkbox box -->
+                                    <Panel Grid.Column="0" Width="24" Height="24">
+                                        <!-- Unchecked -->
+                                        <Image Source="/Assets/live_icon.png"
+                                                IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
+                                                RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                        <!-- Checked -->
+                                        <Image Source="/Assets/live_icon_ticked.png"
+                                                IsVisible="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
+                                                RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                                    </Panel>
+                                    <!-- Label -->
+                                    <Label Grid.Column="1" HorizontalAlignment="Stretch" FontSize="17" MinHeight="25" VerticalAlignment="Center" 
+                                            FontFamily="avares://NetVine/Assets#Bebas Neue"
+                                            Foreground="White"
+                                            Margin="4,4,0,0">COMBO</Label>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </CheckBox.Template>
+                </CheckBox>    
+                <CheckBox x:Name="LiveBox" Checked="LiveViewChecked" Grid.Column="1" Unchecked="LiveViewUnchecked" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Toggle the database viewing for only live data">
                     <CheckBox.Template>
                         <ControlTemplate>
                             <Border Background="Transparent"
@@ -54,7 +95,7 @@
                             </Border>
                         </ControlTemplate>
                     </CheckBox.Template>
-                </CheckBox>
+                </CheckBox>    
             </Grid>
         </Grid>
     </Grid>

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Core;
+using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 
 namespace Infrastructure;
 

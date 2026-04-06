@@ -43,7 +43,7 @@ namespace UI.ViewModels
         private bool _showMemory = true;
         private bool _showDisk = true;
         private bool _showNetwork = true;
-
+        
         private DateTime? HistoricalStart = null;
         private DateTime? HistoricalEnd = null;
 
@@ -118,7 +118,8 @@ namespace UI.ViewModels
 
             //Event Subscriptions
             MainWindowViewModel.OnTabChanged += OnTabChanged;
-            LiveViewModel.ViewChangedEvent += ViewChanged;
+            LiveViewModel.ViewChangedEvent += ViewChangedLive;
+            CombinationModel.ViewChangedEvent += ViewChangedCombination;
             SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
             DBInteract.OnDataAdded += OnSnapshotHistorical;
             MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
@@ -161,7 +162,9 @@ namespace UI.ViewModels
             Debug.Log("OnSnapshotHistorical called");
             if (LiveViewModel.IsLive || !_tableViewActive) return;
             
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+            var data = CombinationModel.IsCombination ?
+                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
+                DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -246,15 +249,8 @@ namespace UI.ViewModels
             HistoricalStart = dateRange.Value.date1;
             HistoricalEnd = dateRange.Value.date2;
             
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
-
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                _tableData.UpdateHistoricalData(data);
-                TableRowsView.Refresh();
-                ReapplySort();
-                Debug.Log("OpenTimeFrame update completed");
-            });
+            OnSnapshotHistorical();
+            
             mainWindow.FindControl<FolderView>("FolderView").SetDateRange(HistoricalStart, HistoricalEnd);
         }
 
@@ -266,15 +262,24 @@ namespace UI.ViewModels
             OnSwitchToHistorical();
         }
 
-        private void ViewChanged(bool isLive)
+        private void ViewChangedLive(bool isLive)
         {
-            Debug.Log($"ViewChanged fired, isLive={isLive}");
+            Debug.Log($"ViewChangedLive fired, isLive={isLive}");
             Debug.Log($"Printing Recieved Data to a file");
 
             if (isLive)
                 OnSwitchToLive();
             else
                 OnSwitchToHistorical();
+
+        }
+        
+        private void ViewChangedCombination(bool isCombination)
+        {
+            Debug.Log($"ViewChangedCombination fired, isCombination={isCombination}");
+            Debug.Log($"Printing Recieved Data to a file");
+
+            OnSwitchToHistorical();
 
         }
 
@@ -295,7 +300,10 @@ namespace UI.ViewModels
 
         private void OnSwitchToHistorical()
         {
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+            var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
+            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
+            DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
+            
             Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data!);
@@ -312,7 +320,8 @@ namespace UI.ViewModels
             {
                 _tableViewActive = true;
                 //resubscribe to events
-                LiveViewModel.ViewChangedEvent += ViewChanged;
+                LiveViewModel.ViewChangedEvent += ViewChangedLive;
+                CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnDataAdded += OnSnapshotHistorical;
             }
@@ -320,7 +329,8 @@ namespace UI.ViewModels
             {
                 _tableViewActive = false;
                 //unsubscribe from events
-                LiveViewModel.ViewChangedEvent -= ViewChanged;
+                LiveViewModel.ViewChangedEvent -= ViewChangedLive;
+                CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnDataAdded -= OnSnapshotHistorical;
             }

@@ -17,6 +17,8 @@ public partial class FolderView : UserControl
         AttachedToVisualTree += OnAttached;
         DetachedFromLogicalTree += OnLeaveScope;
         SetDateRange(null, null);
+        LiveBox.IsChecked = true;
+        CombinationBox.IsChecked = false;
     }
 
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
@@ -78,18 +80,33 @@ public partial class FolderView : UserControl
     private void LiveViewChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         LiveViewModel.IsLive = true;
+        CombinationBox.IsChecked = false;
+        CombinationBox.IsEnabled = false;
+        
     }
 
     private void LiveViewUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         LiveViewModel.IsLive = false;
+        CombinationBox.IsEnabled = true;
     }
+    
+    private void CombinationChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CombinationModel.IsCombination = true;
+    }
+
+    private void CombinationUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CombinationModel.IsCombination = false;
+    }
+    
+    
     
     public void SetDateRange(DateTime? date1, DateTime? date2)
     {
-        String date1String = date1?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
-        String date2String = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
+        Date1Text.Text = date1?.ToString("MMMM d, yyyy h:mm tt") ?? "∞";
+        Date2Text.Text  = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "∞";
         
-        DateRange.Text = date1String + " - \n" + date2String;
     }
 }
