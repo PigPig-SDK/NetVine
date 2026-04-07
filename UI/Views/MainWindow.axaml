@@ -133,7 +133,7 @@
                 <TabItem Header="SettingsView" Classes="hiddenTab">
                     <views:SettingsView />
                 </TabItem>
-                <TabItem Header="SettingsView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                <TabItem Header="SettingsView" Classes="hiddenTab">
                     <views:HomeView />
                 </TabItem>
             </TabControl>
