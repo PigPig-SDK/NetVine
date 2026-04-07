@@ -17,63 +17,9 @@
 
     <!-- Styles -->
     <Window.Styles>
-        <!-- Checkbox -->    
-        <Style Selector="CheckBox /template/ Border#NormalRectangle">
-            <Setter Property="BorderBrush" Value="#A5C882" />
-        </Style>
-        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
-            <Setter Property="Background" Value="#A5C882" />
-            <Setter Property="BorderBrush" Value="#A5C882" />
-        </Style>
-        <!-- Textbox -->
-        <Style Selector="TextBox:focus-within /template/ Border">
-          <Setter Property="BorderBrush" Value="#A5C882" />
-        </Style>
-        <!-- Button -->
-        <Style Selector="Button.selected">
-            <Setter Property="Background" Value="#A5C882"/>
-        </Style>
-        <Style Selector="Button.deselected">
-            <Setter Property="Background" Value="#33000000"/>
-        </Style>
-        <!--
-            This style is based on the default Fluent theme
-            (https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/Menu.xaml),
-            but allows menu items to wrap in multiple rows.
-            You can remove this part if you prefer the default behavior (single row menu).
-        -->
-        <Style Selector="Menu">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Height" Value="NaN" />
-            <!--
-                Height=NaN is required because Avalonia fluent theme uses 32 as default menu height,
-                and this would cause the wrapped rows to be hidden when using WrapPanel as ItemsPanel.
-            -->
-            <Setter Property="ItemContainerTheme" Value="{StaticResource FluentTopLevelMenuItem}" />
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border
-                        Padding="{TemplateBinding Padding}"
-                        HorizontalAlignment="Stretch"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <ItemsPresenter
-                            Name="PART_ItemsPresenter"
-                            VerticalAlignment="Stretch"
-                            KeyboardNavigation.TabNavigation="Continue">
-                            <ItemsPresenter.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsPresenter.ItemsPanel>
-                        </ItemsPresenter>
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-        </Style>
+        <StyleInclude Source="avares:/Styles/MainStyle.axaml"/>
     </Window.Styles>
+
     <!--The titlebar starts here.-->
     <Grid RowDefinitions="Auto,*">
         <Border Padding="0,10" IsHitTestVisible="False" Background="#99222228">
