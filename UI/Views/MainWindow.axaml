@@ -109,19 +109,18 @@
                 </Grid.Background>
             </Grid>
 
-
             <!-- Canvas -->
             <TabControl Grid.Column="2" x:Name="CanvasTabControl" SelectionChanged="OnTabChanged" Padding="0">
-                <TabItem Header="GraphView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                <TabItem Header="GraphView" Classes="hiddenTab">
                     <Grid ColumnDefinitions="150, *">
-                        <views:ComponentView Grid.Column="0" />
+                        <views:ComponentView Grid.Column="0"/>
                         <views:Canvas Grid.Column="1" />
                     </Grid>
                 </TabItem>
-                <TabItem Header="TableView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
-                    <views:TableView Padding="0"/>
+                <TabItem Header="TableView" Classes="hiddenTab">
+                    <views:TableView/>
                 </TabItem>
-                <TabItem Header="SettingsView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                <TabItem Header="SettingsView" Classes="hiddenTab">
                     <views:SettingsView />
                 </TabItem>
             </TabControl>
