@@ -137,7 +137,9 @@ namespace UI.ViewModels
         {
             if (LiveViewModel.IsLive || !_tableViewActive) return;
 
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+            var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
+                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
+                DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd); 
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -157,18 +159,16 @@ namespace UI.ViewModels
         }
         public void OnSnapshotLive(List<IProgramData> data)
         {
-            if (!LiveViewModel.IsLive || !_tableViewActive) return;
-            
-            var data = CombinationModel.IsCombination ?
-                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
-                DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
-
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                _tableData.UpdateLiveData(data);
-                TableRowsView.Refresh();
-                ReapplySort();
-            });
+                if (!LiveViewModel.IsLive || !_tableViewActive) return;
+            
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    _tableData.UpdateLiveData(data);
+                    TableRowsView.Refresh();
+                    ReapplySort();
+                });
+            }
         }
         public void SetSort(string? header, bool isAscending)
         {
@@ -245,7 +245,7 @@ namespace UI.ViewModels
             HistoricalStart = dateRange.Value.date1;
             HistoricalEnd = dateRange.Value.date2;
             
-            OnSnapshotHistorical();
+            OnSwitchToHistorical();
             
             mainWindow.FindControl<FolderView>("FolderView").SetDateRange(HistoricalStart, HistoricalEnd);
         }
