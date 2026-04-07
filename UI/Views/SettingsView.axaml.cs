@@ -22,7 +22,7 @@ public partial class SettingsView : UserControl
 
     private void SearchBarUpdated(string? input)
     {
-        if (MainWindowViewModel.ActiveTab != MainWindow.SettingsView) return;//Don't care.
+        if (MainWindowViewModel.ActiveTab != MainWindowViewModel.SettingView) return;//Don't care.
         if (input == null) return;
 
         string[] split = input.Split(' ');//Split at spaces

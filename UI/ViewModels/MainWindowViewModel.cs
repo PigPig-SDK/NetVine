@@ -4,8 +4,10 @@ namespace UI.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    public const int GraphView = 0;//from merge conflict
-    public const int TableView = 1;//
+    public const int GraphView = 0;
+    public const int TableView = 1;
+    public const int SettingView = 2;
+    public const int HomeView = 3;
 
     public static event Action<int>? OnTabChanged;
 
