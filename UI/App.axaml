@@ -25,12 +25,13 @@
     
     <Application.Resources>
 		<ResourceDictionary>
+            <local:BitmapAssetValueConverter x:Key="BitmapAssetValueConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="/Views/ColorPallete.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
-    
+
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
@@ -43,4 +44,5 @@
             <Setter Property="BorderBrush" Value="#A5C882" />
         </Style>
     </Application.Styles>
+
 </Application>
