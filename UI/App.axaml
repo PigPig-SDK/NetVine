@@ -10,9 +10,15 @@
             <TrayIcon Icon="/Assets/icon.ico" ToolTipText="Net-Vine" Clicked="ShowWindow">
                 <TrayIcon.Menu>
                     <NativeMenu>
-                        <NativeMenuItem Header="Open" Click="ShowWindow"/>
+                        <NativeMenuItem Header="Open" 
+                                        Icon="/Assets/share.png" 
+                                        Click="ShowWindow"/>
+                        <!--
                         <NativeMenuItemSeparator/>
-                        <NativeMenuItem Header="Quit" Click="QuitWindow"/>
+                        <NativeMenuItem Header="Disconnect" Icon="/Assets/plug.png"  Click="ToggleConnection"/>
+                        -->
+                        <NativeMenuItemSeparator/>
+                        <NativeMenuItem Header="Quit" Icon="/Assets/close.png"  Click="QuitWindow"/>
                     </NativeMenu>
                 </TrayIcon.Menu>
             </TrayIcon>
