@@ -19,6 +19,7 @@ public partial class FolderView : UserControl
         DetachedFromLogicalTree += OnLeaveScope;
         SetDateRange(null, null);
         CombinationBox.IsChecked = false;
+        CombinationBox.IsLocked = true;
     }
 
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
@@ -80,9 +81,7 @@ public partial class FolderView : UserControl
     private void LiveViewChecked()
     {
         LiveViewModel.IsLive = true;
-        CombinationBox.IsChecked = false;
         CombinationBox.IsLocked = true;
-
         NetworkDataManager.Instance.HostSendLivePayload(true);
     }
 
