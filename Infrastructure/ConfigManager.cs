@@ -56,7 +56,6 @@ public class ConfigManager
         {SettingInt.WindowWidth, 700 },
         {SettingInt.WindowHeight, 500 },
         {SettingInt.HostPort, NetworkManager.DefaultPort},
-        {SettingInt.AutoEstablishConnection, 1 },
         {SettingInt.MinimizeOnClose, 0 },
         {SettingInt.LoadOnStartup, 0 },
         {SettingInt.StartMinimized, 0 },

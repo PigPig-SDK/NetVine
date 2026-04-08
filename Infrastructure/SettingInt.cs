@@ -12,7 +12,6 @@ public enum SettingInt
     LastActivePage,
     WindowWidth,
     WindowHeight,
-    AutoEstablishConnection,
     LoadOnStartup,
     MinimizeOnClose,
     StartMinimized,

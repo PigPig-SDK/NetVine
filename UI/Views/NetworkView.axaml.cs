@@ -4,6 +4,7 @@ using Infrastructure;
 using Infrastructure.Networking;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using UI.ViewModels;
 
 namespace UI;
@@ -18,7 +19,6 @@ public partial class NetworkView : UserControl
         AttachedToLogicalTree += OnEnterScope;
         DetachedFromLogicalTree += OnLeaveScope;
         InitializeComponent();
-
         _portInput = AddTextbox(SettingInt.HostPort, "Port");
         _ipInput = AddTextbox(SettingString.HostIP, "Host IP Binding");
         PopulateConnections();
@@ -79,6 +79,7 @@ public partial class NetworkView : UserControl
     {
         UpdateHostConfig();
         UpdateHostToggleButtonName();
+        UpdateOnlineText();
     }
 
     private void UpdateHostToggleButtonName()
@@ -152,12 +153,13 @@ public partial class NetworkView : UserControl
 
     public void CustomCheckbox_CheckedChanged(object? sender, bool isChecked)
     {
+        ConfigManager.WriteSetting(SettingInt.NetworkDisabled, 
+            ConfigManager.ReadSetting(SettingInt.NetworkDisabled) == 0? 1 : 0);
         UpdateOnlineText();
     }
     void UpdateOnlineText()
     {
-        ConfigManager.WriteSetting(SettingInt.NetworkDisabled, disconnectBox.IsChecked ? 0 : 1);
-
+        disconnectBox.IsChecked = !ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled);
         if (disconnectBox.IsChecked)
             disconnectBox.Title = "Go Offline";
         else

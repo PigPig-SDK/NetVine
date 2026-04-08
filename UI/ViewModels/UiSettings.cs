@@ -56,10 +56,10 @@ public static class UiSettings
                 SettingFloat.NetworkReconnectInterval,
                 "network", "usage", "interval"),
 
-            new SettingInputCheckbox("Auto establish connection on startup",
-                "When re-establishing connection, how often do we check?",
-                SettingInt.AutoEstablishConnection,
-                "network", "client"),
+            new SettingInputCheckbox("Disable Network Operations",
+                "Disable all client connections and host connections. ",
+                SettingInt.NetworkDisabled,
+                "network", "usage"),
         ]),
         new SettingGroup ("Database Storage", [
 
