@@ -57,7 +57,8 @@ public class ConfigManager
         {SettingInt.AutoEstablishConnection, 1 },
         {SettingInt.MinimizeOnClose, 0 },
         {SettingInt.LoadOnStartup, 0 },
-        {SettingInt.StartMinimized, 0 }
+        {SettingInt.StartMinimized, 0 },
+        {SettingInt.NetworkDisabled, 0 }
     };
 
 

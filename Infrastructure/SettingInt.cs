@@ -15,5 +15,6 @@ public enum SettingInt
     AutoEstablishConnection,
     LoadOnStartup,
     MinimizeOnClose,
-    StartMinimized
+    StartMinimized,
+    NetworkDisabled
 };
