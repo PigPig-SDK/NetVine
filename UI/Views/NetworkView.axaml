@@ -40,7 +40,7 @@
         <Rectangle Grid.Row="4" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
         <Grid Grid.Row="5" RowDefinitions="*,*,*,*">
                 <!-- Live toggle -->
-                <local:CustomCheckbox x:Name="disconnectBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                <local:CustomCheckbox x:Name="disconnectBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" 
                                       Title="Disconnect"
                                       CheckedChanged="CustomCheckbox_CheckedChanged"
                                       IsChecked="True" FontSize="20"

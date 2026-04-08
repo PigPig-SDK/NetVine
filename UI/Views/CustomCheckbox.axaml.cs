@@ -107,15 +107,14 @@ public partial class CustomCheckbox : UserControl
         SelectorButton.IsEnabled = !IsLocked;
 
         SelectorButton.IsChecked = IsChecked;
+        LockedIcon.IsVisible = IsLocked;
         if (IsLocked)
         {
-            LockedIcon.IsVisible = true;
             UncheckedIcon.IsVisible = false;
             CheckedIcon.IsVisible = false;
         }
         else
         {
-            LockedIcon.IsVisible = false;
             if (IsChecked)
             {
                 CheckedIcon.IsVisible = true;

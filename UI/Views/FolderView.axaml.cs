@@ -18,7 +18,6 @@ public partial class FolderView : UserControl
         AttachedToVisualTree += OnAttached;
         DetachedFromLogicalTree += OnLeaveScope;
         SetDateRange(null, null);
-        LiveBox.IsChecked = true;
         CombinationBox.IsChecked = false;
     }
 
@@ -82,45 +81,36 @@ public partial class FolderView : UserControl
     {
         LiveViewModel.IsLive = true;
         CombinationBox.IsChecked = false;
-        CombinationBox.IsEnabled = false;
-        
+        CombinationBox.IsLocked = true;
+
         NetworkDataManager.Instance.HostSendLivePayload(true);
     }
 
     private void LiveViewUnchecked()
     {
         LiveViewModel.IsLive = false;
-        CombinationBox.IsEnabled = true;
+        CombinationBox.IsLocked = false;
         NetworkDataManager.Instance.HostSendLivePayload(false);
     }
-    
-    private void CombinationChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        CombinationModel.IsCombination = true;
-    }
 
-    private void CombinationUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        CombinationModel.IsCombination = false;
-    }
-    
-    
-    
+
     public void SetDateRange(DateTime? date1, DateTime? date2)
     {
         Date1Text.Text = date1?.ToString("MMMM d, yyyy h:mm tt") ?? "∞";
-        Date2Text.Text  = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "∞";
+        Date2Text.Text = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "∞";
     }
 
-    private void CustomCheckbox_CheckedChanged(object? sender, bool isChecked)
+    public void LiveCheckChanged(object? sender, bool isChecked)
     {
-        if(isChecked)
-        {
+        if (isChecked)
             LiveViewChecked();
-        }
         else
-        {
             LiveViewUnchecked();
-        }
+    }
+
+    public void CombinedCheckChanged(object? sender, bool isChecked)
+    {
+        Console.WriteLine($"Combination box changed: {isChecked}");
+        CombinationModel.IsCombination = isChecked;
     }
 }
