@@ -14,10 +14,11 @@
     </Style>
     <!-- Button -->
     <Style Selector="Button.selected">
-        <Setter Property="Background" Value="#A5C882"/>
+        <Setter Property="BorderBrush" Value="#A5C882"/>
+
     </Style>
     <Style Selector="Button.deselected">
-        <Setter Property="Background" Value="#33000000"/>
+        <Setter Property="BorderBrush" Value="#33000000"/>
     </Style>
     <!--
         This style is based on the default Fluent theme
@@ -59,15 +60,17 @@
     <!-- Menubar -->
     <Style Selector="Button.titlebar">
 		<Setter Property="FontSize" Value="24"/>
-        <Setter Property="CornerRadius" Value="1,1,0,0"/>
+        <Setter Property="CornerRadius" Value="3,3,0,0"/>
         <Setter Property="Padding" Value="24,0"/>
         <Setter Property="Margin" Value="5,10,0,0"/>
         <Setter Property="FontFamily" Value="avares://NetVine/Assets#Bebas Neue"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Background" Value="#883F3F43"/>
     </Style>
 
     <Style Selector="Button.titlebarGear">
         <Setter Property="CornerRadius" Value="0,16,0,0"/>
-        <Setter Property="Width" Value="30"/>
+        <Setter Property="Width" Value="35"/>
     </Style>
 
     <Style Selector="Panel.searchPanel">

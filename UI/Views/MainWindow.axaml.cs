@@ -19,7 +19,8 @@ public partial class MainWindow : Window
 
         InitializeComponent();
 
-        _tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton},
+        _tabBarMapping = new Dictionary<int, Button>() { 
+            { MainWindowViewModel.GraphView,  GraphButton},
             { MainWindowViewModel.TableView,TableButton },
             { MainWindowViewModel.SettingView, SettingsButton },
             { MainWindowViewModel.HomeView, HomeButton } }; 
