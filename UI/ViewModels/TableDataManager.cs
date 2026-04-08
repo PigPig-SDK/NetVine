@@ -32,7 +32,7 @@ namespace UI.ViewModels
         /// <param name="data"></param> new data to take in
         public void UpdateLiveData(List<IProgramData> data)
         {
-
+            Debug.Log("Table Live updated");
             var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
             var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
 

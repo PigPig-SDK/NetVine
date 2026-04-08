@@ -12,6 +12,7 @@ namespace UI;
 public partial class TableView : UserControl
 {
     private Dictionary<string, bool> _sortDirections = new();
+    private TableRow? _selectedRow;
 
     public TableView()
     {
@@ -60,12 +61,17 @@ public partial class TableView : UserControl
         }
     }
 
+    private void ContextMenuOpened(object? sender, RoutedEventArgs e)
+    {
+        _selectedRow = MyDataGrid.SelectedItem as TableRow;
+    }
     private void OnEndProgramClick(object? sender, RoutedEventArgs e)
     {
+        if (_selectedRow == null) throw new Exception("_selected row is null");
 
-        if (sender is MenuItem { DataContext: TableRow row })
-        {
-            _ = AppQuitter.KillProcessesByRowAsync(row);
-        }
+        _ = AppQuitter.KillProcessesByRowAsync(_selectedRow);
+
     }
+
+
 }

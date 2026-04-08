@@ -27,7 +27,8 @@
                 <!-- 1. Context Menu for the BODY (Rows) -->
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
-                        <ContextMenu>
+                        <ContextMenu Opened="ContextMenuOpened">
+                            
                             <MenuItem Header="End Program" Click="OnEndProgramClick"/>
                         </ContextMenu>
                     </Setter>

@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Core;
+using Infrastructure;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
-using Infrastructure;
-using Core;
-using System.Drawing;
+using System.Xml.Linq;
 namespace UI.ViewModels
 {
 
@@ -25,12 +26,7 @@ namespace UI.ViewModels
             {
                 using (p)
                 {
-                    p.CloseMainWindow();
-                    p.WaitForExit(2000);
-                    if (!p.HasExited)
-                    {
-                        p.Kill();
-                    }
+                    p.Kill(entireProcessTree: true);
                 }
             }
         }
@@ -44,6 +40,8 @@ namespace UI.ViewModels
 
         public static async Task KillProcessesByRowAsync(TableRow row)
         {
+            Core.Debug.Log($"Ending processes: {row.AppName}");
+
             string sysName = SystemHistory.Instance.SystemName;//?
             if (row.SystemName != sysName)
             {
@@ -52,8 +50,9 @@ namespace UI.ViewModels
             }
             else
             {
-                await Task.Run(async () => KillProcessByName(row.AppName));
+                await Task.Run(() => KillProcessByName(row.AppName));
             }
+
         }
 
     }

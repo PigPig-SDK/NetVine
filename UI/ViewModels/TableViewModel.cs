@@ -316,6 +316,7 @@ namespace UI.ViewModels
             {
                 _tableViewActive = true;
                 //resubscribe to events
+                // should be able to delete the subscribing and unsubscribing
                 LiveViewModel.ViewChangedEvent += ViewChangedLive;
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
