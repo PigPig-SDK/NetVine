@@ -1,4 +1,6 @@
 ﻿using Infrastructure.Networking;
+using NetCoreServer;
+using System;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -230,6 +232,7 @@ public class ConfigManager
         var yamlFile = File.ReadAllText(path);
         var deserializer = new DeserializerBuilder()
             .WithTypeConverter(new YamlStringEnumConverter())
+            .WithTypeConverter(new YamlConnectionInfoConverter())
             .IncludeNonPublicProperties()
             .Build();
         var manager = deserializer.Deserialize<ConfigManager>(yamlFile);
@@ -250,6 +253,7 @@ public class ConfigManager
     {
         var serializer = new SerializerBuilder()
             .WithTypeConverter(new YamlStringEnumConverter())
+            .WithTypeConverter(new YamlConnectionInfoConverter())
             .IncludeNonPublicProperties()
             .Build();
         var yamlOutput = serializer.Serialize(config);
@@ -327,6 +331,35 @@ public class ConfigManager
         public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
         {
             emitter.Emit(new Scalar(value!.ToString()!));
+        }
+    }
+
+    private class YamlConnectionInfoConverter : IYamlTypeConverter
+    {
+        public bool Accepts(Type type) => type == typeof(ConnectionInfo);
+
+        public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
+        {
+            ConnectionInfo connectionInfo = new("ParseFailure", 404);
+            string value = ((Scalar)parser.Current).Value;
+            parser.MoveNext();
+            var split = value.Split(':');
+
+            if (split.Length != 2)
+                return connectionInfo;
+
+            //Set connect info properly.
+            connectionInfo.Ip = split[0];
+            int.TryParse(split[1], out int expectedPort);
+            connectionInfo.Port = expectedPort;
+            return connectionInfo;
+        }
+
+        public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
+        {
+            var myType = (ConnectionInfo)value!;
+
+            emitter.Emit(new Scalar($"{myType.Ip}:{myType.Port}"));
         }
     }
 }
