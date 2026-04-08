@@ -23,8 +23,8 @@ public partial class NetworkView : UserControl
         _ipInput = AddTextbox(SettingString.HostIP, "Host IP Binding");
         PopulateConnections();
         UpdateHostConfig();
-        UpdateToggleButtonName();
-
+        UpdateHostToggleButtonName();
+        UpdateOnlineText();
     }
     public SettingInput? AddTextbox<T>(T setting, string watermark) where T : Enum
     {
@@ -78,10 +78,10 @@ public partial class NetworkView : UserControl
     private void OnSettingChanged(Enum setting)
     {
         UpdateHostConfig();
-        UpdateToggleButtonName();
+        UpdateHostToggleButtonName();
     }
 
-    private void UpdateToggleButtonName()
+    private void UpdateHostToggleButtonName()
     {
         ToggleHostButton.Content = ConfigManager.ReadSettingBool(SettingInt.IsHosting) == false ? "Start Host" : "Stop Host";
     }
@@ -136,6 +136,7 @@ public partial class NetworkView : UserControl
         if (connectionInfo is null) goto ErrorSubmittingDisplay;
 
         ConfigManager.AddClientConnection(connectionInfo);
+        ConfigManager.TrySaveToFile();
         return;
     ErrorSubmittingDisplay:
         ErrorSubmittingDisplay();
@@ -151,13 +152,15 @@ public partial class NetworkView : UserControl
 
     public void CustomCheckbox_CheckedChanged(object? sender, bool isChecked)
     {
-        if(isChecked)
-        {
-            disconnectBox.Title = "Disconnect";
-        }
+        UpdateOnlineText();
+    }
+    void UpdateOnlineText()
+    {
+        ConfigManager.WriteSetting(SettingInt.NetworkDisabled, disconnectBox.IsChecked ? 0 : 1);
+
+        if (disconnectBox.IsChecked)
+            disconnectBox.Title = "Go Offline";
         else
-        {
-            disconnectBox.Title = "Reconnect";
-        }
+            disconnectBox.Title = "Go Online";
     }
 }

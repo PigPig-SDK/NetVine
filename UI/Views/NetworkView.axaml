@@ -41,7 +41,8 @@
         <Grid Grid.Row="5" RowDefinitions="*,*,*,*">
                 <!-- Live toggle -->
                 <local:CustomCheckbox x:Name="disconnectBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" 
-                                      Title="Disconnect"
+                                      Title="Online"
+                                      ToolTip.Tip="Toggles all connections (For host and client)"
                                       CheckedChanged="CustomCheckbox_CheckedChanged"
                                       IsChecked="True" FontSize="20"
                                       UncheckedSource="avares://NetVine/Assets/plug.png" 
