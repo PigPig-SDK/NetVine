@@ -18,6 +18,7 @@ public partial class TableView : UserControl
     {
         InitializeComponent();
         DataContext = new TableViewModel();
+
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
     }
@@ -64,14 +65,32 @@ public partial class TableView : UserControl
     private void ContextMenuOpened(object? sender, RoutedEventArgs e)
     {
         _selectedRow = MyDataGrid.SelectedItem as TableRow;
+
+        if (DataContext is TableViewModel vm)
+        {
+            if (!string.IsNullOrWhiteSpace(vm.SearchText))
+            {
+                //turn off update temporarily to ensure context menu stays open
+
+                vm.PauseUpdate();
+
+            }
+        }
     }
     private void OnEndProgramClick(object? sender, RoutedEventArgs e)
     {
         if (_selectedRow == null) throw new Exception("_selected row is null");
-
+        if (DataContext is TableViewModel vm)
+        {
+            vm.ResumeUpdate();
+        }
         _ = AppQuitter.KillProcessesByRowAsync(_selectedRow);
 
     }
 
-
+    private void ContextMenuClosed(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is TableViewModel vm)
+            vm.ResumeUpdate();
+    }
 }
