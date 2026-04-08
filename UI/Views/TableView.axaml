@@ -12,7 +12,7 @@
                   CanUserSortColumns="True"
                   IsReadOnly="True"
                   GridLinesVisibility="All">
-            <DataGrid.ContextMenu>
+            <!--<DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="{Binding CpuMenuText}" Command="{Binding ToggleCpuCommand}"/>
                     <MenuItem Header="{Binding MemoryMenuText}" Command="{Binding ToggleMemoryCommand}"/>
@@ -21,7 +21,36 @@
                     <MenuItem Header="Select Timeframe" x:Name="TimeFrameSelectionOption" IsEnabled="False" Command="{Binding OpenTimeframeCommand}"/>
                     <MenuItem Header="{Binding AllMenuText}" Command="{Binding ToggleAllCommand}"/>
                 </ContextMenu>
-            </DataGrid.ContextMenu>
+            </DataGrid.ContextMenu>-->
+
+            <DataGrid.Styles>
+                <!-- 1. Context Menu for the BODY (Rows) -->
+                <Style Selector="DataGridRow">
+                    <Setter Property="ContextMenu">
+                        <ContextMenu Opened="ContextMenuOpened" 
+                                     Closed="ContextMenuClosed">
+                            
+                            <MenuItem Header="End Program" Click="OnEndProgramClick"/>
+                        </ContextMenu>
+                    </Setter>
+                </Style>
+
+                <!-- 2. Context Menu for the HEADERS -->
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="ContextMenu">
+                        <ContextMenu>
+                            <MenuItem Header="{Binding CpuMenuText}" Command="{Binding ToggleCpuCommand}"/>
+                            <MenuItem Header="{Binding MemoryMenuText}" Command="{Binding ToggleMemoryCommand}"/>
+                            <MenuItem Header="{Binding DiskMenuText}" Command="{Binding ToggleDiskCommand}"/>
+                            <MenuItem Header="{Binding NetworkMenuText}" Command="{Binding ToggleNetworkCommand}"/>
+                            <MenuItem Header="Select Timeframe" x:Name="TimeFrameSelectionOption" IsEnabled="False" Command="{Binding OpenTimeframeCommand}"/>
+                            <MenuItem Header="{Binding AllMenuText}" Command="{Binding ToggleAllCommand}"/>
+                        </ContextMenu>
+                    </Setter>
+                </Style>
+            </DataGrid.Styles>
+
+
             <DataGrid.Columns>
 
                 <DataGridTextColumn Header="PC Name" 

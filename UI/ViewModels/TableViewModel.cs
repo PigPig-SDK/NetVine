@@ -43,7 +43,9 @@ namespace UI.ViewModels
         private bool _showMemory = true;
         private bool _showDisk = true;
         private bool _showNetwork = true;
-        
+
+        private bool _updatePaused = false;
+
         private DateTime? HistoricalStart = null;
         private DateTime? HistoricalEnd = null;
 
@@ -135,7 +137,7 @@ namespace UI.ViewModels
 
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
-            if (LiveViewModel.IsLive || !_tableViewActive) return;
+            if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
 
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
                 DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
@@ -152,6 +154,17 @@ namespace UI.ViewModels
 
         // Public Methods
 
+
+        public void PauseUpdate()
+        {
+            _updatePaused = true;
+        }
+
+        public void ResumeUpdate()
+        {
+            _updatePaused = false;
+        }
+
         public void OnSearchKeyStroke(string? search)
         {
             if (search == null) return;
@@ -160,7 +173,7 @@ namespace UI.ViewModels
         public void OnSnapshotLive(List<IProgramData> data)
         {
             {
-                if (!LiveViewModel.IsLive || !_tableViewActive) return;
+                if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
             
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
@@ -316,6 +329,7 @@ namespace UI.ViewModels
             {
                 _tableViewActive = true;
                 //resubscribe to events
+                // should be able to delete the subscribing and unsubscribing
                 LiveViewModel.ViewChangedEvent += ViewChangedLive;
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
