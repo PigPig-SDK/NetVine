@@ -166,5 +166,10 @@
         <Setter Property="Height" Value="0"/>
     </Style>
 
-    <!-- Fonts -->
+    <Style Selector="Rectangle.separator">
+        <Setter Property="Height" Value="2"/>
+        <Setter Property="Fill" Value="#444444"/>
+        <Setter Property="Margin" Value="8,4"/>
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
 </Styles>
