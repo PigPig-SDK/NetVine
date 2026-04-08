@@ -17,6 +17,7 @@ public partial class TableView : UserControl
         InitializeComponent();
         DataContext = new TableViewModel();
         LiveViewModel.ViewChangedEvent += OnViewChanged;
+        LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
     }
 
     /// <summary>
@@ -43,6 +44,18 @@ public partial class TableView : UserControl
             vm.SetSort(header, _sortDirections[header]);
             _sortDirections[header] = !_sortDirections[header];
             e.Handled = true;
+        }
+    }
+
+    private void TimeFrameDisableOnLive(bool isLive)
+    {
+        if (isLive)
+        {
+            TimeFrameSelectionOption.IsEnabled = false;
+        }
+        else
+        {
+            TimeFrameSelectionOption.IsEnabled = true;
         }
     }
 }

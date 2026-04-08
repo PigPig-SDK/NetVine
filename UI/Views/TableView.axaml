@@ -18,7 +18,7 @@
                     <MenuItem Header="{Binding MemoryMenuText}" Command="{Binding ToggleMemoryCommand}"/>
                     <MenuItem Header="{Binding DiskMenuText}" Command="{Binding ToggleDiskCommand}"/>
                     <MenuItem Header="{Binding NetworkMenuText}" Command="{Binding ToggleNetworkCommand}"/>
-                    <MenuItem Header="Select Timeframe" Command="{Binding OpenTimeframeCommand}"/>
+                    <MenuItem Header="Select Timeframe" x:Name="TimeFrameSelectionOption" IsEnabled="False" Command="{Binding OpenTimeframeCommand}"/>
                     <MenuItem Header="{Binding AllMenuText}" Command="{Binding ToggleAllCommand}"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
