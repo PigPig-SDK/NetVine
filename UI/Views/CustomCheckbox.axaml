@@ -6,17 +6,23 @@
              xmlns:local="using:UI"
              x:Class="UI.CustomCheckbox">
 
-    <Button Click="Button_Click"
+    <ToggleButton HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="SelectorButton"
+                Click="Button_Click"
                 Background="Transparent"
                 BorderBrush="#888888"
                 BorderThickness="2"
                 CornerRadius="8"
                 Padding="8,8">
-            <Button.Styles>
+
+            <ToggleButton.Styles>
                 <Style Selector=":pointerover > Border">
                     <Setter Property="Background" Value="#22ffffff"/>
                 </Style>
-            </Button.Styles>
+                <Style Selector="ToggleButton#SelectorButton:checked /template/ ContentPresenter">
+                    <Setter Property="BorderBrush" Value="#A5C882"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                </Style>
+            </ToggleButton.Styles>
 
             <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
                 <!-- Custom sprite checkbox box -->
@@ -25,15 +31,17 @@
                     <Image x:Name="UncheckedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
                     <!-- Checked -->
                     <Image x:Name="CheckedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                    <!-- Checked -->
+                    <Image x:Name="LockedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
                 </Panel>
                 <!-- Label -->
-                <TextBlock Grid.Column="1" HorizontalAlignment="Stretch" 
+                <TextBlock Grid.Column="1"
                             FontSize="{Binding FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CustomCheckbox}}"
-                            VerticalAlignment="Center" 
+                            VerticalAlignment="Center" HorizontalAlignment="Center"
                         FontFamily="avares://NetVine/Assets#Bebas Neue"
                         Foreground="White"
                         Text="{Binding Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CustomCheckbox}}"
                         Margin="4,4,0,0"/>
             </Grid>
-    </Button>
+    </ToggleButton>
 </UserControl>

@@ -1,14 +1,17 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using System;
+using YamlDotNet.Core.Tokens;
 
 namespace UI;
 
 public partial class CustomCheckbox : UserControl
 {
+
+    public event EventHandler<bool>? CheckedChanged;
 
     public static readonly StyledProperty<string> TitleProperty =
         AvaloniaProperty.Register<CustomCheckbox, string>(nameof(Title), defaultValue: "Default");
@@ -45,6 +48,19 @@ public partial class CustomCheckbox : UserControl
         }
     }
 
+    public static readonly StyledProperty<string> LockedSourceProperty =
+        AvaloniaProperty.Register<CustomCheckbox, string>(nameof(LockedSource), defaultValue: "avares://NetVine/Assets/lock.png");
+
+    public string LockedSource
+    {
+        get => GetValue(LockedSourceProperty);
+        set
+        {
+            SetValue(LockedSourceProperty, value);
+            LockedIcon.Source = new Bitmap(AssetLoader.Open(new Uri(LockedSource)));
+        }
+    }
+
     public static new readonly StyledProperty<int> FontSizeProperty =
         AvaloniaProperty.Register<CustomCheckbox, int>(nameof(FontSize), defaultValue: 30);
 
@@ -66,6 +82,18 @@ public partial class CustomCheckbox : UserControl
         }
     }
 
+    public static readonly StyledProperty<bool> IsLockedProperty =
+        AvaloniaProperty.Register<CustomCheckbox, bool>(nameof(IsLocked), defaultValue: false);
+    public bool IsLocked
+    {
+        get => GetValue(IsLockedProperty);
+        set
+        {
+            SetValue(IsLockedProperty, value);
+            UpdateChecked();
+        }
+    }
+
     public CustomCheckbox()
     {
         InitializeComponent();
@@ -75,20 +103,35 @@ public partial class CustomCheckbox : UserControl
 
     void UpdateChecked()
     {
-        if (IsChecked)
+        SelectorButton.IsHitTestVisible = !IsLocked;
+        SelectorButton.IsEnabled = !IsLocked;
+
+        SelectorButton.IsChecked = IsChecked;
+        if (IsLocked)
         {
-            CheckedIcon.IsVisible = true;
+            LockedIcon.IsVisible = true;
             UncheckedIcon.IsVisible = false;
+            CheckedIcon.IsVisible = false;
         }
         else
         {
-            CheckedIcon.IsVisible = false;
-            UncheckedIcon.IsVisible = true;
+            LockedIcon.IsVisible = false;
+            if (IsChecked)
+            {
+                CheckedIcon.IsVisible = true;
+                UncheckedIcon.IsVisible = false;
+            }
+            else
+            {
+                CheckedIcon.IsVisible = false;
+                UncheckedIcon.IsVisible = true;
+            }
         }
     }
 
     private void Button_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         IsChecked = !IsChecked;
+        CheckedChanged?.Invoke(this, IsChecked);
     }
 }

@@ -76,23 +76,35 @@ public partial class FolderView : UserControl
         }
     }
 
-    private void LiveViewChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void LiveViewChecked()
     {
         LiveViewModel.IsLive = true;
         NetworkDataManager.Instance.HostSendLivePayload(true);
     }
 
-    private void LiveViewUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void LiveViewUnchecked()
     {
         LiveViewModel.IsLive = false;
         NetworkDataManager.Instance.HostSendLivePayload(false);
     }
-    
+
     public void SetDateRange(DateTime? date1, DateTime? date2)
     {
         String date1String = date1?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
         String date2String = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
-        
+
         DateRange.Text = date1String + " - \n" + date2String;
+    }
+
+    private void CustomCheckbox_CheckedChanged(object? sender, bool isChecked)
+    {
+        if(isChecked)
+        {
+            LiveViewChecked();
+        }
+        else
+        {
+            LiveViewUnchecked();
+        }
     }
 }

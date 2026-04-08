@@ -145,7 +145,19 @@ public partial class NetworkView : UserControl
     {
         int isHosting = ConfigManager.ReadSetting(SettingInt.IsHosting);
         //Toggle.
-        isHosting = (isHosting == 0)? 1 : 0;
+        isHosting = (isHosting == 0) ? 1 : 0;
         ConfigManager.WriteSetting(SettingInt.IsHosting, isHosting);
+    }
+
+    public void CustomCheckbox_CheckedChanged(object? sender, bool isChecked)
+    {
+        if(isChecked)
+        {
+            disconnectBox.Title = "Disconnect";
+        }
+        else
+        {
+            disconnectBox.Title = "Reconnect";
+        }
     }
 }
