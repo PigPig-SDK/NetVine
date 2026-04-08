@@ -90,7 +90,7 @@ public static class UiSettings
                 "database", "usage", "interval", "db", "database"),
 
             new SettingInputField<SettingFloat>("Probe rate",
-                "[In Seconds] How often the application will probe all programs on your system. If we are giving you tremendous overhead, try lowering this value.",
+                "[In Seconds] How often this application will probe all programs on your system. If you are experiencing overhead, try lowering this setting.",
                 StringInputMethod.FloatInput,
                 SettingFloat.TickRate,
                 "memory", "usage", "interval", "db", "database"),
