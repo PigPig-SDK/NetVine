@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UI.ViewModels;
@@ -56,6 +57,15 @@ public partial class TableView : UserControl
         else
         {
             TimeFrameSelectionOption.IsEnabled = true;
+        }
+    }
+
+    private void OnEndProgramClick(object? sender, RoutedEventArgs e)
+    {
+
+        if (sender is MenuItem { DataContext: TableRow row })
+        {
+            _ = AppQuitter.KillProcessesByRowAsync(row);
         }
     }
 }
