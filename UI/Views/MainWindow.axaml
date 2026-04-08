@@ -82,7 +82,7 @@
               IsVisible="{OnPlatform Default=False, Windows=True}"/>
     </Grid>
         <!--The program canvas starts here...-->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" x:Name="MainGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="225" MinWidth="40"/> <!-- SideView -->
                 <ColumnDefinition Width="1"/> <!-- Expanding slider -->
@@ -92,8 +92,7 @@
             <!-- Side pannel background gradiant-->
             <Border Classes="sideBarGradient">
                 <!-- Side view-->
-                <TabControl Classes="sidebar" TabStripPlacement="Left" Padding="0">
-
+                <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
                     <TabItem Classes="sideTab" ToolTip.Tip="Data">
                         <TabItem.Header>
                             <Image Classes="folderTab"/>
@@ -105,6 +104,15 @@
                             <Image  Classes="networkTab"/>
                         </TabItem.Header>
                         <views:NetworkView/>
+                    </TabItem>
+                    <TabItem x:Name="QuickResize" Classes="sideTab" ToolTip.Tip="Hide/Show" >
+                        <TabItem.Header>
+                            <Grid>
+                                <Image Classes="left" IsVisible="False" x:Name="ExpanderLeft"/>
+                                <Image Classes="right" x:Name="ExpanderRight"/>
+                            </Grid>
+                        </TabItem.Header>
+                        ERROR, don't be here!
                     </TabItem>
                 </TabControl>
             </Border>

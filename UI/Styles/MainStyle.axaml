@@ -123,6 +123,19 @@
         <Setter Property="Background" Value="#A5C882"/>
     </Style>
 
+    <Style Selector="Border.shrinking">
+        <Style.Animations>
+            <Animation Duration="0:0:0.3" FillMode="Forward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Width" Value="200"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Width" Value="0"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
     <Style Selector="Border.sideBarGradient">
         <Setter Property="Padding" Value="0,10"/>
         <Setter Property="Background">
@@ -157,6 +170,18 @@
 
     <Style Selector="Image.networkTab">
 		<Setter Property="Source" Value="/Assets/people.png"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+    </Style>
+
+    <Style Selector="Image.left">
+		<Setter Property="Source" Value="/Assets/left.png"/>
+        <Setter Property="Width" Value="24"/>
+        <Setter Property="Height" Value="24"/>
+    </Style>
+
+    <Style Selector="Image.right">
+		<Setter Property="Source" Value="/Assets/right.png"/>
         <Setter Property="Width" Value="24"/>
         <Setter Property="Height" Value="24"/>
     </Style>
