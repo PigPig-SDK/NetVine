@@ -7,7 +7,7 @@
     
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="/Assets/icon.ico" ToolTipText="Net-Vine" Clicked="ShowWindow">
+            <TrayIcon Icon="/Assets/netvine_tiny.png" ToolTipText="Net-Vine" Clicked="ShowWindow">
                 <TrayIcon.Menu>
                     <NativeMenu>
                         <NativeMenuItem Header="Open" 
