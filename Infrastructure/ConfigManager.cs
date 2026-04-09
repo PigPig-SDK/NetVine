@@ -59,7 +59,8 @@ public class ConfigManager
         {SettingInt.MinimizeOnClose, 0 },
         {SettingInt.LoadOnStartup, 0 },
         {SettingInt.StartMinimized, 0 },
-        {SettingInt.NetworkDisabled, 0 }
+        {SettingInt.NetworkDisabled, 0 },
+        {SettingInt.UseNetworkPassword, 0 }
     };
 
 
@@ -75,7 +76,8 @@ public class ConfigManager
     /// <summary>Dictionary containing default string setting values.</summary>
     private static readonly Dictionary<SettingString, string> _DefaultStringValues = new()
     {
-        { SettingString.HostIP, NetworkManager.DefaultHost}
+        { SettingString.HostIP, NetworkManager.DefaultHost},
+        { SettingString.HostPassword, "password123" }
     };
     
     

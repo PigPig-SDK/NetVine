@@ -16,7 +16,7 @@ public class Client : SslClient
         ConnectionInfo = new ConnectionInfo(address.ToString(), port);
     }
 
-    protected override void OnConnected()
+    protected override void OnHandshaked()
     {
         Console.WriteLine($"Client connected: {Id}");
         SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName)).ToBytes());
@@ -41,7 +41,7 @@ public class Client : SslClient
             }
             else
             {
-                Console.WriteLine("Malformed packet!");
+                Debug.Log("Malformed packet!");
             }
         }
     }
