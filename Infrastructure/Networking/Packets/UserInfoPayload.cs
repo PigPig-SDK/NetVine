@@ -19,10 +19,10 @@ public class UserInfoPayload : IPacketPayload
         Password = string.Empty;
     }
 
-    public UserInfoPayload(string userName)
+    public UserInfoPayload(string userName, string password)
     {
         UserName = userName;
-        Password = "Test";
+        Password = password;
     }
     public async Task AddUser()
     {

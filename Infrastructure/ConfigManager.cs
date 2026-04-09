@@ -341,18 +341,19 @@ public class ConfigManager
 
         public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
-            ConnectionInfo connectionInfo = new("ParseFailure", 404);
+            ConnectionInfo connectionInfo = new("ParseFailure", 404, "password");
             string value = ((Scalar)parser.Current).Value;
             parser.MoveNext();
             var split = value.Split(':');
 
-            if (split.Length != 2)
+            if (split.Length != 3)
                 return connectionInfo;
 
             //Set connect info properly.
             connectionInfo.Ip = split[0];
             int.TryParse(split[1], out int expectedPort);
             connectionInfo.Port = expectedPort;
+            connectionInfo.Password = split[2];
             return connectionInfo;
         }
 
@@ -360,7 +361,7 @@ public class ConfigManager
         {
             var myType = (ConnectionInfo)value!;
 
-            emitter.Emit(new Scalar($"{myType.Ip}:{myType.Port}"));
+            emitter.Emit(new Scalar($"{myType.Ip}:{myType.Port}:{myType.Password}"));
         }
     }
 }

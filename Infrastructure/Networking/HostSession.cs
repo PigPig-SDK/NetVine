@@ -20,7 +20,9 @@ public class HostSession : SslSession
     protected override void OnHandshaked()
     {
         Console.WriteLine($"Host session connected: {Id}");
-        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName)).ToBytes());
+        //Send disregard, as a server dosn't actually care what the client thinks.
+        //Possibly codesmell, but it prevents me from writing two different packets for basically the same action.
+        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName,  "Disregard")).ToBytes());
         //Send(Packet.CreatePacket(new DateRequestPayload(DateTime.Now, DateTime.Now.AddSeconds(1))).ToBytes());
     }
     protected override void OnDisconnected()

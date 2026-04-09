@@ -9,6 +9,7 @@ public record class ConnectionInfo
 {
     public string Ip { get; set; }
     public int Port { get; set; }
+    public string Password { get; set; }
 
     public ConnectionInfo()
     {
@@ -16,10 +17,11 @@ public record class ConnectionInfo
         Port = default;
     }
 
-    public ConnectionInfo(string connection, int port)
+    public ConnectionInfo(string connection, int port, string password)
     {
         Ip = connection;
         Port = port;
+        Password = password;
     }
 
     public IPAddress? GetIP()
@@ -27,7 +29,7 @@ public record class ConnectionInfo
         IPAddress.TryParse(Ip, out IPAddress? ip);
         return ip;
     }
-    public static void TryParse(string ip, string port, out ConnectionInfo? connectionInfo)
+    public static void TryParse(string ip, string port, string password, out ConnectionInfo? connectionInfo)
     {
         ConnectionInfo info = new ConnectionInfo();
         if (!int.TryParse(port, out int portInt))
@@ -37,6 +39,7 @@ public record class ConnectionInfo
         }
         info.Ip = ip;
         info.Port = portInt;
+        info.Password = password;
         connectionInfo = info;
     }
 }

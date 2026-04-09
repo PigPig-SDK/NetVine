@@ -10,16 +10,17 @@ public class Client : SslClient
 {
     private bool _shutdown = false;
     private MessageBuffer _messageBuffer = new();
-    public ConnectionInfo? ConnectionInfo { get; private set; }
-    public Client(SslContext context, IPAddress address, int port) : base(context, address, port)
+    public ConnectionInfo ConnectionInfo { get; private set; }
+    
+    public Client(SslContext context, IPAddress address, int port, string password) : base(context, address, port)
     {
-        ConnectionInfo = new ConnectionInfo(address.ToString(), port);
+        ConnectionInfo = new ConnectionInfo(address.ToString(), port, password);
     }
 
     protected override void OnHandshaked()
     {
         Console.WriteLine($"Client connected: {Id}");
-        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName)).ToBytes());
+        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName, ConnectionInfo.Password)).ToBytes());
     }
 
     override protected void OnDisconnected()

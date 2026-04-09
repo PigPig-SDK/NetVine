@@ -155,7 +155,7 @@ public class NetworkManager
             else//No Connection
             {
                 var context = new SslContext(SslProtocols.Tls12, ClientCertificate, (sender, certificate, chain, sslPolicyErrors) => true);
-                Client client = new(context, ip, connectionContext.Port);
+                Client client = new(context, ip, connectionContext.Port, connectionContext.Password);
                 client.ConnectAsync();
                 EstablishedClientConnections.Add(connectionIdentity, client);
             }
@@ -203,7 +203,7 @@ public class NetworkManager
     public static X509Certificate2 GenerateSelfSignedCertificate()
     {
         using var rsa = RSA.Create(2048);
-        var request = new CertificateRequest("cn=myapp", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var request = new CertificateRequest("cn=netvine", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         var cert = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
         return new X509Certificate2(cert.Export(X509ContentType.Pfx));
     }

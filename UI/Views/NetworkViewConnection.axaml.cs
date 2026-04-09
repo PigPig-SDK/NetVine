@@ -15,7 +15,7 @@ public partial class NetworkViewConnection : UserControl
         InitializeComponent();
         this._connection = connection;
 
-        Label.Content = $"{_connection.Ip}:{_connection.Port}";
+        Label.Content = $"{_connection.Ip}:{_connection.Port}:{_connection.Password}";
     }
 
     private void DisconnectClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

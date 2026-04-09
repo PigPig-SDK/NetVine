@@ -123,7 +123,7 @@ public partial class NetworkView : UserControl
     }
 
     private void TryAddConnection(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
+    { 
         ///
         /// Heads up: This function uses GOTO's.
         ///
@@ -131,8 +131,8 @@ public partial class NetworkView : UserControl
         string? input = AddConnectionInput.Text;
         if (input is null) goto ErrorSubmittingDisplay;
         string[] inputSplit = input.Split(":");
-        if (inputSplit.Length != 2) goto ErrorSubmittingDisplay;
-        ConnectionInfo.TryParse(inputSplit[0], inputSplit[1], out ConnectionInfo? connectionInfo);
+        if (inputSplit.Length != 3) goto ErrorSubmittingDisplay;
+        ConnectionInfo.TryParse(inputSplit[0], inputSplit[1], inputSplit[2], out ConnectionInfo? connectionInfo);
 
         if (connectionInfo is null) goto ErrorSubmittingDisplay;
 
