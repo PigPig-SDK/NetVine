@@ -6,12 +6,12 @@ using System.Text;
 
 namespace Infrastructure.Networking;
 
-public class Client : TcpClient
+public class Client : SslClient
 {
     private bool _shutdown = false;
     private MessageBuffer _messageBuffer = new();
     public ConnectionInfo? ConnectionInfo { get; private set; }
-    public Client(IPAddress address, int port) : base(address, port) 
+    public Client(SslContext context, IPAddress address, int port) : base(context, address, port)
     {
         ConnectionInfo = new ConnectionInfo(address.ToString(), port);
     }

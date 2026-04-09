@@ -1,4 +1,8 @@
-﻿using System.Net;
+﻿using NetCoreServer;
+using System.Net;
+using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Infrastructure.Networking;
 
@@ -10,6 +14,9 @@ public class NetworkManager
     private Timer _timer;
     public const int DefaultPort = 54236;
     public const string DefaultHost = "0.0.0.0";
+
+    private static readonly X509Certificate2 ServerCertificate = GenerateSelfSignedCertificate();
+    private static readonly X509Certificate2 ClientCertificate = GenerateSelfSignedCertificate();
 
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
     public Host? Host { get; private set; }
@@ -116,7 +123,8 @@ public class NetworkManager
         if (!ConfigManager.ReadSettingBool(SettingInt.IsHosting)) return;
         if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled)) return;
 
-        Host = new Host(IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
+        var context = new SslContext(SslProtocols.Tls12, ServerCertificate, (sender, certificate, chain, sslPolicyErrors) => true);
+        Host = new Host(context, IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
         Host.Start();
 
     }
@@ -146,7 +154,8 @@ public class NetworkManager
             }
             else//No Connection
             {
-                Client client = new(ip, connectionContext.Port);
+                var context = new SslContext(SslProtocols.Tls12, ClientCertificate, (sender, certificate, chain, sslPolicyErrors) => true);
+                Client client = new(context, ip, connectionContext.Port);
                 client.ConnectAsync();
                 EstablishedClientConnections.Add(connectionIdentity, client);
             }
@@ -189,5 +198,13 @@ public class NetworkManager
     {
         Disconnect();
         ConfigManager.OnClientConnectionAdded -= _instance.AddClientConnection;
+    }
+
+    public static X509Certificate2 GenerateSelfSignedCertificate()
+    {
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest("cn=myapp", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var cert = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
+        return new X509Certificate2(cert.Export(X509ContentType.Pfx));
     }
 }

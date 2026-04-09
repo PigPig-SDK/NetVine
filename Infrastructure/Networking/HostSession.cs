@@ -5,9 +5,9 @@ using NetCoreServer;
 
 namespace Infrastructure.Networking;
 
-public class HostSession : TcpSession
+public class HostSession : SslSession
 {
-    public HostSession(TcpServer server) : base(server) { }
+    public HostSession(SslServer server) : base(server) { }
 
     private MessageBuffer _messageBuffer  = new();
 
