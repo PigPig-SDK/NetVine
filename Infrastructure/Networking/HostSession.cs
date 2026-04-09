@@ -54,7 +54,7 @@ public class HostSession : SslSession
                         OnAuthorized?.Invoke(this);
                     else
                     {
-                        //TODO: Send client decline packet. Telling them bad password.
+                        SendAsync(Packet.CreatePacket(new NetworkErrorPayload(NetworkErrorType.BadPassword)).ToBytes());
                         Disconnect();
                     }
 

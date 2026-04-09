@@ -231,6 +231,8 @@ namespace UI.ViewModels
             if (LiveViewModel.IsLive || !_tableViewActive) return;
             
             var timeFrameWindow = new TimeFrameSelectionWindow();
+
+            if (Application.Current is null) return;
             var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
             
             (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
@@ -247,7 +249,7 @@ namespace UI.ViewModels
             
             OnSwitchToHistorical();
             
-            mainWindow.FindControl<FolderView>("FolderView").SetDateRange(HistoricalStart, HistoricalEnd);
+            mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStart, HistoricalEnd);
         }
 
         //initial population on startup

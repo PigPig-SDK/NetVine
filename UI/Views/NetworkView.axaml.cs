@@ -2,9 +2,12 @@ using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Infrastructure;
 using Infrastructure.Networking;
+using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
+using System.Net.Sockets;
 using UI.ViewModels;
 
 namespace UI;
@@ -61,18 +64,73 @@ public partial class NetworkView : UserControl
         PopulateConnections();//Someone to populate.
     }
 
+    private void OnDisconnectFromHost(Guid guid, ConnectionInfo connectionInfo)
+    {
+        if (!_connectionViews.TryGetValue(connectionInfo, out NetworkViewConnection? networkViewConnection)) return;
+        if (networkViewConnection is null) return;
+
+        networkViewConnection.IsConnected = false;
+    }
+
+    private void OnConnectToHost(Guid guid, ConnectionInfo connectionInfo)
+    {
+        if (!_connectionViews.TryGetValue(connectionInfo, out NetworkViewConnection? networkViewConnection)) return;
+        if (networkViewConnection is null) return;
+
+        networkViewConnection.IsConnected = true;
+    }
+
     private void OnEnterScope(object? sender, LogicalTreeAttachmentEventArgs e)
     {
         ConfigManager.OnClientConnectionAdded += ClientConnectionAdded;
         ConfigManager.OnClientConnectionRemoved += ClientConnectionRemoved;
         ConfigManager.OnSettingChanged += OnSettingChanged;
+        NetworkManager.Instance.OnNetworkError += OnNetworkError;
+        MainWindowViewModel.OnAnimateFrame += OnAnimate;
+        NetworkManager.Instance.OnDisconnectFromHost += OnDisconnectFromHost;
+        NetworkManager.Instance.OnConnectToHost += OnConnectToHost;
+        NetworkManager.Instance.OnSocketError += OnSocketError;
     }
 
     private void OnLeaveScope(object? sender, LogicalTreeAttachmentEventArgs e)
     {
+        //Prevent memory leaks!
         ConfigManager.OnClientConnectionAdded -= ClientConnectionAdded;
         ConfigManager.OnClientConnectionRemoved -= ClientConnectionRemoved;
         ConfigManager.OnSettingChanged -= OnSettingChanged;
+        MainWindowViewModel.OnAnimateFrame -= OnAnimate;
+        //False positive, ignoring.
+#pragma warning disable CS8601
+        NetworkManager.Instance.OnNetworkError -= OnNetworkError;
+        NetworkManager.Instance.OnDisconnectFromHost -= OnDisconnectFromHost;
+        NetworkManager.Instance.OnConnectToHost -= OnConnectToHost;
+        NetworkManager.Instance.OnSocketError -= OnSocketError;
+#pragma warning restore CS8601
+    }
+
+    private void OnSocketError(Guid guid, ConnectionInfo connectionInfo, SocketError error)
+    {
+        if (!_connectionViews.TryGetValue(connectionInfo, out NetworkViewConnection? networkViewConnection)) return;
+        if (networkViewConnection is null) return;
+
+        networkViewConnection.SetSocketError(error);
+    }
+    private void OnAnimate(double animtime)
+    {
+        foreach (NetworkViewConnection networkView in _connectionViews.Values)
+        {
+            networkView.Animate(animtime);
+        }
+    }
+    private void OnNetworkError(Guid guid, NetworkErrorType type)
+    {
+        Client? client = NetworkManager.Instance.GuidToClient(guid);
+        if (client is null) return;
+
+        if (!_connectionViews.TryGetValue(client.ConnectionInfo, out NetworkViewConnection? networkViewConnection)) return;
+        if (networkViewConnection is null) return;
+
+        networkViewConnection.SetNetworkError(type);
     }
 
     private void OnSettingChanged(Enum setting)
@@ -108,7 +166,7 @@ public partial class NetworkView : UserControl
 
     private void PopulateConnections()
     {
-        foreach (var connection in ConfigManager.ClientConnections)
+        foreach (var connection in ConfigManager.CurrentClientConnections)
         {
             if (_connectionViews.ContainsKey(connection)) continue;
             NetworkViewConnection view = new(connection);

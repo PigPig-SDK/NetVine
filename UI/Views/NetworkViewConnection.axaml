@@ -4,12 +4,21 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="40"
              x:Class="UI.NetworkViewConnection">
-    <Grid ColumnDefinitions="auto,auto">
-        <Label x:Name="Label" Grid.Column="0">
-			Ip goes here
-        </Label>
-        <Button Grid.Column="1" Click="DisconnectClick">
-			Disconnect
-        </Button>
-    </Grid>
+    <Border x:Name="Border" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5" BorderThickness="2" CornerRadius="8" BorderBrush="White" Background="Transparent">
+        <Grid ColumnDefinitions="auto,*,auto" HorizontalAlignment="Stretch" Margin="5">
+            <Ellipse Width="15" StrokeThickness="2" 
+                     StrokeDashArray="5,2" Stroke="Black" 
+                     Height="15" Margin="10,0,10,0" Fill="LightGreen" 
+                     x:Name="ActivityCircle" Grid.Column="0"/>
+            <Label x:Name="Label" Grid.Column="1">
+			    Ip goes here
+            </Label>
+            <Button Grid.Column="2" Click="DisconnectClick"
+                    ToolTip.Tip="Disconnect"
+                    CornerRadius="8" 
+                    HorizontalAlignment="Right">
+			    <Image Source="/Assets/unplug.png" Height="16"/>
+            </Button>
+        </Grid>
+    </Border>
 </UserControl>

@@ -12,9 +12,9 @@ public class Client : SslClient
     private MessageBuffer _messageBuffer = new();
     public ConnectionInfo ConnectionInfo { get; private set; }
     
-    public Client(SslContext context, IPAddress address, int port, string password) : base(context, address, port)
+    public Client(SslContext context, IPAddress address, int port, string password, ConnectionInfo connectionInfo) : base(context, address, port)
     {
-        ConnectionInfo = new ConnectionInfo(address.ToString(), port, password);
+        ConnectionInfo = connectionInfo;
     }
 
     protected override void OnHandshaked()
@@ -22,12 +22,14 @@ public class Client : SslClient
         Console.WriteLine($"Client connected: {Id}");
         SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName, ConnectionInfo.Password)).ToBytes());
     }
-
+    protected override void OnConnected()
+    {
+        NetworkManager.Instance.OnConnectToHost?.Invoke(Id, ConnectionInfo);
+    }
     override protected void OnDisconnected()
     {
         ConnectedUserInfo.RemoveUserData(Id, out string? username);
-        Console.WriteLine($"Client disconnected: {Id} {username}");
-        NetworkManager.Instance.OnDisconnectFromHost?.Invoke(Id);
+        NetworkManager.Instance.OnDisconnectFromHost?.Invoke(Id, ConnectionInfo);
     }
 
     override protected void OnReceived(byte[] buffer, long offset, long size)
@@ -50,6 +52,7 @@ public class Client : SslClient
     protected override void OnError(System.Net.Sockets.SocketError error)
     {
         Console.WriteLine($"Client error: {Id} - {error}");
+        NetworkManager.Instance.OnSocketError?.Invoke(Id, ConnectionInfo, error);
     }
 
     public void DisconnectShutdown()

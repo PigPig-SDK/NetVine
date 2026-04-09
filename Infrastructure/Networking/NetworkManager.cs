@@ -1,5 +1,7 @@
-﻿using NetCoreServer;
+﻿using Infrastructure.Networking.Packets;
+using NetCoreServer;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -24,7 +26,10 @@ public class NetworkManager
     /// <summary>
     /// Called when a client loses their connection with the host.
     /// </summary>
-    public Action<Guid> OnDisconnectFromHost;
+    public Action<Guid, ConnectionInfo>? OnDisconnectFromHost;
+    public Action<Guid, ConnectionInfo, SocketError>? OnSocketError;
+    public Action<Guid, ConnectionInfo>? OnConnectToHost;
+    public Action<Guid, NetworkErrorType>? OnNetworkError; 
 
     public static void SetupInstance()
     {
@@ -133,7 +138,7 @@ public class NetworkManager
     {
         if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled)) return;
 
-        foreach (ConnectionInfo connectionContext in ConfigManager.ClientConnections)
+        foreach (ConnectionInfo connectionContext in ConfigManager.CurrentClientConnections)
         {
             connectionContext.GetIP();
 
@@ -155,7 +160,7 @@ public class NetworkManager
             else//No Connection
             {
                 var context = new SslContext(SslProtocols.Tls12, ClientCertificate, (sender, certificate, chain, sslPolicyErrors) => true);
-                Client client = new(context, ip, connectionContext.Port, connectionContext.Password);
+                Client client = new(context, ip, connectionContext.Port, connectionContext.Password, connectionContext);
                 client.ConnectAsync();
                 EstablishedClientConnections.Add(connectionIdentity, client);
             }
@@ -192,6 +197,15 @@ public class NetworkManager
             client.DisconnectShutdown();
         }
         DisconnectHost();
+    }
+
+    public Client? GuidToClient(Guid id)
+    {
+        foreach (Client client in EstablishedClientConnections.Values)
+        {
+            if (client.Id == id) return client;
+        }
+        return null;
     }
 
     ~NetworkManager()

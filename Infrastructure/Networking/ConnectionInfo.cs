@@ -15,6 +15,7 @@ public record class ConnectionInfo
     {
         Ip = string.Empty;
         Port = default;
+        Password = string.Empty;
     }
 
     public ConnectionInfo(string connection, int port, string password)

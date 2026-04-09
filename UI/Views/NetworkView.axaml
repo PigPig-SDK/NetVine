@@ -32,7 +32,7 @@
 		        <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center" Click="TryAddConnection"/>	
             </Grid>
         </Grid>
-        <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+        <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" Padding="10" HorizontalAlignment="Stretch" >
 			<StackPanel x:Name="ConnectionPanel"/>
         </ScrollViewer>
 

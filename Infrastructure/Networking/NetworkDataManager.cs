@@ -64,7 +64,7 @@ public class NetworkDataManager
             NetworkManager.Instance.SendToId(pushInfoForHost, packetBytes);
         }
     }
-    private void OnHostDisconnect(Guid info)
+    private void OnHostDisconnect(Guid info, ConnectionInfo connectionInfo)
     {
         LivePushHostSet.Remove(info);
     }
