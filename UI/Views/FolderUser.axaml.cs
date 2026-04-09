@@ -17,8 +17,6 @@ public partial class FolderUser : UserControl
     private readonly static SolidColorBrush _lightText = new (Colors.White);
     private readonly static SolidColorBrush _darkText = new (Color.Parse("#1E152A"));
 
-    private double timeTick = 0;
-
     public FolderUser(Infrastructure.User user)
     {
         InitializeComponent();
