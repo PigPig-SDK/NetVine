@@ -42,7 +42,7 @@ public partial class FolderView : UserControl
     {
         foreach (var user in FolderViewData.UserMapping.Values)
         {
-            user.Animate();
+            user.Animate(animationFrame);
         }
     }
 

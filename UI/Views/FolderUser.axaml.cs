@@ -56,11 +56,10 @@ public partial class FolderUser : UserControl
         ToolTip.SetTip(OnlineCircle, IsOnline ? "Online" : "Offline");
     }
 
-    public void Animate()
+    public void Animate(double time)
     {
         if (OnlineCircle is null) return;
         if (IsOnline == false) return;
-        OnlineCircle.StrokeDashOffset = timeTick;
-        timeTick += 0.10;
+        OnlineCircle.StrokeDashOffset = (time * 4);
     }
 }

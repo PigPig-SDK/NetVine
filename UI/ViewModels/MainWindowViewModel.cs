@@ -16,6 +16,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private static Lock _timerLock = new Lock();
     private static System.Timers.Timer? _animationTimer;
     private static double _animationTime = 0;
+    private static double _animationRefire = 0.015;
     public static event Action<double>? OnAnimateFrame;
 
     // I guess events can't be invoked from outside the class,
@@ -38,7 +39,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             if (_animationTimer is null)
             {
-                _animationTimer = new System.Timers.Timer(15);
+                _animationTimer = new System.Timers.Timer(_animationRefire * 1000);
                 _animationTimer.Elapsed += AnimateFrame;
                 _animationTimer.Start();
             }
@@ -50,6 +51,7 @@ public partial class MainWindowViewModel : ViewModelBase
         //Execute all animations on the main thread!
         Dispatcher.UIThread.Post(() =>
         {
+            _animationTime += _animationRefire;
             OnAnimateFrame?.Invoke(_animationTime);
         });
     }
