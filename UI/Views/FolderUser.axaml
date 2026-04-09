@@ -6,6 +6,12 @@
              x:Class="UI.FolderUser">
     <Panel>
         <Grid RowDefinitions="15,*">
+                <Grid.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="Copy IP address" Click="CopyIP"/>
+                    <MenuItem Header="Copy Username" Click="CopyUsername"/>
+                  </ContextMenu>
+                </Grid.ContextMenu>
             <Image Grid.Row="0" Source="/Assets/folder_top.png" HorizontalAlignment="Left" Margin="10,0,0,-10" Width="24" Height="29" RenderOptions.BitmapInterpolationMode="HighQuality"/>
             <Border Padding="0,25" Margin="10,-25,0,0" Background="Transparent" Grid.Row="1">
                 <Button HorizontalAlignment="Stretch" Padding="0" CornerRadius="0,0,0,8" x:Name="SelectionButton" Height="45" Click="OnClicked">
