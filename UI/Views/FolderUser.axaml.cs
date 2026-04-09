@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 using System;
 using UI.ViewModels;
 
@@ -11,10 +12,12 @@ public partial class FolderUser : UserControl
     
     private readonly static SolidColorBrush _selectedColor = new(Color.Parse("#A5C882"));
     private readonly static SolidColorBrush _deselectColor = new (new Color(255, 82, 82, 86));
-    private readonly static SolidColorBrush _onlineColor = new (Colors.Green);
+    private readonly static SolidColorBrush _onlineColor = new (Colors.White);
     private readonly static SolidColorBrush _offlineColor = new (Colors.Black);
     private readonly static SolidColorBrush _lightText = new (Colors.White);
     private readonly static SolidColorBrush _darkText = new (Color.Parse("#1E152A"));
+
+    private double timeTick = 0;
 
     public FolderUser(Infrastructure.User user)
     {
@@ -47,7 +50,17 @@ public partial class FolderUser : UserControl
 
         SelectionButton.Background = IsSelected? _selectedColor : _deselectColor;
         OnlineCircle.Fill = IsOnline ? _onlineColor : _offlineColor;
-        Subscript.Content = $"{(IsOnline ? "Online" : "Offline")}";//TODO: Put info here.
+        OnlineCircle.StrokeThickness = IsOnline ? 2 : 0;
         UsernameLabel.Foreground = IsSelected? _darkText : _lightText;
+
+        ToolTip.SetTip(OnlineCircle, IsOnline ? "Online" : "Offline");
+    }
+
+    public void Animate()
+    {
+        if (OnlineCircle is null) return;
+        if (IsOnline == false) return;
+        OnlineCircle.StrokeDashOffset = timeTick;
+        timeTick += 0.10;
     }
 }

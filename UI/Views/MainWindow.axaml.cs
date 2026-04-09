@@ -69,11 +69,13 @@ public partial class MainWindow : Window
             Hide();
         }
         IsInitialized = true;
+        MainWindowViewModel.StartAnimation();
     }
 
     private void OnCloseEvent(object? sender, WindowClosingEventArgs e)
     {
         NetworkDataManager.Instance.HostSendLivePayload(false);
+        MainWindowViewModel.StopAnimation();
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
