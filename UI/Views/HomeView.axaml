@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UI.HomeView">
+    <UserControl.Styles>
+        <StyleInclude Source="avares:/Styles/HomePageStyles.axaml"/>
+    </UserControl.Styles>
+  <Grid HorizontalAlignment="Stretch" 
+        VerticalAlignment="Top"
+        Grid.RowDefinitions="auto,auto,*">
+
+      <Grid HorizontalAlignment="Center" VerticalAlignment="Top"
+            Grid.Row="0"
+            Grid.ColumnDefinitions="auto,auto"
+            Grid.RowDefinitions="auto,auto,auto">
+
+	      <Image x:Name="icon" Classes="largeIcon" Grid.Row="0" Grid.Column="0"/>
+          <TextBlock Classes="title" Grid.Row="0" Grid.Column="1"/>
+          <TextBlock Classes="slogan" Grid.Row="2" Grid.Column="1" x:Name="Slogan"/>
+      </Grid>
+
+      <ScrollViewer Grid.Row="2" Margin="10" MaxWidth="600" Background="#66000000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <StackPanel HorizontalAlignment="Stretch">
+            <!-- Made by-->
+            <Grid RowDefinitions="auto,auto" ColumnDefinitions="auto,auto">
+
+		          <TextBlock Classes="developerTitle" Text="Developed by :" Grid.Row="0"/>
+
+		          <TextBlock Classes="developerNames" Text="Aidan, Ben, Sean, Ty" Grid.Row="0" Grid.Column="1"/>
+            </Grid>
+            <Rectangle Classes="separator"/>
+            <!-- Version-->
+            <TextBlock Classes="bulletPoint" 
+                       Text=">  If there is a searchbar at the top of your screen, it can be used for filtering. CTRL+F quick searches."/>
+
+            <TextBlock Classes="bulletPoint" 
+                       Text=">  Configuration changes are applied instantly"/>
+
+            <TextBlock Classes="bulletPoint"
+                  Text=">  If something confuses you, it probably has a tooltip. Try hovering your mouse over it" />
+
+            <TextBlock Classes="bulletPoint"
+                  Text=">  Ram is reported in total allocation"/>
+
+            <TextBlock Classes="bulletPoint" 
+                  Text=">  You must give admin privileges to this application in order to gather network statistics" />
+
+            <Rectangle Classes="separator"/>
+
+            <TextBlock Classes="developerTitle"
+                  Text="Something else goes here"/>
+
+        </StackPanel>
+      </ScrollViewer>
+  </Grid>
+</UserControl>

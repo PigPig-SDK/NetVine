@@ -17,186 +17,105 @@
 
     <!-- Styles -->
     <Window.Styles>
-        <!-- Checkbox -->    
-        <Style Selector="CheckBox /template/ Border#NormalRectangle">
-            <Setter Property="BorderBrush" Value="#A5C882" />
-        </Style>
-        <Style Selector="CheckBox:checked /template/ Border#NormalRectangle">
-            <Setter Property="Background" Value="#A5C882" />
-            <Setter Property="BorderBrush" Value="#A5C882" />
-        </Style>
-        <!-- Textbox -->
-        <Style Selector="TextBox:focus-within /template/ Border">
-          <Setter Property="BorderBrush" Value="#A5C882" />
-        </Style>
-        <!-- Button -->
-        <Style Selector="Button.selected">
-            <Setter Property="Background" Value="#A5C882"/>
-        </Style>
-        <Style Selector="Button.deselected">
-            <Setter Property="Background" Value="#33000000"/>
-        </Style>
-        <!--
-            This style is based on the default Fluent theme
-            (https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/Menu.xaml),
-            but allows menu items to wrap in multiple rows.
-            You can remove this part if you prefer the default behavior (single row menu).
-        -->
-        <Style Selector="Menu">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Height" Value="NaN" />
-            <!--
-                Height=NaN is required because Avalonia fluent theme uses 32 as default menu height,
-                and this would cause the wrapped rows to be hidden when using WrapPanel as ItemsPanel.
-            -->
-            <Setter Property="ItemContainerTheme" Value="{StaticResource FluentTopLevelMenuItem}" />
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border
-                        Padding="{TemplateBinding Padding}"
-                        HorizontalAlignment="Stretch"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                        <ItemsPresenter
-                            Name="PART_ItemsPresenter"
-                            VerticalAlignment="Stretch"
-                            KeyboardNavigation.TabNavigation="Continue">
-                            <ItemsPresenter.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsPresenter.ItemsPanel>
-                        </ItemsPresenter>
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-        </Style>
+        <StyleInclude Source="avares:/Styles/MainStyle.axaml"/>
     </Window.Styles>
+
     <!--The titlebar starts here.-->
     <Grid RowDefinitions="Auto,*">
-        <Border Padding="0,10" IsHitTestVisible="False" Background="#99222228">
-        </Border>
+
+      <Border Padding="0,10" IsHitTestVisible="False" Background="#99222228"/>
+
       <Grid x:Name="titleBar"
           Grid.Row="0"
           HorizontalAlignment="Stretch"
           ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto">
-
-        <Image x:Name="icon"
-               Grid.Column="0"
-               Width="36" Height="36"
-               Margin="4,0"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               IsVisible="{OnPlatform Default=False, Windows=True}"
-               RenderOptions.BitmapInterpolationMode="HighQuality"
-               Source="/Assets/netvine_tiny.png"/>
-
+        <Button Grid.Column="0"
+                Width="36" Height="36"
+                Margin="4,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{OnPlatform Default=False, Windows=True}"
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="0"
+                x:Name="HomeButton"
+                Click="OnDudeClicked">
+			<Image x:Name="icon"
+				   Classes="app-iconTiny"
+				   Grid.Column="0"
+				   IsVisible="{OnPlatform Default=False, Windows=True}"/>
+        </Button>
         <Button Grid.Column="1" Click="OnGraphClicked"
-                FontSize="24" CornerRadius="1,1,0,0"
-                Padding="24,0" Margin="5,10,0,0"
-                x:Name="GraphButton"
-                FontFamily="avares://NetVine/Assets#Bebas Neue">
+                Classes="titlebar"
+                x:Name="GraphButton">
             <TextBlock Text="Graph"/>
         </Button>
 
         <Button Grid.Column="2" Click="OnTableClicked"
-                FontSize="24" CornerRadius="1,1,0,0"
-                Padding="24,0" Margin="5,10,0,0"
-                x:Name="TableButton"
-                FontFamily="avares://NetVine/Assets#Bebas Neue">
+                Classes="titlebar"
+                x:Name="TableButton">
             <TextBlock Text="Table"/>
         </Button>
 
         <Button Grid.Column="3" Click="OnSettingsClicked"
-                CornerRadius="0,16,0,0"
-                Width="30"
-                Padding="24,0" Margin="5,10,0,0"
+                Classes="titlebar titlebarGear"
                 ToolTip.Tip="Settings"
                 x:Name="SettingsButton">
-                <Image Source="/Assets/gear.png" HorizontalAlignment="Right" Margin="2,0,0,0" Width="24" Height="29" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                <Image Classes="gear" RenderOptions.BitmapInterpolationMode="HighQuality"/>
         </Button>
         <!-- SearchBox -->
         <Panel Grid.Column="4"
-               MaxWidth="240"
-               HorizontalAlignment="Stretch"
-               x:Name="SearchBoxPanel"
-               Margin="5,0,5,0">
-            <TextBox HorizontalAlignment="Stretch"
-                     VerticalAlignment="Center"
-                     VerticalContentAlignment="Center"
-                     MinWidth="0"
+               Classes="searchPanel"
+               x:Name="SearchBoxPanel">
+            <TextBox Classes="searchBox"
                      TextChanged="SearchTextChanged"
                      TextInput="SearchSubmission"
-                     x:Name="SearchBoxInput"
-                     Padding="32,0,8,0" Height="20">
-
-                </TextBox>
-
-            <PathIcon Data="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"
-                      Width="14" Height="14"
-                      HorizontalAlignment="Left"
-                      VerticalAlignment="Center"
-                      Margin="10,0,0,0"
+                     x:Name="SearchBoxInput"/>
+            <PathIcon Classes="searchIcon"
                       IsVisible="{Binding #SearchBoxInput.Bounds.Width, Converter={x:Static vm:Converters.WiderThan60}, ConverterParameter=60}"
                       Foreground="{DynamicResource TextControlPlaceholderForeground}"/>
         </Panel>
 
         <Grid x:Name="dragRegion"
+              Classes="dragRegion"
               Grid.Column="5"
-              MinWidth="175"
               IsVisible="{OnPlatform Default=False, Windows=True}"/>
     </Grid>
         <!--The program canvas starts here...-->
-        <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="225" MinWidth="40"/> <!-- SideView -->
-                    <ColumnDefinition Width="1"/> <!-- Expanding slider -->
-                    <ColumnDefinition Width="*" MinWidth="150"/> <!-- Canvas -->
-                </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1" x:Name="MainGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="225" MinWidth="40"/> <!-- SideView -->
+                <ColumnDefinition Width="1"/> <!-- Expanding slider -->
+                <ColumnDefinition Width="*" MinWidth="150"/> <!-- Canvas -->
+            </Grid.ColumnDefinitions>
 
-                <!-- Side pannel background gradiant-->
-            	<Border Padding="0,10">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                            <GradientStop Color="#99282838" Offset="0"/>
-                            <GradientStop Color="#99222228" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Border.Effect>
-                        <DropShadowEffect Color="Black" 
-                                          BlurRadius="50" 
-                                          OffsetX="0" 
-                                          OffsetY="4" 
-                                          Opacity="0.5"/>
-                    </Border.Effect>
-            
-            <!-- Side view-->
-                <TabControl TabStripPlacement="Left" Padding="0">
-
-                    <TabControl.Styles>
-						<Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
-                            <Setter Property="Background" Value="#A5C882" />
-                        </Style>
-                    </TabControl.Styles>
-
-                    <TabItem Padding="0" Margin="0,0,10,0" ToolTip.Tip="Data">
+            <!-- Side pannel background gradiant-->
+            <Border Classes="sideBarGradient">
+                <!-- Side view-->
+                <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
+                    <TabItem Classes="sideTab" ToolTip.Tip="Data">
                         <TabItem.Header>
-                            <Image Source="/Assets/folder.png" Width="24" Height="24" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                            <Image Classes="folderTab"/>
                         </TabItem.Header>
                         <views:FolderView x:Name="FolderView"/>
                     </TabItem>
-                    <TabItem Padding="0" Margin="0,0,10,0" ToolTip.Tip="Networking">
+                    <TabItem Classes="sideTab" ToolTip.Tip="Networking">
                         <TabItem.Header>
-                            <Image Source="/Assets/people.png" Width="24" Height="24" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                            <Image  Classes="networkTab"/>
                         </TabItem.Header>
                         <views:NetworkView/>
                     </TabItem>
+                    <TabItem x:Name="QuickResize" Classes="sideTab" ToolTip.Tip="Hide/Show" >
+                        <TabItem.Header>
+                            <Grid>
+                                <Image Classes="left" IsVisible="False" x:Name="ExpanderLeft"/>
+                                <Image Classes="right" x:Name="ExpanderRight"/>
+                            </Grid>
+                        </TabItem.Header>
+                        ERROR, don't be here!
+                    </TabItem>
                 </TabControl>
-
             </Border>
-
             <!--Grid splitter for resizable side pannel-->
             <GridSplitter Grid.Column="1" Background="Transparent" Width="6"/>
             <Grid Grid.Column="2">
@@ -208,20 +127,22 @@
                 </Grid.Background>
             </Grid>
 
-
             <!-- Canvas -->
             <TabControl Grid.Column="2" x:Name="CanvasTabControl" SelectionChanged="OnTabChanged" Padding="0">
-                <TabItem Header="GraphView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                <TabItem Header="GraphView" Classes="hiddenTab">
                     <Grid ColumnDefinitions="150, *">
-                        <views:ComponentView Grid.Column="0" />
+                        <views:ComponentView Grid.Column="0"/>
                         <views:Canvas Grid.Column="1" />
                     </Grid>
                 </TabItem>
-                <TabItem Header="TableView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
-                    <views:TableView Padding="0"/>
+                <TabItem Header="TableView" Classes="hiddenTab">
+                    <views:TableView/>
                 </TabItem>
-                <TabItem Header="SettingsView" Width="0" Padding="0" MinWidth="0" IsVisible="False">
+                <TabItem Header="SettingsView" Classes="hiddenTab">
                     <views:SettingsView />
+                </TabItem>
+                <TabItem Header="SettingsView" Classes="hiddenTab">
+                    <views:HomeView />
                 </TabItem>
             </TabControl>
         </Grid>

@@ -1,76 +1,51 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:UI"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="450"
              x:Class="UI.NetworkView">
+    <UserControl.Styles>
+        <StyleInclude Source="avares:/Styles/TabStyles.axaml"/>
+    </UserControl.Styles>
+
     <Grid RowDefinitions="auto,auto, auto, *, auto, auto">
         <!-- Title -->
-        <Label Grid.Row="0" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
-                FontFamily="avares://NetVine/Assets#Bebas Neue"
-                VerticalAlignment="Center" Foreground="White">Host</Label>
+        <Label Grid.Row="0" Classes="title">Host</Label>
         
         <!-- Hosting -->
         <Grid Grid.Row="1" RowDefinitions="auto,auto,auto,auto">
+
             <StackPanel Grid.Row="0" x:Name="hostSettingsStackPannel" HorizontalAlignment="Stretch"/>
 		    <Button Grid.Row="1" x:Name="ToggleHostButton" Click="ToggleHostClicked" Content="BeginHost"  Margin="0,0,10,0" HorizontalAlignment="Center"/>
             <Label x:Name="HostStatusLabel" Grid.Row="2" Content="Status"/>
         </Grid>
+
         <!-- Connecting -->
         <Grid Grid.Row="2" RowDefinitions="auto, auto, auto">
 		    <Rectangle Grid.Row="0" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
-            <Label Grid.Row="1" HorizontalAlignment="Center" Padding="0,0" FontSize="30" 
-                FontFamily="avares://NetVine/Assets#Bebas Neue"
-                VerticalAlignment="Center" Foreground="White">Add</Label>
+
+            <Label Grid.Row="1" Classes="title">Add</Label>
+
             <Grid Grid.Row="3" ColumnDefinitions="*,auto">
                 <TextBox Grid.Column="0"  MinWidth="0" Watermark="Ip:Port" UseFloatingWatermark="True" Margin="10,0,10,0" x:Name="AddConnectionInput"/>
 		        <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center" Click="TryAddConnection"/>	
             </Grid>
         </Grid>
         <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-			<StackPanel x:Name="ConnectionPanel">
-            </StackPanel>
+			<StackPanel x:Name="ConnectionPanel"/>
         </ScrollViewer>
 
         <!-- Disconnect -->
         <Rectangle Grid.Row="4" Height="2" Fill="#444444" Margin="8,4" Opacity="0.5"/>
         <Grid Grid.Row="5" RowDefinitions="*,*,*,*">
                 <!-- Live toggle -->
-                <CheckBox  Grid.Row="1" MaxHeight="24"  HorizontalAlignment="Center" ToolTip.Tip="Shutdown all connections">
-                    <CheckBox.Template>
-                        <ControlTemplate>
-                            <Border Background="Transparent"
-                                    BorderBrush="#888888"
-                                    BorderThickness="2"
-                                    CornerRadius="8"
-                                    Padding="8,8">
-                                <Border.Styles>
-                                    <Style Selector=":pointerover > Border">
-                                        <Setter Property="Background" Value="#22ffffff"/>
-                                    </Style>
-                                </Border.Styles>
-                                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-                                    <!-- Custom sprite checkbox box -->
-                                    <Panel Grid.Column="0" Width="24" Height="24">
-                                        <!-- Unchecked -->
-                                        <Image Source="/Assets/live_icon.png"
-                                                IsVisible="{Binding !IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
-                                                RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                        <!-- Checked -->
-                                        <Image Source="/Assets/live_icon_ticked.png"
-                                                IsVisible="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}}"
-                                                RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                                    </Panel>
-                                    <!-- Label -->
-                                    <Label Grid.Column="1" HorizontalAlignment="Stretch" FontSize="25" MinHeight="40" VerticalAlignment="Center" 
-                                            FontFamily="avares://NetVine/Assets#Bebas Neue"
-                                            Foreground="White"
-                                            Margin="4,4,0,0">Shutdown</Label>
-                                </Grid>
-                            </Border>
-                        </ControlTemplate>
-                    </CheckBox.Template>
-                </CheckBox>
+                <local:CustomCheckbox x:Name="disconnectBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" 
+                                      Title="Disconnect"
+                                      CheckedChanged="CustomCheckbox_CheckedChanged"
+                                      IsChecked="True" FontSize="20"
+                                      UncheckedSource="avares://NetVine/Assets/plug.png" 
+                                      CheckedSource="avares://NetVine/Assets/unplug.png"/>
             </Grid>
     </Grid>
 </UserControl>

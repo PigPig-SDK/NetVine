@@ -1,13 +1,16 @@
+using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
+using Avalonia.Styling;
+using Avalonia.Threading;
 using Infrastructure;
 using Infrastructure.Networking;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 using UI.ViewModels;
-using YamlDotNet.Core.Events;
 
 namespace UI.Views;
 
@@ -15,13 +18,11 @@ namespace UI.Views;
 public partial class MainWindow : Window
 {
     private Dictionary<int, Button> _tabBarMapping;
-
-    //Not an ENUM, these values respond to the tab of the CanvasTabControl.
-    public const int GraphView = 0;
-    public const int TableView = 1;
-    public const int SettingsView = 2;
-
     public bool IsInitialized = false;
+
+    private int CurrentSidebarTab = 0;
+    private bool isAnimatingSidebar = false;
+    private const int SidebarMinSize = 40;
 
     public MainWindow()
     {
@@ -29,8 +30,11 @@ public partial class MainWindow : Window
 
         InitializeComponent();
 
-        //_tabBarMapping = new Dictionary<int, Button>() { { MainWindowViewModel.GraphView,  GraphButton}, { MainWindowViewModel.TableView,TableButton } }; old code from merge conflict
-        _tabBarMapping = new Dictionary<int, Button>() { { GraphView, GraphButton }, { TableView, TableButton }, { SettingsView, SettingsButton } };
+        _tabBarMapping = new Dictionary<int, Button>() {
+            { MainWindowViewModel.GraphView,  GraphButton},
+            { MainWindowViewModel.TableView,TableButton },
+            { MainWindowViewModel.SettingView, SettingsButton },
+            { MainWindowViewModel.HomeView, HomeButton } };
 
         Width = ConfigManager.ReadSetting(SettingInt.WindowWidth);
         Height = ConfigManager.ReadSetting(SettingInt.WindowHeight);
@@ -45,6 +49,14 @@ public partial class MainWindow : Window
 
         Opened += OnOpenedEvent;
         Closing += OnCloseEvent;
+        SideBar.PropertyChanged += (s, e) =>
+        {
+            if (e.Property == BoundsProperty)
+            {
+                ExpanderLeft.IsVisible = SideBar.Bounds.Width != SidebarMinSize;
+                ExpanderRight.IsVisible = SideBar.Bounds.Width == SidebarMinSize;
+            }
+        };
     }
 
     private void OnOpenedEvent(object? sender, EventArgs e)
@@ -107,13 +119,16 @@ public partial class MainWindow : Window
     }
     private void OnSettingsClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        CanvasTabControl.SelectedIndex = SettingsView;
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.SettingView;
     }
-
+    private void OnDudeClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        CanvasTabControl.SelectedIndex = MainWindowViewModel.HomeView;
+    }
     private void SetTabSelected(int tab)
     {
-        if(tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
-           MainWindowViewModel.RaiseTabChanged(tab); //invokes OnTabChanged
+        if (tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
+            MainWindowViewModel.RaiseTabChanged(tab); //invokes OnTabChanged
 
         MainWindowViewModel.ActiveTab = tab;
 
@@ -138,8 +153,8 @@ public partial class MainWindow : Window
 
         switch (tab)
         {
-            case TableView:
-            case SettingsView:
+            case MainWindowViewModel.TableView:
+            case MainWindowViewModel.SettingView:
                 SearchBoxPanel.IsVisible = true;
                 break;
             default:
@@ -164,5 +179,47 @@ public partial class MainWindow : Window
     private void SearchTextChanged(object? sender, TextChangedEventArgs e)
     {
         MainWindowViewModel.OnSearchKeyStroke?.Invoke(SearchBoxInput.Text);
+    }
+
+    private void TabControl_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is TabControl tabControl)
+        {
+            // Run your code here based on which tab was clicked
+            var clickedTab = e.AddedItems[0] as TabItem;
+
+            if (clickedTab == QuickResize)
+            {
+                tabControl.SelectedIndex = CurrentSidebarTab;
+                CurrentSidebarTab = 0;
+
+                if(MainGrid.ColumnDefinitions[0].Width.Value == SidebarMinSize)
+                    AnimateSidebar(SidebarMinSize, 250, 10);
+                else
+                    AnimateSidebar(MainGrid.ColumnDefinitions[0].Width.Value, SidebarMinSize, 10);
+            }
+            
+        }
+    }
+    private void AnimateSidebar(double from, double to, int totalTicks)
+    {
+        if(isAnimatingSidebar) return;
+
+        isAnimatingSidebar = true;
+        var current = 0;
+        var timer = new System.Timers.Timer(15);
+        timer.Elapsed += (s, e) =>
+        {
+            var t = (double)current / totalTicks;
+            t = t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
+            var width = from + (to - from) * t;
+            Dispatcher.UIThread.Post(() => MainGrid.ColumnDefinitions[0].Width = new GridLength(width));
+            if (++current > totalTicks)
+            {
+                timer.Stop();
+                isAnimatingSidebar = false;
+            }
+        };
+        timer.Start();
     }
 }

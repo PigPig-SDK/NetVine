@@ -7,12 +7,18 @@
     
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="/Assets/icon.ico" ToolTipText="Net-Vine" Clicked="ShowWindow">
+            <TrayIcon Icon="/Assets/netvine_tiny.png" ToolTipText="Net-Vine" Clicked="ShowWindow">
                 <TrayIcon.Menu>
                     <NativeMenu>
-                        <NativeMenuItem Header="Open" Click="ShowWindow"/>
+                        <NativeMenuItem Header="Open" 
+                                        Icon="/Assets/share.png" 
+                                        Click="ShowWindow"/>
+                        <!--
                         <NativeMenuItemSeparator/>
-                        <NativeMenuItem Header="Quit" Click="QuitWindow"/>
+                        <NativeMenuItem Header="Disconnect" Icon="/Assets/plug.png"  Click="ToggleConnection"/>
+                        -->
+                        <NativeMenuItemSeparator/>
+                        <NativeMenuItem Header="Quit" Icon="/Assets/close.png"  Click="QuitWindow"/>
                     </NativeMenu>
                 </TrayIcon.Menu>
             </TrayIcon>
@@ -25,12 +31,13 @@
     
     <Application.Resources>
 		<ResourceDictionary>
+            <local:BitmapAssetValueConverter x:Key="BitmapAssetValueConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="/Views/ColorPallete.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
-    
+
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
@@ -43,4 +50,5 @@
             <Setter Property="BorderBrush" Value="#A5C882" />
         </Style>
     </Application.Styles>
+
 </Application>
