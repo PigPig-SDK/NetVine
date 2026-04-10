@@ -6,6 +6,8 @@ using Infrastructure.Networking;
 using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Timers;
 using UI.ViewModels;
 
 namespace UI;
@@ -16,10 +18,16 @@ public partial class FolderView : UserControl
     {
         InitializeComponent();
         AttachedToVisualTree += OnAttached;
+        DetachedFromVisualTree += OnDetach;
         DetachedFromLogicalTree += OnLeaveScope;
         SetDateRange(null, null);
         CombinationBox.IsChecked = false;
         CombinationBox.IsLocked = true;
+    }
+
+    private void OnDetach(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        MainWindowViewModel.OnAnimateFrame -= AnimateUsers;
     }
 
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
@@ -27,6 +35,15 @@ public partial class FolderView : UserControl
         UpdateUsersLate();
         DBInteract.OnProgramAdded += UpdateUsersLate;
         ConnectedUserInfo.OnUserConnectionModified += OnUserModified;
+        MainWindowViewModel.OnAnimateFrame += AnimateUsers;
+    }
+
+    private void AnimateUsers(double animationFrame)
+    {
+        foreach (var user in FolderViewData.UserMapping.Values)
+        {
+            user.Animate(animationFrame);
+        }
     }
 
     public void OnUserModified(string username, bool isAdded)

@@ -52,6 +52,16 @@ public class NetworkManager
                     else if(Host is null)//We can rehost...
                         StartHost();
                         break;
+                case SettingInt.NetworkDisabled:
+                    if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled))
+                        Disconnect();
+                    else
+                    {
+                        if(Host is null) StartHost();
+
+                        RefreshClientConnections();
+                    }
+                    break;
 
             }
         }
@@ -103,16 +113,18 @@ public class NetworkManager
         if(Host != null) throw new InvalidOperationException($"Cannot host while host is already established!");
 
         //Don't host!
-        if(!ConfigManager.ReadSettingBool(SettingInt.IsHosting)) return;
+        if (!ConfigManager.ReadSettingBool(SettingInt.IsHosting)) return;
+        if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled)) return;
 
         Host = new Host(IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
         Host.Start();
 
-        Console.WriteLine($"Accepting : {Host.IsAccepting}");
     }
 
     public void RefreshClientConnections()
     {
+        if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled)) return;
+
         foreach (ConnectionInfo connectionContext in ConfigManager.ClientConnections)
         {
             connectionContext.GetIP();

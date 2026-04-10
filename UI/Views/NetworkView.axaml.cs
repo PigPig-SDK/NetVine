@@ -4,6 +4,7 @@ using Infrastructure;
 using Infrastructure.Networking;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using UI.ViewModels;
 
 namespace UI;
@@ -18,13 +19,12 @@ public partial class NetworkView : UserControl
         AttachedToLogicalTree += OnEnterScope;
         DetachedFromLogicalTree += OnLeaveScope;
         InitializeComponent();
-
         _portInput = AddTextbox(SettingInt.HostPort, "Port");
         _ipInput = AddTextbox(SettingString.HostIP, "Host IP Binding");
         PopulateConnections();
         UpdateHostConfig();
-        UpdateToggleButtonName();
-
+        UpdateHostToggleButtonName();
+        UpdateOnlineText();
     }
     public SettingInput? AddTextbox<T>(T setting, string watermark) where T : Enum
     {
@@ -78,10 +78,11 @@ public partial class NetworkView : UserControl
     private void OnSettingChanged(Enum setting)
     {
         UpdateHostConfig();
-        UpdateToggleButtonName();
+        UpdateHostToggleButtonName();
+        UpdateOnlineText();
     }
 
-    private void UpdateToggleButtonName()
+    private void UpdateHostToggleButtonName()
     {
         ToggleHostButton.Content = ConfigManager.ReadSettingBool(SettingInt.IsHosting) == false ? "Start Host" : "Stop Host";
     }
@@ -136,6 +137,7 @@ public partial class NetworkView : UserControl
         if (connectionInfo is null) goto ErrorSubmittingDisplay;
 
         ConfigManager.AddClientConnection(connectionInfo);
+        ConfigManager.TrySaveToFile();
         return;
     ErrorSubmittingDisplay:
         ErrorSubmittingDisplay();
@@ -151,13 +153,16 @@ public partial class NetworkView : UserControl
 
     public void CustomCheckbox_CheckedChanged(object? sender, bool isChecked)
     {
-        if(isChecked)
-        {
-            disconnectBox.Title = "Disconnect";
-        }
+        ConfigManager.WriteSetting(SettingInt.NetworkDisabled, 
+            ConfigManager.ReadSetting(SettingInt.NetworkDisabled) == 0? 1 : 0);
+        UpdateOnlineText();
+    }
+    void UpdateOnlineText()
+    {
+        disconnectBox.IsChecked = !ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled);
+        if (disconnectBox.IsChecked)
+            disconnectBox.Title = "Go Offline";
         else
-        {
-            disconnectBox.Title = "Reconnect";
-        }
+            disconnectBox.Title = "Go Online";
     }
 }

@@ -1,8 +1,10 @@
 ﻿
 using System.Net;
+using YamlDotNet.Serialization;
 
 namespace Infrastructure.Networking;
 
+[YamlSerializable]
 public record class ConnectionInfo
 {
     public string Ip { get; set; }

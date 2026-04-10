@@ -79,6 +79,7 @@ public partial class App : Application
             desktop.MainWindow?.Activate();
             desktop.MainWindow?.Focus();
         }
+        MainWindowViewModel.StartAnimation();
     }
 
     private void QuitWindow(object? sender, System.EventArgs e)
