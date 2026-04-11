@@ -15,6 +15,12 @@ namespace UI.ViewModels
         public string SystemName { get; set; }
         public string AppName { get; set; }
 
+        //access for the filter
+        public float Cpu { get => LiveData!.CpuUsage; }
+        public float Memory { get => LiveData!.MemoryUsage; }
+        public float Disk {  get => LiveData!.DiskUsage; }
+        public float Network {  get => LiveData!.NetworkUsage; }
+
         private IProgramData? _liveData;
         public IProgramData? LiveData
         {

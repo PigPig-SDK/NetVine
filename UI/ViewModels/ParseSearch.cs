@@ -213,6 +213,10 @@ namespace UI.ViewModels
         private IFilterNode Parse(string expression)
         {
             expression = expression.Trim();
+            if (expression[0] == '(' && expression[expression.Length - 1] == ')')
+            {
+                expression = expression.Substring(1, expression.Length - 2);
+            }
 
             var parts = SplitByLevel0(expression, _or);
             if (parts.Count > 1)

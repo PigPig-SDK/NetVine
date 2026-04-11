@@ -356,13 +356,34 @@ namespace UI.ViewModels
                 TableRowsView.SortDescriptions.Add(sort);
         }
 
+        private bool TryParseExpression(string expression, TableRow target)
+        {
+            if (expression == null) return false;
+            try
+            {
+                var t = new TreeBuilder<TableRow>(target, '&');
+                return t.BuildTree(_searchText).Evaluate();
+            }
+            catch
+            {
+                return false; // lazy -- works though
+            }
+        }
+
         private bool FilterRow(object obj)
         {
-            
+
 
             if (obj is not TableRow row) return false;
-            return row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
-                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+            if (obj is TableRow tr)
+            {
+                return TryParseExpression(_searchText, tr) 
+                    || row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+                    || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);;
+            }
+            else return false;
+
+            //
         }
 
     }
