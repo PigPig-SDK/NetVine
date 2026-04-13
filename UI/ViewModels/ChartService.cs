@@ -10,6 +10,10 @@ public class ChartService
     public const string DISK = "DISK";
     public const string NET = "NET";
 
+    public const string Line = "Line";
+    public const string Bar = "Bar";
+    public const string Pie = "Pie";
+
     private string _chartType = "Line";
     public string ChartType
     {

@@ -2,6 +2,8 @@ using Avalonia.Controls;
 using Core;
 using ScottPlot;
 using ScottPlot.Avalonia;
+using ScottPlot.Colormaps;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
@@ -13,9 +15,12 @@ public partial class Canvas : UserControl
 {
     private readonly CanvasViewModel _vm;
     private AvaPlot _canvasPlot;
+    private List<string> _barProcessNames = new();
+    private ScottPlot.Plottables.Annotation? _tooltip;
+    private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
 
     //add to settings
-    int topcount = 10;
+    int _topCount = 10;
 
 
 
@@ -32,6 +37,26 @@ public partial class Canvas : UserControl
         // TODO: make 0 the minimum x for graph
         // _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
 
+
+        Loaded += OnLoaded;
+    }
+
+    private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
+
+        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
+        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
+        _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
+        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+
+        _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
+        _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
+        _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
+        _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
+
+        _canvasPlot.PointerMoved += OnPointerMoved;
+        _canvasPlot.PointerExited += OnPointerExited;
 
         _canvasPlot.Refresh();
     }
@@ -80,19 +105,67 @@ public partial class Canvas : UserControl
         signal.LegendText = history.Item2;
         signal.Color = ScottPlot.Colors.White;
 
-        if (_vm.SelectedResource == ChartService.RAM)
-            _canvasPlot.Plot.Axes.AutoScale();
-        else
-        {
-            _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
-            _canvasPlot.Plot.Axes.AutoScaleX();
-        }
+        SetLimits();
 
         _canvasPlot.Plot.YLabel(history.Item2);
         _canvasPlot.Plot.ShowLegend();
     }
-    private void DrawBarChart() {
 
+    private void DrawBarChart()
+    {
+        if (_vm.SnapshotHistory.Count == 0) return;
+
+        _barTooltipData.Clear();
+
+
+
+        // assign a distinct color per process name, consistent across bars
+        var processColors = new Dictionary<string, ScottPlot.Color>();
+        var palette = new ScottPlot.Palettes.Category10();
+        int colorIndex = 0;
+
+        for (int i = 0; i < _vm.SnapshotHistory.Count; i++)
+        {
+            var snapshot = _vm.SnapshotHistory[i];
+
+            var _topCount = snapshot
+                .OrderByDescending(p => GetValue(p))
+                .Where(p => GetValue(p) > 0)
+                .Take(10)
+                .ToList();
+
+            double cumulative = 0;
+            var segmentData = new List<(string name, double yBase, double yTop)>();
+
+            foreach (var process in _topCount)
+            {
+                double value = GetValue(process);
+
+                // assign a consistent color per process name
+                if (!processColors.ContainsKey(process.ProcessName))
+                    processColors[process.ProcessName] = palette.GetColor(colorIndex++);
+
+                var bar = new ScottPlot.Bar
+                {
+                    Position = i,
+                    Value = cumulative + value,
+                    ValueBase = cumulative,
+                    FillColor = processColors[process.ProcessName],
+                    LineColor = ScottPlot.Colors.Transparent,
+                };
+
+                _canvasPlot!.Plot.Add.Bar(bar);
+                segmentData.Add((process.ProcessName, cumulative, cumulative + value));
+                cumulative += value;
+            }
+
+            _barTooltipData[i] = segmentData;
+        }
+
+        SetLimits();
+
+        string label = _vm.SelectedResource == ChartService.RAM ? "RAM (MB)" : "Usage (%)";
+        _canvasPlot.Plot.YLabel(label);
     }
     private void DrawPieChart() {
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(1);
@@ -138,9 +211,78 @@ public partial class Canvas : UserControl
 
         return _vm.LatestSnapshot
             .OrderByDescending(p => GetValue(p))
-            .Take(topcount)
+            .Take(_topCount)
             .Where(p => GetValue(p) > 0)
             .ToList();
+    }
+
+    private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
+    {
+        if (_vm.CurrentChartType != ChartService.Bar || _canvasPlot is null) return;
+        if (_barTooltipData.Count == 0) return;
+
+        var pos = e.GetPosition(_canvasPlot);
+        var dataCoords = _canvasPlot.Plot.GetCoordinates((float)pos.X, (float)pos.Y);
+
+        int barIndex = (int)Math.Round(dataCoords.X);
+
+        if (!_barTooltipData.TryGetValue(barIndex, out var segments))
+        {
+            RemoveTooltip();
+            _canvasPlot.Refresh();
+            return;
+        }
+
+        // find which stacked segment the Y coordinate falls within
+        var hovered = segments.FirstOrDefault(s =>
+            dataCoords.Y >= s.yBase && dataCoords.Y <= s.yTop);
+
+        if (hovered == default)
+        {
+            RemoveTooltip();
+            _canvasPlot.Refresh();
+            return;
+        }
+
+        string unit = _vm.SelectedResource == ChartService.RAM ? "MB" : "%";
+        double val = hovered.yTop - hovered.yBase;
+        string text = $"{hovered.name}\n{val:0.0} {unit}";
+
+        RemoveTooltip();
+        _tooltip = _canvasPlot.Plot.Add.Annotation(text, Alignment.UpperLeft);
+        _tooltip.LabelBackgroundColor = ScottPlot.Color.FromHex("#2D2D38");
+        _tooltip.LabelFontColor = ScottPlot.Colors.White;
+        _tooltip.LabelBorderColor = ScottPlot.Colors.White;
+        _tooltip.LabelBorderWidth = 1;
+
+        _canvasPlot.Refresh();
+    }
+
+    private void OnPointerExited(object? sender, Avalonia.Input.PointerEventArgs e)
+    {
+        RemoveTooltip();
+        _canvasPlot?.Refresh();
+    }
+
+    private void RemoveTooltip()
+    {
+        if (_tooltip is null || _canvasPlot is null) return;
+        _canvasPlot.Plot.Remove(_tooltip);
+        _tooltip = null;
+    }
+
+    private void SetLimits()
+    {
+        if (_vm.SelectedResource == ChartService.RAM)
+        {
+            _canvasPlot.Plot.Axes.SetLimitsY(0, _vm.RAMTotal);
+            _canvasPlot.Plot.Axes.AutoScaleX();
+        }
+        else
+        {
+            _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
+            _canvasPlot.Plot.Axes.AutoScaleX();
+        }
     }
 
 }

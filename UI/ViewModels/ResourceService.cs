@@ -1,13 +1,19 @@
+using Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Core;
+using System.Runtime.InteropServices;
 
 namespace UI.ViewModels
 {
     public class ResourceService
     {
+        [DllImport("kernel32.dll")]
+        private static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
+
         public static readonly ResourceService Instance = new();
+
+        public double RAMTotal { get; private set; }
 
         public double CpuUsage { get; private set; }
         public double RamUsage { get; private set; }
@@ -19,18 +25,32 @@ namespace UI.ViewModels
         public List<double> DiskHistory { get; } = new();
         public List<double> NetworkHistory { get; } = new();
 
+        public List<List<IProgramData>> SnapshotHistory { get; } = new();
+
         public List<IProgramData> LatestSnapshot { get; private set; } = new();
+        private const int MaxHistory = 60;
 
         public event Action? DataUpdated;
 
         private ResourceService()
         {
             SystemHistory.Instance.OnSnapshotTaken += OnSnapshot;
+            RAMTotal = GetRAMTotal();
+        }
+        private double GetRAMTotal()
+        {
+            var status = new MemoryStatusEx { dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>() };
+            GlobalMemoryStatusEx(ref status);
+            return status.ullTotalPhys / (1024.0 * 1024.0);
         }
 
         private void OnSnapshot(List<IProgramData> data)
         {
             LatestSnapshot = data;
+
+            SnapshotHistory.Add(data.ToList());
+            if (SnapshotHistory.Count > MaxHistory)
+                SnapshotHistory.RemoveAt(0);
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
             RamUsage = data.Sum(p => p.MemoryUsage);
             DiskUsage = data.Sum(p => p.DiskUsage);
@@ -42,6 +62,22 @@ namespace UI.ViewModels
             NetworkHistory.Add(NetworkUsage);
 
             DataUpdated?.Invoke();
+
+
         }
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MemoryStatusEx
+        {
+            public uint dwLength;
+            public uint dwMemoryLoad;
+            public ulong ullTotalPhys;
+            public ulong ullAvailPhys;
+            public ulong ullTotalPageFile;
+            public ulong ullAvailPageFile;
+            public ulong ullTotalVirtual;
+            public ulong ullAvailVirtual;
+            public ulong ullAvailExtendedVirtual;
+        }
+
     }
 }
