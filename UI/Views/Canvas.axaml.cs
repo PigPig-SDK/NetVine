@@ -18,11 +18,8 @@ public partial class Canvas : UserControl
     private List<string> _barProcessNames = new();
     private ScottPlot.Plottables.Annotation? _tooltip;
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
-
     //add to settings
     int _topCount = 10;
-
-
 
     public Canvas()
     {
@@ -34,30 +31,22 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
         _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
-        // TODO: make 0 the minimum x for graph
-        // _canvasPlot.Plot.Axes.SetLimitsX(0, 100);
-
-
         Loaded += OnLoaded;
     }
 
     private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
-
         _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
         _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
-
         _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
         _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
-
         _canvasPlot.PointerMoved += OnPointerMoved;
         _canvasPlot.PointerExited += OnPointerExited;
-
         _canvasPlot.Refresh();
     }
 
@@ -66,16 +55,14 @@ public partial class Canvas : UserControl
         Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
             _canvasPlot.Plot.Clear();
-
             _canvasPlot.Plot.YLabel("");
+            
             switch (_vm.CurrentChartType)
             {
                 case "Line": DrawLineChart(); break;
                 case "Bar": DrawBarChart(); break;
                 case "Pie": DrawPieChart(); break;
             }
-
-
 
             _canvasPlot.Refresh();
         });
@@ -100,7 +87,6 @@ public partial class Canvas : UserControl
 
         if (history.Item1.Count == 0) return;
 
-
         var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
         signal.LegendText = history.Item2;
         signal.Color = ScottPlot.Colors.White;
@@ -117,9 +103,6 @@ public partial class Canvas : UserControl
 
         _barTooltipData.Clear();
 
-
-
-        // assign a distinct color per process name, consistent across bars
         var processColors = new Dictionary<string, ScottPlot.Color>();
         var palette = new ScottPlot.Palettes.Category10();
         int colorIndex = 0;
@@ -128,20 +111,19 @@ public partial class Canvas : UserControl
         {
             var snapshot = _vm.SnapshotHistory[i];
 
-            var _topCount = snapshot
+            var bartop = snapshot
                 .OrderByDescending(p => GetValue(p))
                 .Where(p => GetValue(p) > 0)
-                .Take(10)
+                .Take(_topCount)
                 .ToList();
 
             double cumulative = 0;
             var segmentData = new List<(string name, double yBase, double yTop)>();
 
-            foreach (var process in _topCount)
+            foreach (var process in bartop)
             {
                 double value = GetValue(process);
 
-                // assign a consistent color per process name
                 if (!processColors.ContainsKey(process.ProcessName))
                     processColors[process.ProcessName] = palette.GetColor(colorIndex++);
 
@@ -233,7 +215,6 @@ public partial class Canvas : UserControl
             return;
         }
 
-        // find which stacked segment the Y coordinate falls within
         var hovered = segments.FirstOrDefault(s =>
             dataCoords.Y >= s.yBase && dataCoords.Y <= s.yTop);
 

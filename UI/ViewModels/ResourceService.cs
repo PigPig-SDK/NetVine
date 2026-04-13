@@ -28,7 +28,6 @@ namespace UI.ViewModels
         public List<List<IProgramData>> SnapshotHistory { get; } = new();
 
         public List<IProgramData> LatestSnapshot { get; private set; } = new();
-        private const int MaxHistory = 60;
 
         public event Action? DataUpdated;
 
@@ -49,8 +48,6 @@ namespace UI.ViewModels
             LatestSnapshot = data;
 
             SnapshotHistory.Add(data.ToList());
-            if (SnapshotHistory.Count > MaxHistory)
-                SnapshotHistory.RemoveAt(0);
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
             RamUsage = data.Sum(p => p.MemoryUsage);
             DiskUsage = data.Sum(p => p.DiskUsage);
@@ -62,9 +59,8 @@ namespace UI.ViewModels
             NetworkHistory.Add(NetworkUsage);
 
             DataUpdated?.Invoke();
-
-
         }
+
         [StructLayout(LayoutKind.Sequential)]
         private struct MemoryStatusEx
         {
