@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace UI.ViewModels
 {
-    //from seperate project. Will break this up and integrate tomorrow
     class Row
     {
         public float Id { get; set; }
@@ -66,14 +65,15 @@ namespace UI.ViewModels
         }
     }
 
-    public class FilterNode<TypeRow> : IFilterNode
+
+    public class FilterNode : IFilterNode
     {
         public string FieldName { get; }
         public string FieldValue { get; }
         private string _op;
-        TypeRow _target;
-        public TypeRow Target { set => _target = value; }
-        public FilterNode(string fieldName, string fieldValue, string op, TypeRow target)
+        TableRow _target;
+        public TableRow Target { set => _target = value; }
+        public FilterNode(string fieldName, string fieldValue, string op, TableRow target)
         {
             _op = op;
             FieldValue = fieldValue;
@@ -81,38 +81,53 @@ namespace UI.ViewModels
             _target = target;
         }
 
+        bool EvaluateField(float expected, float actual)
+        {
+            return _op switch
+            {
+                ">=" => expected >= actual,
+                ">" => actual < expected,
+                "<" => expected < actual,
+                "<=" => expected <= actual,
+                "=" => actual == expected,
+                _ => false
+            };
+        }
+
+
         bool IFilterNode.Evaluate()
         {
-            if (_target == null) return false;
-            var prop = _target.GetType().GetProperty(FieldName);
-            if (prop == null) return false;
-            try
+            switch (FieldName)
             {
-                object? propertyValue = prop.GetValue(_target);
-                object? convertedInput = Convert.ChangeType(FieldValue, prop.PropertyType);
+                case "Process": case "process": case "proc":
+                    if (_target.AppName == FieldValue && _op == "=")
+                        return true;
+                    else return false;
 
-                if (propertyValue is IComparable comp)
-                {
-                    int result = comp.CompareTo(convertedInput);
-
-                    switch (_op) // e.g., "<", ">", "<=", ">="
-                    {
-                        case "<": return result < 0;
-                        case ">": return result > 0;
-                        case "<=": return result <= 0;
-                        case ">=": return result >= 0;
-                        case "=": return result == 0;
-                        default: return false;
-                    }
-                }
-                else return false;
-
+                case "System": case "system": case "sys": case "Sys":
+                    if (_target.SystemName == FieldValue && _op == "=")
+                        return true;
+                    else return false;
             }
-            catch { return false; }
 
+            if (float.TryParse(FieldValue, out float v)) 
+            {
+                switch(FieldName)
+                {
+                    case "Cpu": case "CPU": case "cpu":
+                        return EvaluateField(_target.Cpu, v);
+                    case "Disk": case "disk":
+                        return EvaluateField(_target.Disk, v);
+                    case "Memory": case "memory": case "mem": case "Mem":
+                        return EvaluateField(_target.Memory, v);
+                    case "Network": case "network": case "net": case "Net":
+                        return EvaluateField(_target.Network, v);
+                }
+            }
+
+            return false;
         }
     }
-
 
 
     public class TreeBuilder<TypeRow>
@@ -136,9 +151,9 @@ namespace UI.ViewModels
         private char _or;
         private char _leftP;
         private char _rightP;
-        private TypeRow? _target;
-        public TypeRow Target { set => _target = value; }
-        public TreeBuilder(TypeRow target, char and = '.', char or = '+', char lp = '(', char rp = ')')
+        private TableRow? _target;
+        public TableRow Target { set => _target = value; }
+        public TreeBuilder(TableRow target, char and = '.', char or = '+', char lp = '(', char rp = ')')
         {
             _target = target;
             _and = and; _or = or; _leftP = lp; _rightP = rp;
@@ -184,7 +199,7 @@ namespace UI.ViewModels
 
         }
 
-        private FilterNode<TypeRow>? BuildLeafNode(string expression)
+        private FilterNode? BuildLeafNode(string expression)
         {
             if (ValidateLeafExpressionOperation(expression) == false) return null;
             string[] comboOps = { ">=", "<=" };
@@ -195,7 +210,7 @@ namespace UI.ViewModels
                 {
                     string[] parts = expression.Split(op);
                     if (parts.Length == 2)
-                        return new FilterNode<TypeRow>(parts[0].Trim(), parts[1].Trim(), op, _target!);
+                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _target!);
                 }
 
 
@@ -204,7 +219,7 @@ namespace UI.ViewModels
                 {
                     string[] parts = expression.Split(op);
                     if (parts.Length == 2)
-                        return new FilterNode<TypeRow>(parts[0].Trim(), parts[1].Trim(), op, _target!);
+                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _target!);
                 }
 
             return null;
@@ -213,6 +228,7 @@ namespace UI.ViewModels
         private IFilterNode Parse(string expression)
         {
             expression = expression.Trim();
+            if (string.IsNullOrEmpty(expression)) return new CompositeNode(); //safe empty
             if (expression[0] == '(' && expression[expression.Length - 1] == ')')
             {
                 expression = expression.Substring(1, expression.Length - 2);
@@ -244,3 +260,38 @@ namespace UI.ViewModels
 
     }
 }
+
+/*
+         * Unhandled exception. System.IndexOutOfRangeException: Index was outside the bounds of the array.
+         * at UI.ViewModels.TreeBuilder`1.Parse(String expression) in C:\Dev\GitHub\NetVine\UI\ViewModels\ParseSearch.cs:line 230
+         * at UI.ViewModels.TreeBuilder`1.Parse(String expression) in C:\Dev\GitHub\NetVine\UI\ViewModels\ParseSearch.cs:line 240
+         * at Avalonia.Collections.DataGridCollectionView.PassesFilter(Object item)
+         * at Avalonia.Collections.DataGridCollectionView.PrepareLocalArray(IEnumerable enumerable)
+         * at Avalonia.Collections.DataGridCollectionView.RefreshOverride()
+         * at Avalonia.Collections.DataGridCollectionView.Refresh()
+         * at UI.ViewModels.TableViewModel.set_SearchText(String value) in C:\Dev\GitHub\NetVine\UI\ViewModels\TableViewModel.cs:line 74                                         
+         * at UI.ViewModels.TableViewModel.OnSearchKeyStroke(String search) in C:\Dev\GitHub\NetVine\UI\ViewModels\TableViewModel.cs:line 171
+         * at UI.Views.MainWindow.SearchTextChanged(Object sender, TextChangedEventArgs e) in C:\Dev\GitHub\NetVine\UI\Views\MainWindow.axaml.cs:line 184
+         * at Avalonia.Interactivity.EventRoute.RaiseEventImpl(RoutedEventArgs e)   
+         * at Avalonia.Interactivity.EventRoute.RaiseEvent(Interactive source, RoutedEventArgs e)       
+         * at Avalonia.Interactivity.Interactive.RaiseEvent(RoutedEventArgs e)                         
+         * 
+         * at Avalonia.Controls.TextBox.<RaiseTextChangeEvents>b__241_0()                                   
+         * at Avalonia.Threading.DispatcherOperation.InvokeCore()                                           
+         * at Avalonia.Threading.DispatcherOperation.Execute()                                              
+         * at Avalonia.Threading.Dispatcher.ExecuteJob(DispatcherOperation job)                             
+         * at Avalonia.Threading.Dispatcher.ExecuteJobsCore(Boolean fromExplicitBackgroundProcessingCallback)    
+         * at Avalonia.Threading.Dispatcher.Signaled()                                                
+         * at Avalonia.Win32.Win32Platform.WndProc(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam)  
+         * at Avalonia.Win32.Interop.UnmanagedMethods.DispatchMessage(MSG& lpmsg)                           
+         * at Avalonia.Win32.Win32DispatcherImpl.RunLoop(CancellationToken cancellationToken)               
+         * at Avalonia.Threading.DispatcherFrame.Run(IControlledDispatcherImpl impl)                           
+         * at Avalonia.Threading.Dispatcher.PushFrame(DispatcherFrame frame)                                
+         * at Avalonia.Threading.Dispatcher.MainLoop(CancellationToken cancellationToken)                     
+         * at Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime.StartCore(String[] args)    
+         * at Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime.Start(String[] args)              
+         * at Avalonia.ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime(AppBuilder builder, String[] args, Action`1 lifetimeBuilder)  
+         * at UI.Program.Main(String[] args) in C:\Dev\GitHub\NetVine\UI\Program.cs:line 38
+         * 
+         * 
+         */
