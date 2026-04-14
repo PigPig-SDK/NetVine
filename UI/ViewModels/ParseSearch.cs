@@ -28,36 +28,37 @@ namespace UI.ViewModels
     {
         public CompositeType Type { get; }
 
-        private List<IFilterNode> children;
+        private List<IFilterNode> _children;
 
         public CompositeNode()
         {
             Type = CompositeType.AND;
-            children = new List<IFilterNode>();
+            _children = new List<IFilterNode>();
         }
 
         public CompositeNode(CompositeType type)
         {
             Type = type;
-            children = new List<IFilterNode>();
+            _children = new List<IFilterNode>();
         }
-        public void AddChild(IFilterNode node) { children.Add(node); }
+        public void AddChild(IFilterNode node) { _children.Add(node); }
 
         public bool Evaluate()
         {
             bool result = true;
+            if (_children.Count < 1) return false;
 
             if (Type == CompositeType.AND)
             {
                 result = true;
-                foreach (IFilterNode node in children)
+                foreach (IFilterNode node in _children)
                     result = result && node.Evaluate();
             }
 
             else if (Type == CompositeType.OR)
             {
                 result = false;
-                foreach (IFilterNode node in children)
+                foreach (IFilterNode node in _children)
                     result = result || node.Evaluate();
             }
 
@@ -228,7 +229,7 @@ namespace UI.ViewModels
         private IFilterNode Parse(string expression)
         {
             expression = expression.Trim();
-            if (string.IsNullOrEmpty(expression)) return new CompositeNode(); //safe empty
+           // if (string.IsNullOrEmpty(expression)) return new CompositeNode(); //safe empty
             if (expression[0] == '(' && expression[expression.Length - 1] == ')')
             {
                 expression = expression.Substring(1, expression.Length - 2);
@@ -295,3 +296,76 @@ namespace UI.ViewModels
          * 
          * 
          */
+
+
+/*
+ * Here is your stack trace formatted into multiple lines for better readability:
+
+Unhandled exception. System.ArgumentOutOfRangeException: Specified argument was out of the range of valid values. (Parameter 'index')
+
+    at Avalonia.Collections.DataGridCollectionView.GetItemAt(Int32 index)
+
+    at Avalonia.Collections.DataGridCollectionView.get_IsCurrentInSync()
+
+    at Avalonia.Collections.DataGridCollectionView.AdjustCurrencyForRemove(Int32 index)
+
+    at Avalonia.Collections.DataGridCollectionView.ProcessRemoveEvent(Object removedItem, Boolean isReplace)
+
+    at Avalonia.Collections.DataGridCollectionView.ProcessCollectionChanged(NotifyCollectionChangedEventArgs args)
+
+    at Avalonia.Collections.DataGridCollectionView.<.ctor>b__27_0(Object _, NotifyCollectionChangedEventArgs args)
+
+    at System.Collections.ObjectModel.ObservableCollection`1.OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+
+    at System.Collections.ObjectModel.Collection`1.Remove(T item)
+
+    at UI.ViewModels.TableDataManager.UpdateLiveData(List`1 data)
+
+        Location: C:\Dev\GitHub\NetVine\UI\ViewModels\TableDataManager.cs:line 52
+
+    at UI.ViewModels.TableViewModel.<>c__DisplayClass74_0.<OnSnapshotLive>b__0()
+
+        Location: C:\Dev\GitHub\NetVine\UI\ViewModels\TableViewModel.cs:line 180
+
+    at Avalonia.Threading.DispatcherOperation.InvokeCore()
+
+    at Avalonia.Threading.DispatcherOperation.Execute()
+
+    at Avalonia.Threading.Dispatcher.ExecuteJob(DispatcherOperation job)
+
+    at Avalonia.Threading.Dispatcher.ExecuteJobsCore(Boolean fromExplicitBackgroundProcessingCallback)
+
+    at Avalonia.Threading.Dispatcher.Signaled()
+
+    at Avalonia.Win32.Win32Platform.WndProc(IntPtr hWnd, UInt32 msg, IntPtr wParam, IntPtr lParam)
+
+    at Avalonia.Win32.Interop.UnmanagedMethods.DispatchMessage(MSG& lpmsg)
+
+    at Avalonia.Win32.Win32DispatcherImpl.RunLoop(CancellationToken cancellationToken)
+
+    at Avalonia.Threading.DispatcherFrame.Run(IControlledDispatcherImpl impl)
+
+    at Avalonia.Threading.Dispatcher.PushFrame(DispatcherFrame frame)
+
+    at Avalonia.Threading.Dispatcher.MainLoop(CancellationToken cancellationToken)
+
+    at Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime.StartCore(String[] args)
+
+    at Avalonia.Controls.ApplicationLifetimes.ClassicDesktopStyleApplicationLifetime.Start(String[] args)
+
+    at Avalonia.ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime(AppBuilder builder, String[] args, Action`1 lifetimeBuilder)
+
+    at UI.Program.Main(String[] args)
+
+        Location: C:\Dev\GitHub\NetVine\UI\Program.cs:line 38
+
+    Quick Observation
+
+    It looks like the crash is happening inside TableDataManager.UpdateLiveData (line 52) when you call .Remove() on an ObservableCollection.
+
+    This is triggering a UI update in the Avalonia DataGrid, but the collection's state and the DataGrid's internal "currency" (the currently 
+    selected or active item) have fallen out of sync, causing it to look for an index that no longer exists. If you're removing items in a loop, 
+    you might want to try removing from the end of the list first or using a for loop in reverse
+
+    
+ */

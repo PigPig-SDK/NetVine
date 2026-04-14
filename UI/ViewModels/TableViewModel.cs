@@ -137,8 +137,8 @@ namespace UI.ViewModels
 
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
-            if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-
+            //if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+            if (!LiveViewModel.IsLive || !_tableViewActive) return;
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
                 DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
                 DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd); 
@@ -173,7 +173,8 @@ namespace UI.ViewModels
         public void OnSnapshotLive(List<IProgramData> data)
         {
             {
-                if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+                //if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+                if (!LiveViewModel.IsLive || !_tableViewActive ) return;
             
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
