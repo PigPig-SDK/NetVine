@@ -11,7 +11,11 @@ public class DBInteract : DbContext
 
     public DbSet<User> UserTable { get; set; } = null!;
     
+    public DbSet<ProgramDataHistorical> PDHTable { get; set; } = null!;
+    
     public static Action? OnProgramAdded;
+    
+    private static readonly object _dbLock;
 
     public delegate void ProgramListAddedDelegate(List<ProgramData> programs, bool isDataLocal);
 
@@ -50,6 +54,9 @@ public class DBInteract : DbContext
         
         modelBuilder.Entity<User>()
             .HasKey(u => new {u.Username});
+        
+        modelBuilder.Entity<ProgramDataHistorical>()
+            .HasKey(u => new {u.SystemName, u.ProcessName});
     }
 
     /// <summary>
@@ -147,14 +154,15 @@ public class DBInteract : DbContext
     /// </summary>
     public static void WipeDB()
     {
-        using (var db = new DBInteract())
+        lock (_dbLock)
         {
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
+            using (var db = new DBInteract())
+            {
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
+            }
         }
     }
-    
-    
     
     /// <summary>
     /// Submit an entry to the DB without an existing context.
@@ -301,6 +309,7 @@ public class DBInteract : DbContext
             {
                 SubmitEntry(data, db);
             }    
+            DBArithmetic.UpdatePDHTable(programs.ToList(), db);
         }
         OnProgramListAdded?.Invoke(programs.ToList() ,isLocal);
     }
@@ -326,5 +335,34 @@ public class DBInteract : DbContext
             db.SaveChanges();
             
         }
+    }
+
+    /// <summary>
+    /// Returns true if the Program Data Historical Table is empty
+    /// </summary>
+    public bool PDHIsEmpty()
+    {
+        {
+            return !this.PDHTable.Any();
+        }
+    }
+    
+    /// <summary>
+    /// Cecks if a specific value is contained within the Program Data Historical Table
+    /// </summary>
+    /// 
+    public bool ValueInPDH(ProgramData data)
+    {
+        return this.PDHTable.Find(data.SystemName, data.ProcessName) != null;
+    }
+    
+    /// <summary>
+    /// Adds entry to Program Data Historical Table
+    /// </summary>
+    /// 
+    public void AddPDHEntry(ProgramDataHistorical data)
+    {
+        this.PDHTable.Add(data);
+        this.SaveChanges();
     }
 }
