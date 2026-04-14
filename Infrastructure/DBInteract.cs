@@ -144,7 +144,19 @@ public class DBInteract : DbContext
     {
         using (var db = new DBInteract())
         {
-            db.ProgramDataTable.RemoveRange(db.ProgramDataTable);
+            db.ProgramDataTable.RemoveRange(db.ProgramDataTable.ToList());
+            db.SaveChanges();
+        }
+    }
+    
+    /// <summary>
+    /// Wipes ProgramDataTableHistorical data
+    /// </summary>
+    public static void ClearAllProgramDataHistorical()
+    {
+        using (var db = new DBInteract())
+        {
+            db.PDHTable.RemoveRange(db.PDHTable.ToList());
             db.SaveChanges();
         }
     }
@@ -154,14 +166,8 @@ public class DBInteract : DbContext
     /// </summary>
     public static void WipeDB()
     {
-        lock (_dbLock)
-        {
-            using (var db = new DBInteract())
-            {
-                db.Database.EnsureDeleted();
-                db.Database.EnsureCreated();
-            }
-        }
+        ClearAllProgramData();
+        ClearAllProgramDataHistorical();
     }
     
     /// <summary>
