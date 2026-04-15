@@ -104,6 +104,13 @@ namespace UI.ViewModels
                 TableRows.Remove(row);
         }
 
+
+        /// <summary>
+        /// Kills an application by its primary key (system, app)
+        /// </summary>
+        /// <param name="systemName"></param>
+        /// <param name="appName"></param>
+        /// <returns></returns>
         public async Task KillAndRemoveByKey(string systemName, string appName)
         {
             await AppQuitter.KillProcessByNameAsync(appName);
