@@ -1,6 +1,3 @@
-/* Note: This class contains two classes! This is to play ball with the genrics system!
- * 
- */
 using Avalonia.Controls;
 
 namespace UI.ViewModels;

@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UI.ViewModels;
@@ -11,12 +12,15 @@ namespace UI;
 public partial class TableView : UserControl
 {
     private Dictionary<string, bool> _sortDirections = new();
+    private TableRow? _selectedRow;
 
     public TableView()
     {
         InitializeComponent();
         DataContext = new TableViewModel();
+
         LiveViewModel.ViewChangedEvent += OnViewChanged;
+        LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
     }
 
     /// <summary>
@@ -44,5 +48,49 @@ public partial class TableView : UserControl
             _sortDirections[header] = !_sortDirections[header];
             e.Handled = true;
         }
+    }
+
+    private void TimeFrameDisableOnLive(bool isLive)
+    {
+        if (isLive)
+        {
+            TimeFrameSelectionOption.IsEnabled = false;
+        }
+        else
+        {
+            TimeFrameSelectionOption.IsEnabled = true;
+        }
+    }
+
+    private void ContextMenuOpened(object? sender, RoutedEventArgs e)
+    {
+        _selectedRow = MyDataGrid.SelectedItem as TableRow;
+
+        if (DataContext is TableViewModel vm)
+        {
+            if (!string.IsNullOrWhiteSpace(vm.SearchText))
+            {
+                //turn off update temporarily to ensure context menu stays open
+
+                vm.PauseUpdate();
+
+            }
+        }
+    }
+    private void OnEndProgramClick(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedRow == null) throw new Exception("_selected row is null");
+        if (DataContext is TableViewModel vm)
+        {
+            vm.ResumeUpdate();
+        }
+        _ = AppQuitter.KillProcessesByRowAsync(_selectedRow);
+
+    }
+
+    private void ContextMenuClosed(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is TableViewModel vm)
+            vm.ResumeUpdate();
     }
 }

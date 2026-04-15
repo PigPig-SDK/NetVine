@@ -11,7 +11,11 @@ public class DBInteract : DbContext
 
     public DbSet<User> UserTable { get; set; } = null!;
     
-    public static Action? OnDataAdded;
+    public static Action? OnProgramAdded;
+
+    public delegate void ProgramListAddedDelegate(List<ProgramData> programs, bool isDataLocal);
+
+    public static event ProgramListAddedDelegate? OnProgramListAdded;
     
     /// <summary>
     ///Database interaction constructor. Each method creates and deletes the interaction object.
@@ -48,11 +52,6 @@ public class DBInteract : DbContext
             .HasKey(u => new {u.Username});
     }
 
-    
-    
-    
-    
-    
     /// <summary>
     /// Returns a list of DB ProgramData contents
     /// </summary>
@@ -164,19 +163,8 @@ public class DBInteract : DbContext
     public static void SubmitEntry<T>(T entry) where T : class
     {
         using (var db = new DBInteract())
-        {
-            if(EntryExists(entry, db))
-            {
-                
-                Console.WriteLine("Entry already exists!");
-                return;
-            }
-            db.Set<T>().Add(entry);
-            db.SaveChanges();  
-            
-            
-        }
-        OnDataAdded?.Invoke();
+            SubmitEntry(entry, db);
+        OnProgramAdded?.Invoke();
     }
     
     /// <summary>
@@ -294,7 +282,7 @@ public class DBInteract : DbContext
                 });
             }
 
-            Store(dummyList);    
+            Store(dummyList, true);    
         }
         else
         {
@@ -304,17 +292,17 @@ public class DBInteract : DbContext
     /// <summary>
     ///Store a list of IProgramData
     /// </summary>
-    /// <param name="info"></param>
-    public static void Store(IEnumerable<IProgramData> info)
+    /// <param name="programs"></param>
+    public static void Store(IEnumerable<ProgramData> programs, bool isLocal)
     {
         using (var db = new DBInteract())
         {
-            foreach (var data in info)
+            foreach (var data in programs)
             {
-                SubmitEntry((ProgramData)data, db);
+                SubmitEntry(data, db);
             }    
         }
-        OnDataAdded?.Invoke();
+        OnProgramListAdded?.Invoke(programs.ToList() ,isLocal);
     }
 
     /// <summary>

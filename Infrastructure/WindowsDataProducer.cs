@@ -109,7 +109,6 @@ public class WindowsDataProducer : IProgramDataProducer
             return false;
         }
     }
-
     /// <summary>
     /// Writes the given "dataInfo" to its respective dictionary.
     /// </summary>
@@ -229,7 +228,9 @@ public class WindowsDataProducer : IProgramDataProducer
                     programs[process.ProcessName].NetworkUsage += networkUsage;
                 }
             }
-            catch (Win32Exception ex) { }//Access violation, Let it go.
+            catch (Win32Exception ex)
+            {
+            }
             catch (InvalidOperationException ex)
             {
                 Core.Debug.Log($"Process {process.ProcessName} exited before reading: {ex.Message}");

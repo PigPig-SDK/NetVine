@@ -19,6 +19,12 @@ public static class UiSettings
                 "This is your current netvine version.",
                 "version", "app", "application"),
 
+
+            new SettingInputCheckbox($"Start minimized",
+                "Should netvine start minimized",
+                SettingInt.StartMinimized,
+                "load", "startup", "app", "application"),
+
             new SettingInputCheckbox($"Minimize on close",
                 "When you close net-vine, should it remain silent in the background?",
                 SettingInt.MinimizeOnClose,
@@ -29,6 +35,7 @@ public static class UiSettings
                 SettingInt.LoadOnStartup,
                 "load", "startup", "app", "application"),
             ]),
+
 
         new SettingGroup ("Network",[
             new SettingInputField<SettingInt>("Port for host",
@@ -49,10 +56,10 @@ public static class UiSettings
                 SettingFloat.NetworkReconnectInterval,
                 "network", "usage", "interval"),
 
-            new SettingInputCheckbox("Auto establish connection on startup",
-                "When re-establishing connection, how often do we check?",
-                SettingInt.AutoEstablishConnection,
-                "network", "client"),
+            new SettingInputCheckbox("Disable Network Operations",
+                "Disable all client connections and host connections. ",
+                SettingInt.NetworkDisabled,
+                "network", "usage"),
         ]),
         new SettingGroup ("Database Storage", [
 
@@ -83,7 +90,7 @@ public static class UiSettings
                 "database", "usage", "interval", "db", "database"),
 
             new SettingInputField<SettingFloat>("Probe rate",
-                "[In Seconds] How often the application will probe all programs on your system. If we are giving you tremendous overhead, try lowering this value.",
+                "[In Seconds] How often this application will probe all programs on your system. If you are experiencing overhead, try lowering this setting.",
                 StringInputMethod.FloatInput,
                 SettingFloat.TickRate,
                 "memory", "usage", "interval", "db", "database"),

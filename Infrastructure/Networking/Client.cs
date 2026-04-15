@@ -10,8 +10,11 @@ public class Client : TcpClient
 {
     private bool _shutdown = false;
     private MessageBuffer _messageBuffer = new();
-
-    public Client(IPAddress address, int port) : base(address, port) { }
+    public ConnectionInfo? ConnectionInfo { get; private set; }
+    public Client(IPAddress address, int port) : base(address, port) 
+    {
+        ConnectionInfo = new ConnectionInfo(address.ToString(), port);
+    }
 
     protected override void OnConnected()
     {
@@ -23,6 +26,7 @@ public class Client : TcpClient
     {
         ConnectedUserInfo.RemoveUserData(Id, out string? username);
         Console.WriteLine($"Client disconnected: {Id} {username}");
+        NetworkManager.Instance.OnDisconnectFromHost?.Invoke(Id);
     }
 
     override protected void OnReceived(byte[] buffer, long offset, long size)

@@ -44,6 +44,8 @@ namespace UI.ViewModels
         private bool _showDisk = true;
         private bool _showNetwork = true;
 
+        private bool _updatePaused = false;
+
         private DateTime? HistoricalStart = null;
         private DateTime? HistoricalEnd = null;
 
@@ -118,9 +120,10 @@ namespace UI.ViewModels
 
             //Event Subscriptions
             MainWindowViewModel.OnTabChanged += OnTabChanged;
-            LiveViewModel.ViewChangedEvent += ViewChanged;
+            LiveViewModel.ViewChangedEvent += ViewChangedLive;
+            CombinationModel.ViewChangedEvent += ViewChangedCombination;
             SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-            DBInteract.OnDataAdded += OnSnapshotHistorical;
+            DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
 
             //Commands
@@ -132,36 +135,13 @@ namespace UI.ViewModels
             PopulateTableInit();
         }
 
-        // Public Methods
-
-        public void OnSearchKeyStroke(string? search)
+        private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
-            if (search == null) return;
-            SearchText = search;
-        }
-        public void OnSnapshotLive(List<IProgramData> data)
-        {
-            Debug.Log("OnSnapShotLive called");
+            if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
 
-            if (!LiveViewModel.IsLive || !_tableViewActive) return;
-            
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
-            {
-                _tableData.UpdateLiveData(data);
-                TableRowsView.Refresh();
-                ReapplySort();
-                Debug.Log("OnSnapShotLive update completed");
-            });
-        }
-
-
-
-        public void OnSnapshotHistorical()
-        {
-            Debug.Log("OnSnapshotHistorical called");
-            if (LiveViewModel.IsLive || !_tableViewActive) return;
-            
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+            var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
+                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
+                DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd); 
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -170,6 +150,38 @@ namespace UI.ViewModels
                 ReapplySort();
                 Debug.Log("OnSnapshot historical update completed");
             });
+        }
+
+        // Public Methods
+
+
+        public void PauseUpdate()
+        {
+            _updatePaused = true;
+        }
+
+        public void ResumeUpdate()
+        {
+            _updatePaused = false;
+        }
+
+        public void OnSearchKeyStroke(string? search)
+        {
+            if (search == null) return;
+            SearchText = search;
+        }
+        public void OnSnapshotLive(List<IProgramData> data)
+        {
+            {
+                if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+            
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    _tableData.UpdateLiveData(data);
+                    TableRowsView.Refresh();
+                    ReapplySort();
+                });
+            }
         }
         public void SetSort(string? header, bool isAscending)
         {
@@ -234,21 +246,20 @@ namespace UI.ViewModels
             var timeFrameWindow = new TimeFrameSelectionWindow();
             var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
             
-            (DateTime? date1, DateTime? date2) dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)>
+            (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
             (mainWindow);
-          
-            HistoricalStart = dateRange.date1;
-            HistoricalEnd = dateRange.date2;
             
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
-
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            if (!dateRange.HasValue)
             {
-                _tableData.UpdateHistoricalData(data);
-                TableRowsView.Refresh();
-                ReapplySort();
-                Debug.Log("OpenTimeFrame update completed");
-            });
+                return;
+            }
+            
+            Console.WriteLine(dateRange);
+            HistoricalStart = dateRange.Value.date1;
+            HistoricalEnd = dateRange.Value.date2;
+            
+            OnSwitchToHistorical();
+            
             mainWindow.FindControl<FolderView>("FolderView").SetDateRange(HistoricalStart, HistoricalEnd);
         }
 
@@ -260,15 +271,24 @@ namespace UI.ViewModels
             OnSwitchToHistorical();
         }
 
-        private void ViewChanged(bool isLive)
+        private void ViewChangedLive(bool isLive)
         {
-            Debug.Log($"ViewChanged fired, isLive={isLive}");
+            Debug.Log($"ViewChangedLive fired, isLive={isLive}");
             Debug.Log($"Printing Recieved Data to a file");
 
             if (isLive)
                 OnSwitchToLive();
             else
                 OnSwitchToHistorical();
+
+        }
+        
+        private void ViewChangedCombination(bool isCombination)
+        {
+            Debug.Log($"ViewChangedCombination fired, isCombination={isCombination}");
+            Debug.Log($"Printing Recieved Data to a file");
+
+            OnSwitchToHistorical();
 
         }
 
@@ -289,7 +309,10 @@ namespace UI.ViewModels
 
         private void OnSwitchToHistorical()
         {
-            var data = DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+            var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
+            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
+            DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
+            
             Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data!);
@@ -306,17 +329,20 @@ namespace UI.ViewModels
             {
                 _tableViewActive = true;
                 //resubscribe to events
-                LiveViewModel.ViewChangedEvent += ViewChanged;
+                // should be able to delete the subscribing and unsubscribing
+                LiveViewModel.ViewChangedEvent += ViewChangedLive;
+                CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-                DBInteract.OnDataAdded += OnSnapshotHistorical;
+                DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             }
             else
             {
                 _tableViewActive = false;
                 //unsubscribe from events
-                LiveViewModel.ViewChangedEvent -= ViewChanged;
+                LiveViewModel.ViewChangedEvent -= ViewChangedLive;
+                CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
-                DBInteract.OnDataAdded -= OnSnapshotHistorical;
+                DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
             }
 
         }

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Core;
+using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 
 namespace Infrastructure;
 
@@ -20,6 +21,8 @@ public static class DBArithmetic
                 {
                     SystemName = y.Key.SystemName,
                     ProcessName = y.Key.ProcessName,
+                    TimeFrame = y.Min(z => z.Date).ToString("MMMM d, yyyy h:mm tt")
+                                + " - " + y.Max(z => z.Date).ToString("MMMM d, yyyy h:mm tt"),
 
                     CpuUsageAvg = y.Average(z => z.CpuUsage),
                     DiskUsageAvg = y.Average(z => z.DiskUsage),
@@ -52,6 +55,8 @@ public static class DBArithmetic
                 {
                     SystemName = "Combination",
                     ProcessName = y.Key.ProcessName,
+                    TimeFrame = y.Min(z => z.Date).ToString("MMMM d, yyyy h:mm tt")
+                                + " - " + y.Max(z => z.Date).ToString("MMMM d, yyyy h:mm tt"),
             
                     CpuUsageAvg = y.Average(z => z.CpuUsage),
                     DiskUsageAvg = y.Average(z => z.DiskUsage),

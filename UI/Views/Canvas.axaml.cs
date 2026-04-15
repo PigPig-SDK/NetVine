@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Core;
+using Infrastructure;
 using ScottPlot;
 using ScottPlot.Avalonia;
 using ScottPlot.Colormaps;
@@ -64,7 +65,7 @@ public partial class Canvas : UserControl
                 case "Pie": DrawPieChart(); break;
             }
 
-            _canvasPlot.Refresh();
+            CanvasPlot.Refresh();
         });
     }
 
@@ -85,10 +86,10 @@ public partial class Canvas : UserControl
             _ => (_vm.CpuHistory, "CPU (%)")
         };
 
-        if (history.Item1.Count == 0) return;
+        if (history.data.Count == 0) return;
 
-        var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
-        signal.LegendText = history.Item2;
+        var signal = CanvasPlot.Plot.Add.Signal(history.data.ToArray(), ConfigManager.ReadSetting(SettingFloat.TickRate));
+        signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
         SetLimits();
@@ -261,8 +262,8 @@ public partial class Canvas : UserControl
         }
         else
         {
-            _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
-            _canvasPlot.Plot.Axes.AutoScaleX();
+            CanvasPlot.Plot.Axes.SetLimitsY(0, 100);
+            CanvasPlot.Plot.Axes.AutoScaleX();
         }
     }
 

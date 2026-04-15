@@ -2,9 +2,12 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using Core;
 using Infrastructure;
+using Infrastructure.Networking;
 using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Timers;
 using UI.ViewModels;
 
 namespace UI;
@@ -15,14 +18,32 @@ public partial class FolderView : UserControl
     {
         InitializeComponent();
         AttachedToVisualTree += OnAttached;
+        DetachedFromVisualTree += OnDetach;
         DetachedFromLogicalTree += OnLeaveScope;
+        SetDateRange(null, null);
+        CombinationBox.IsChecked = false;
+        CombinationBox.IsLocked = true;
+    }
+
+    private void OnDetach(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        MainWindowViewModel.OnAnimateFrame -= AnimateUsers;
     }
 
     private void OnAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
         UpdateUsersLate();
-        DBInteract.OnDataAdded += UpdateUsersLate;
+        DBInteract.OnProgramAdded += UpdateUsersLate;
         ConnectedUserInfo.OnUserConnectionModified += OnUserModified;
+        MainWindowViewModel.OnAnimateFrame += AnimateUsers;
+    }
+
+    private void AnimateUsers(double animationFrame)
+    {
+        foreach (var user in FolderViewData.UserMapping.Values)
+        {
+            user.Animate(animationFrame);
+        }
     }
 
     public void OnUserModified(string username, bool isAdded)
@@ -39,7 +60,7 @@ public partial class FolderView : UserControl
     /// <param name="__">Discarded</param>
     private void OnLeaveScope(object? _, Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs __)
     {
-        DBInteract.OnDataAdded -= UpdateUsersLate;
+        DBInteract.OnProgramAdded -= UpdateUsersLate;
         ConnectedUserInfo.OnUserConnectionModified -= OnUserModified;
     }
 
@@ -74,21 +95,38 @@ public partial class FolderView : UserControl
         }
     }
 
-    private void LiveViewChecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void LiveViewChecked()
     {
         LiveViewModel.IsLive = true;
+        CombinationBox.IsLocked = true;
+        NetworkDataManager.Instance.HostSendLivePayload(true);
     }
 
-    private void LiveViewUnchecked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void LiveViewUnchecked()
     {
         LiveViewModel.IsLive = false;
+        CombinationBox.IsLocked = false;
+        NetworkDataManager.Instance.HostSendLivePayload(false);
     }
-    
+
+
     public void SetDateRange(DateTime? date1, DateTime? date2)
     {
-        String date1String = date1?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
-        String date2String = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "inf";
-        
-        DateRange.Text = date1String + " - \n" + date2String;
+        Date1Text.Text = date1?.ToString("MMMM d, yyyy h:mm tt") ?? "∞";
+        Date2Text.Text = date2?.ToString("MMMM d, yyyy h:mm tt") ?? "∞";
+    }
+
+    public void LiveCheckChanged(object? sender, bool isChecked)
+    {
+        if (isChecked)
+            LiveViewChecked();
+        else
+            LiveViewUnchecked();
+    }
+
+    public void CombinedCheckChanged(object? sender, bool isChecked)
+    {
+        Console.WriteLine($"Combination box changed: {isChecked}");
+        CombinationModel.IsCombination = isChecked;
     }
 }

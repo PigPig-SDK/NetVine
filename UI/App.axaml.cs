@@ -77,7 +77,9 @@ public partial class App : Application
         {
             desktop.MainWindow?.Show();
             desktop.MainWindow?.Activate();
+            desktop.MainWindow?.Focus();
         }
+        MainWindowViewModel.StartAnimation();
     }
 
     private void QuitWindow(object? sender, System.EventArgs e)
@@ -86,5 +88,10 @@ public partial class App : Application
         {
             desktop.Shutdown();
         }
+    }
+
+    private void ToggleConnection(object? sender, EventArgs e)
+    {
+
     }
 }
