@@ -252,4 +252,12 @@ public class WindowsDataProducer : IProgramDataProducer
         _networkSession?.Dispose();
         _networkThread?.Join();
     }
+    [DllImport("kernel32.dll")]
+    private static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
+    public double GetTotalRam()
+    {
+        var status = new MemoryStatusEx { dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>() };
+        GlobalMemoryStatusEx(ref status);
+        return status.ullTotalPhys / (1024.0 * 1024.0);
+    }
 }

@@ -59,4 +59,11 @@ public class MockDataProducer : IProgramDataProducer
     {
         return Environment.GetCommandLineArgs().Contains(LaunchArgument);
     }
+    /// <summary>
+    /// Total ram in MB
+    /// </summary>
+    public double GetTotalRam()
+    {
+        return 12000 * 1024;
+    }
 }
