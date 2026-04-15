@@ -65,7 +65,7 @@ public partial class Canvas : UserControl
                 case "Pie": DrawPieChart(); break;
             }
 
-            CanvasPlot.Refresh();
+            _canvasPlot.Refresh();
         });
     }
 
@@ -88,7 +88,7 @@ public partial class Canvas : UserControl
 
         if (history.data.Count == 0) return;
 
-        var signal = CanvasPlot.Plot.Add.Signal(history.data.ToArray(), ConfigManager.ReadSetting(SettingFloat.TickRate));
+        var signal = _canvasPlot.Plot.Add.Signal(history.data.ToArray(), ConfigManager.ReadSetting(SettingFloat.TickRate));
         signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
@@ -262,8 +262,8 @@ public partial class Canvas : UserControl
         }
         else
         {
-            CanvasPlot.Plot.Axes.SetLimitsY(0, 100);
-            CanvasPlot.Plot.Axes.AutoScaleX();
+            _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
+            _canvasPlot.Plot.Axes.AutoScaleX();
         }
     }
 
