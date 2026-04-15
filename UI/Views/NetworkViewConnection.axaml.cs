@@ -19,8 +19,9 @@ public partial class NetworkViewConnection : UserControl
     private Dictionary<NetworkErrorType, string> _connectionErrorText = [];
     private HashSet<SocketError> _socketErrors = [];
 
-    public bool IsConnected {
-        get 
+    public bool IsConnected
+    {
+        get
         {
             if (NetworkManager.Instance is null) return false;//Nothing can be connected.
             return NetworkManager.Instance.IsOnline(_connection);
@@ -66,7 +67,7 @@ public partial class NetworkViewConnection : UserControl
             string error = ComputeConnectionErrorString();
             //No error!!
             if (error.Equals(string.Empty, StringComparison.InvariantCulture))
-                ToolTip.SetTip(ActivityCircle, IsConnected? "Online" : "Offline");
+                ToolTip.SetTip(ActivityCircle, IsConnected ? "Online" : "Offline");
             else
                 ToolTip.SetTip(ActivityCircle, ComputeConnectionErrorString());
 
@@ -102,5 +103,15 @@ public partial class NetworkViewConnection : UserControl
     {
         _connectionErrorText.Clear();
         _socketErrors.Clear();
+    }
+
+    private void CopyConnectionInfo(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+
+        if (clipboard is not null)
+        {
+            clipboard.SetTextAsync(_connection.ToString());
+        }
     }
 }

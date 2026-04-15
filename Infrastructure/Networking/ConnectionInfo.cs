@@ -43,4 +43,8 @@ public record class ConnectionInfo
         info.Password = password;
         connectionInfo = info;
     }
+    public override string ToString()
+    {
+        return $"{Ip}:{Port}:{Password}";
+    }
 }

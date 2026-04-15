@@ -177,15 +177,15 @@ public partial class NetworkView : UserControl
 
     void ErrorSubmittingDisplay()
     {
-        Console.WriteLine("failure to display the blah blah who cares");
+        InvalidConnectDisplay.IsVisible = true;
     }
 
     private void TryAddConnection(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    { 
+    {
         ///
         /// Heads up: This function uses GOTO's.
         ///
-
+        InvalidConnectDisplay.IsVisible = false;
         string? input = AddConnectionInput.Text;
         if (input is null) goto ErrorSubmittingDisplay;
         string[] inputSplit = input.Split(":");
