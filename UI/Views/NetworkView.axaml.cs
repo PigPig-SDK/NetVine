@@ -68,16 +68,15 @@ public partial class NetworkView : UserControl
     {
         if (!_connectionViews.TryGetValue(connectionInfo, out NetworkViewConnection? networkViewConnection)) return;
         if (networkViewConnection is null) return;
-
-        networkViewConnection.IsConnected = false;
+        networkViewConnection.UpdateOnlineDot();
     }
 
     private void OnConnectToHost(Guid guid, ConnectionInfo connectionInfo)
     {
         if (!_connectionViews.TryGetValue(connectionInfo, out NetworkViewConnection? networkViewConnection)) return;
         if (networkViewConnection is null) return;
-
-        networkViewConnection.IsConnected = true;
+        networkViewConnection.ClearErrors();
+        networkViewConnection.UpdateOnlineDot();
     }
 
     private void OnEnterScope(object? sender, LogicalTreeAttachmentEventArgs e)
@@ -110,6 +109,7 @@ public partial class NetworkView : UserControl
 
     private void OnSocketError(Guid guid, ConnectionInfo connectionInfo, SocketError error)
     {
+
         if (!_connectionViews.TryGetValue(connectionInfo, out NetworkViewConnection? networkViewConnection)) return;
         if (networkViewConnection is null) return;
 

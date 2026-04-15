@@ -2,6 +2,7 @@
 using Infrastructure.Networking.Packets;
 using NetCoreServer;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace Infrastructure.Networking;
@@ -29,6 +30,7 @@ public class Client : SslClient
     override protected void OnDisconnected()
     {
         ConnectedUserInfo.RemoveUserData(Id, out string? username);
+        NetworkManager.Instance.OnSocketError?.Invoke(Id, ConnectionInfo, SocketError.NotConnected);
         NetworkManager.Instance.OnDisconnectFromHost?.Invoke(Id, ConnectionInfo);
     }
 
@@ -48,7 +50,7 @@ public class Client : SslClient
             }
         }
     }
-
+    
     protected override void OnError(System.Net.Sockets.SocketError error)
     {
         Console.WriteLine($"Client error: {Id} - {error}");
@@ -57,9 +59,11 @@ public class Client : SslClient
 
     public void DisconnectShutdown()
     {
+        if (IsConnecting) return;
+
         _shutdown = true;
         DisconnectAsync();
-        while(IsConnected)
+        while (IsConnected)
             Thread.Yield();//This Yield shouldn't take that long.
     }
 }

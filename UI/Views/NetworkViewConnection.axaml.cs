@@ -19,21 +19,19 @@ public partial class NetworkViewConnection : UserControl
     private Dictionary<NetworkErrorType, string> _connectionErrorText = [];
     private HashSet<SocketError> _socketErrors = [];
 
-    private bool _isConnected = false;
     public bool IsConnected {
-        get => _isConnected;
-        set 
+        get 
         {
-            _isConnected = value;
-            UpdateOnlineDot();
-        } 
+            if (NetworkManager.Instance is null) return false;//Nothing can be connected.
+            return NetworkManager.Instance.IsOnline(_connection);
+        }
     }
 
     public NetworkViewConnection(ConnectionInfo connection)
     {
         InitializeComponent();
         this._connection = connection;
-        Label.Content = $"{_connection.Ip}:{_connection.Port}:{_connection.Password}";
+        Label.Content = $"{_connection.Ip}:{_connection.Port}\nPassword:{_connection.Password}";
         UpdateOnlineDot();
     }
 
@@ -61,11 +59,17 @@ public partial class NetworkViewConnection : UserControl
 
     private string ComputeConnectionErrorString() => $"{string.Join("\n", _connectionErrorText.Values)}{string.Join("\n", _socketErrors)}";
 
-    private void UpdateOnlineDot()
+    public void UpdateOnlineDot()
     {
         Dispatcher.UIThread.Post(() =>
         {
-            ToolTip.SetTip(ActivityCircle, ComputeConnectionErrorString());
+            string error = ComputeConnectionErrorString();
+            //No error!!
+            if (error.Equals(string.Empty, StringComparison.InvariantCulture))
+                ToolTip.SetTip(ActivityCircle, IsConnected? "Online" : "Offline");
+            else
+                ToolTip.SetTip(ActivityCircle, ComputeConnectionErrorString());
+
             ActivityCircle.Fill = IsConnected ? FolderUser.OnlineColor : FolderUser.OfflineColor;
             ActivityCircle.Stroke = IsConnected ? FolderUser.OfflineColor : FolderUser.OnlineColor;//Contrast, they are meant to be flipped.
         });
@@ -92,5 +96,11 @@ public partial class NetworkViewConnection : UserControl
     {
         _socketErrors.Add(error);
         UpdateOnlineDot();
+    }
+
+    public void ClearErrors()
+    {
+        _connectionErrorText.Clear();
+        _socketErrors.Clear();
     }
 }

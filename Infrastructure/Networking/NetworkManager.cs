@@ -208,6 +208,15 @@ public class NetworkManager
         return null;
     }
 
+    public bool IsOnline(ConnectionInfo connectionInfo)
+    {
+        foreach (Client info in EstablishedClientConnections.Values)
+        {
+            if (info.ConnectionInfo == connectionInfo) return info.IsConnected;
+        }
+
+        return false;
+    }
     ~NetworkManager()
     {
         Disconnect();
