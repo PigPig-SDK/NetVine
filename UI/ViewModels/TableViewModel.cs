@@ -50,6 +50,7 @@ namespace UI.ViewModels
         private DateTime? HistoricalEnd = null;
 
         // Properties
+        public TableDataManager TableData {  get { return _tableData; } }
         public string AllMenuText => (_showCpu && _showMemory && _showDisk && _showNetwork) ? "Hide All" : "Show All";
         public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
         public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
@@ -112,7 +113,7 @@ namespace UI.ViewModels
         // Constructor
         public TableViewModel()
         {
-            _tableData = new TableDataManager();
+            _tableData = new TableDataManager(() => _updatePaused);
             TableRowsView = new DataGridCollectionView(_tableData.TableRows);
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
@@ -137,8 +138,8 @@ namespace UI.ViewModels
 
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
-            //if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-            if (!LiveViewModel.IsLive || !_tableViewActive) return;
+            if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+            //if (!LiveViewModel.IsLive || !_tableViewActive) return;
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
                 DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
                 DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd); 
@@ -157,12 +158,12 @@ namespace UI.ViewModels
 
         public void PauseUpdate()
         {
-            _updatePaused = true;
+            //_updatePaused = true;
         }
 
         public void ResumeUpdate()
         {
-            _updatePaused = false;
+            //_updatePaused = false;
         }
 
         public void OnSearchKeyStroke(string? search)
@@ -173,8 +174,8 @@ namespace UI.ViewModels
         public void OnSnapshotLive(List<IProgramData> data)
         {
             {
-                //if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-                if (!LiveViewModel.IsLive || !_tableViewActive ) return;
+                if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+                //if (!LiveViewModel.IsLive || !_tableViewActive ) return;
             
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
@@ -293,6 +294,7 @@ namespace UI.ViewModels
 
         }
 
+
         private void OnSwitchToLive()
         {
             Debug.Log("OnSwitchToLive called");
@@ -360,16 +362,14 @@ namespace UI.ViewModels
         private bool TryParseExpression(string expression, TableRow target)
         {
             if (expression == null) return false;
-            try
-            {
+
                 var t = new TreeBuilder<TableRow>(target, '&');
                 return t.BuildTree(_searchText).Evaluate();
-            }
-            catch
-            {
-                return false; // lazy -- works though
-            }
+
         }
+
+        
+
 
         private bool FilterRow(object obj)
         {

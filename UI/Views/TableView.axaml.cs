@@ -12,13 +12,17 @@ namespace UI;
 public partial class TableView : UserControl
 {
     private Dictionary<string, bool> _sortDirections = new();
-    private TableRow? _selectedRow;
+    //private TableRow? _selectedRow;
+    private Tuple<string, string>? _selectedRowKey = null;
+
+
 
     public TableView()
     {
         InitializeComponent();
         DataContext = new TableViewModel();
-
+        if (DataContext is TableViewModel vm)
+            vm.TableData.ClearSelection = () => MyDataGrid.SelectedItem = null;
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
     }
@@ -64,28 +68,25 @@ public partial class TableView : UserControl
 
     private void ContextMenuOpened(object? sender, RoutedEventArgs e)
     {
-        _selectedRow = MyDataGrid.SelectedItem as TableRow;
+        var selectedRow = MyDataGrid.SelectedItem as TableRow;
+        if (selectedRow == null) return;
+
+        _selectedRowKey = new Tuple<string, string>(selectedRow.SystemName, selectedRow.AppName);
 
         if (DataContext is TableViewModel vm)
-        {
-            if (!string.IsNullOrWhiteSpace(vm.SearchText))
-            {
-                //turn off update temporarily to ensure context menu stays open
-
-                vm.PauseUpdate();
-
-            }
-        }
+            vm.PauseUpdate();
     }
+
+
     private void OnEndProgramClick(object? sender, RoutedEventArgs e)
     {
-        if (_selectedRow == null) throw new Exception("_selected row is null");
         if (DataContext is TableViewModel vm)
         {
             vm.ResumeUpdate();
-        }
-        _ = AppQuitter.KillProcessesByRowAsync(_selectedRow);
 
+            if (_selectedRowKey == null) return;
+            _ = vm.TableData.KillAndRemoveByKey(_selectedRowKey.Item1, _selectedRowKey.Item2);
+        }
     }
 
     private void ContextMenuClosed(object? sender, RoutedEventArgs e)

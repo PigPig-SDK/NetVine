@@ -55,5 +55,28 @@ namespace UI.ViewModels
 
         }
 
+        public static async Task KillProcessByKeyAsync(Tuple<string, string>? key)
+        {
+            if (key == null)
+            {
+                Core.Debug.Log("null key");
+                return;
+            }
+
+
+            string sysName = SystemHistory.Instance.SystemName;
+
+            if (key.Item1 != sysName)
+            {
+                //some networking logic can be put here for other systems.
+                Core.Debug.Log($"Permission to kill process denied -- must be on your own machine {key.Item1} != {sysName} ");
+            }
+            else
+            {
+                await Task.Run(() => KillProcessByName(key.Item2));
+            }
+
+        }
+
     }
 }

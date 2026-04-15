@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,14 +53,16 @@ namespace UI.ViewModels
             {
                 result = true;
                 foreach (IFilterNode node in _children)
-                    result = result && node.Evaluate();
+                    if (node != null)
+                        result = result && node.Evaluate();
             }
 
             else if (Type == CompositeType.OR)
             {
                 result = false;
                 foreach (IFilterNode node in _children)
-                    result = result || node.Evaluate();
+                    if (node != null)
+                        result = result || node.Evaluate();
             }
 
             return result;
@@ -72,14 +75,28 @@ namespace UI.ViewModels
         public string FieldName { get; }
         public string FieldValue { get; }
         private string _op;
-        TableRow _target;
-        public TableRow Target { set => _target = value; }
+        //TableRow _target;
+        IProgramData? _targetLive;
+        IProgramDataHistorical? _targetHistorical;
+
         public FilterNode(string fieldName, string fieldValue, string op, TableRow target)
         {
+            _targetHistorical = target.HistoricalData;
+            _targetLive = target.LiveData;
             _op = op;
             FieldValue = fieldValue;
             FieldName = fieldName;
-            _target = target;
+        }
+
+        public FilterNode(string fieldName, string fieldValue, string op
+            , IProgramData targetLive
+            , IProgramDataHistorical targetHistorical)
+        {
+            _targetHistorical = targetHistorical;
+            _targetLive = targetLive;
+            _op = op;
+            FieldValue = fieldValue;
+            FieldName = fieldName;
         }
 
         bool EvaluateField(float expected, float actual)
@@ -98,15 +115,16 @@ namespace UI.ViewModels
 
         bool IFilterNode.Evaluate()
         {
+            if (_targetLive == null) return false;
             switch (FieldName)
             {
                 case "Process": case "process": case "proc":
-                    if (_target.AppName == FieldValue && _op == "=")
+                    if (_targetLive.ProcessName == FieldValue && _op == "=")
                         return true;
                     else return false;
 
                 case "System": case "system": case "sys": case "Sys":
-                    if (_target.SystemName == FieldValue && _op == "=")
+                    if (_targetLive.SystemName == FieldValue && _op == "=")
                         return true;
                     else return false;
             }
@@ -116,13 +134,13 @@ namespace UI.ViewModels
                 switch(FieldName)
                 {
                     case "Cpu": case "CPU": case "cpu":
-                        return EvaluateField(_target.Cpu, v);
+                        return EvaluateField(_targetLive.CpuUsage, v);
                     case "Disk": case "disk":
-                        return EvaluateField(_target.Disk, v);
+                        return EvaluateField(_targetLive.DiskUsage, v);
                     case "Memory": case "memory": case "mem": case "Mem":
-                        return EvaluateField(_target.Memory, v);
+                        return EvaluateField(_targetLive.MemoryUsage, v);
                     case "Network": case "network": case "net": case "Net":
-                        return EvaluateField(_target.Network, v);
+                        return EvaluateField(_targetLive.NetworkUsage, v);
                 }
             }
 
@@ -152,11 +170,13 @@ namespace UI.ViewModels
         private char _or;
         private char _leftP;
         private char _rightP;
-        private TableRow? _target;
-        public TableRow Target { set => _target = value; }
+        //private TableRow? _target;
+        private IProgramData? _targetLive;
+        private IProgramDataHistorical? _targetHistory;
         public TreeBuilder(TableRow target, char and = '.', char or = '+', char lp = '(', char rp = ')')
         {
-            _target = target;
+            _targetLive = target.LiveData;
+            _targetHistory = target.HistoricalData;
             _and = and; _or = or; _leftP = lp; _rightP = rp;
         }
 
@@ -211,7 +231,7 @@ namespace UI.ViewModels
                 {
                     string[] parts = expression.Split(op);
                     if (parts.Length == 2)
-                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _target!);
+                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _targetLive, _targetHistory);
                 }
 
 
@@ -220,7 +240,8 @@ namespace UI.ViewModels
                 {
                     string[] parts = expression.Split(op);
                     if (parts.Length == 2)
-                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _target!);
+                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _targetLive, _targetHistory);
+
                 }
 
             return null;
