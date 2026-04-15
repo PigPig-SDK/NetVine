@@ -8,7 +8,7 @@ public class ProgramDataHistorical : IProgramDataHistorical
     public string ProcessName { get; set; }
     public string TimeFrame { get; set; }
 
-    public int valueCount { get; set; } = 0;
+    public int ValueCount { get; set; } = 0;
     public float CpuUsageAvg { get; set; }
     public float DiskUsageAvg { get; set; }
     public float NetworkUsageAvg { get; set; }
