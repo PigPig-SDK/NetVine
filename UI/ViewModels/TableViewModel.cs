@@ -330,6 +330,9 @@ namespace UI.ViewModels
                 Debug.Log($"historical data update complete");
             });
         }
+        
+        
+        
 
         private void OnTabChanged(int tab)
         {
