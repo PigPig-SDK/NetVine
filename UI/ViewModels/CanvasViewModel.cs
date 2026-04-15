@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
@@ -13,9 +14,14 @@ namespace UI.ViewModels
         private readonly ChartService _chartService;
         private readonly ResourceService _resourceService;
 
+        public double RAMTotal => _resourceService.RAMTotal;
+
         public event Action? ChartUpdateRequested;
         public string CurrentChartType => _chartService.ChartType;
 
+        public List<IProgramData> LatestSnapshot => _resourceService.LatestSnapshot;
+
+        public List<List<IProgramData>> SnapshotHistory => _resourceService.SnapshotHistory;
         public List<double> CpuHistory => _resourceService.CpuHistory;
         public List<double> RamHistory => _resourceService.RamHistory;
         public List<double> DiskHistory => _resourceService.DiskHistory;
