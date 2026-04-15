@@ -88,7 +88,7 @@ public partial class Canvas : UserControl
 
         if (history.data.Count == 0) return;
 
-        var signal = _canvasPlot.Plot.Add.Signal(history.data.ToArray(), ConfigManager.ReadSetting(SettingFloat.TickRate));
+        var signal = _canvasPlot.Plot.Add.Signal(history.data.ToArray());
         signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
