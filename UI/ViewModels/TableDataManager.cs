@@ -52,14 +52,14 @@ namespace UI.ViewModels
 
             // Remove stale rows -- I guess that this is needed in order to keep things sorted. If not we can figure out a fix like dummy rows or something
             var toRemove = TableRows.Where(r => !incoming.ContainsKey((r.SystemName, r.AppName))).ToList();
-            //foreach (var row in toRemove)
-            //    TableRows.Remove(row);
+           
             if (toRemove.Count > 0)
             {
                 Dispatcher.UIThread.Post(() =>
                 {
                     if (_isPaused()) return;
                     ClearSelection();
+
                     for (int i = 0; i < toRemove.Count; i++)
                     {
                         var item = toRemove[i];
@@ -68,24 +68,11 @@ namespace UI.ViewModels
                             TableRows.Remove(item);
                         }
                     }
+
                 }, DispatcherPriority.Background);
             }
         }
-        public async Task KillAndRemoveRow(TableRow row)
-        {
-            // 1. Kill the process
-            await AppQuitter.KillProcessByNameAsync(row.AppName);
 
-            // 2. Schedule the removal on the UI thread with 'Background' priority
-            // This priority ensures it happens AFTER the context menu is fully gone
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (TableRows.Contains(row))
-                {
-                    TableRows.Remove(row);
-                }
-            }, DispatcherPriority.Background);
-        }
 
         /// <summary>
         /// Contains the logic to update the historical data inside of the TableRows collection
