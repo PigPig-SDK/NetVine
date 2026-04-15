@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Core;
+using Infrastructure;
 using ScottPlot;
 using ScottPlot.Avalonia;
 using ScottPlot.Colormaps;
@@ -56,7 +57,7 @@ public partial class Canvas : UserControl
         {
             _canvasPlot.Plot.Clear();
             _canvasPlot.Plot.YLabel("");
-
+            
             switch (_vm.CurrentChartType)
             {
                 case "Line": DrawLineChart(); break;
@@ -78,22 +79,22 @@ public partial class Canvas : UserControl
 
         var history = _vm.SelectedResource switch
         {
-            ChartService.CPU => (_vm.CpuHistory, "CPU (%)"),
-            ChartService.RAM => (_vm.RamHistory, "RAM (MB)"),
-            ChartService.DISK => (_vm.DiskHistory, "Disk (%)"),
-            ChartService.NET => (_vm.NetworkHistory, "Network (MB/s)"),
-            _ => (_vm.CpuHistory, "CPU (%)")
+            ChartService.CPU => (data: _vm.CpuHistory, title: "CPU (%)"),
+            ChartService.RAM => (data: _vm.RamHistory, title: "RAM (MB)"),
+            ChartService.DISK => (data: _vm.DiskHistory, title: "Disk (%)"),
+            ChartService.NET => (data: _vm.NetworkHistory, title: "Network (MB/s)"),
+            _ => (data: _vm.CpuHistory, title: "CPU (%)")
         };
 
-        if (history.Item1.Count == 0) return;
+        if (history.data.Count == 0) return;
 
-        var signal = _canvasPlot.Plot.Add.Signal(history.Item1.ToArray());
-        signal.LegendText = history.Item2;
+        var signal = _canvasPlot.Plot.Add.Signal(history.data.ToArray());
+        signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
         SetLimits();
 
-        _canvasPlot.Plot.YLabel(history.Item2);
+        _canvasPlot.Plot.YLabel(history.title);
         _canvasPlot.Plot.ShowLegend();
     }
 
@@ -149,14 +150,13 @@ public partial class Canvas : UserControl
         string label = _vm.SelectedResource == ChartService.RAM ? "RAM (MB)" : "Usage (%)";
         _canvasPlot.Plot.YLabel(label);
     }
-    private void DrawPieChart()
-    {
+    private void DrawPieChart() {
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(1);
         _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
         _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
-
+        
         if (_vm.LatestSnapshot.Count == 0) return;
 
         var pietop = GetTopProcesses();
@@ -175,7 +175,7 @@ public partial class Canvas : UserControl
             pie.Slices[i].LegendText = $"{pietop[i].ProcessName} ({GetValue(pietop[i]):0.0})";
         }
 
-
+        
         _canvasPlot.Plot.ShowLegend();
         _canvasPlot.Plot.Axes.AutoScale();
     }
