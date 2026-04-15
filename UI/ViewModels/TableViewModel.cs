@@ -155,6 +155,8 @@ namespace UI.ViewModels
 
         // Public Methods
 
+        //we can uncomment these if we want to pause the update when context menu is selected.
+        //This is because the context menu is automatically closed by avalonia when the table is updated.
 
         public void PauseUpdate()
         {
@@ -166,6 +168,9 @@ namespace UI.ViewModels
             //_updatePaused = false;
         }
 
+        ////////
+
+
         public void OnSearchKeyStroke(string? search)
         {
             if (search == null) return;
@@ -175,7 +180,6 @@ namespace UI.ViewModels
         {
             {
                 if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-                //if (!LiveViewModel.IsLive || !_tableViewActive ) return;
             
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {

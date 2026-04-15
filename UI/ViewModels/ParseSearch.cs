@@ -250,7 +250,7 @@ namespace UI.ViewModels
         private IFilterNode Parse(string expression)
         {
             expression = expression.Trim();
-           // if (string.IsNullOrEmpty(expression)) return new CompositeNode(); //safe empty
+            if (string.IsNullOrEmpty(expression)) return new CompositeNode(); //safe empty
             if (expression[0] == '(' && expression[expression.Length - 1] == ')')
             {
                 expression = expression.Substring(1, expression.Length - 2);
