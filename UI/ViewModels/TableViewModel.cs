@@ -11,6 +11,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using UI.Views;
+using UI.ViewModels.SearchFilter;
 
 namespace UI.ViewModels
 {
@@ -160,12 +161,12 @@ namespace UI.ViewModels
 
         public void PauseUpdate()
         {
-            //_updatePaused = true;
+            _updatePaused = true;
         }
 
         public void ResumeUpdate()
         {
-            //_updatePaused = false;
+            _updatePaused = false;
         }
 
         ////////

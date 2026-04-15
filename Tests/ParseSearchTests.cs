@@ -5,11 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Tests
 {
     public class ParseSearchTests 
     {
-       
+        [Fact]  
+        public void RunFilterTests()
+        {
+            Console.WriteLine("testing");
+        }
     }
 
 }
