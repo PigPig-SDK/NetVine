@@ -75,23 +75,16 @@ namespace UI.ViewModels
             {
                 try
                 {
-                    var process = System.Diagnostics.Process
-                        .GetProcessesByName(AppName)
-                        .FirstOrDefault();
-
-                    if (process?.MainModule?.FileName is not { } path)
-                        return null;
-
-                    var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
-                    if (icon == null) return null;
-
-                    using var bmp = icon.ToBitmap();
-                    using var ms = new System.IO.MemoryStream();
-                    bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    using var ms = SystemHistory.Instance.GetIcon(AppName);
+                    if (ms is null) return null;
                     ms.Position = 0;
                     return new Bitmap(ms);
                 }
-                catch { return null; }
+                catch 
+                { 
+                    return null; 
+                }
+
             });
 
             await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>

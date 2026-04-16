@@ -1,5 +1,6 @@
 ﻿using Infrastructure;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace Core;
 
@@ -129,4 +130,6 @@ public class SystemHistory : IDisposable
         if (_producer is null) return 0;
         return _producer.GetTotalRam();
     }
+
+    public MemoryStream? GetIcon(string processName) => _producer.GetProcessIcon(processName);
 }

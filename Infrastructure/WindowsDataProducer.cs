@@ -3,6 +3,7 @@ using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 
@@ -259,5 +260,39 @@ public class WindowsDataProducer : IProgramDataProducer
         var status = new MemoryStatusEx { dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>() };
         GlobalMemoryStatusEx(ref status);
         return status.ullTotalPhys / (1024.0 * 1024.0);
+    }
+
+    public MemoryStream? GetProcessIcon(string processName)
+    {
+        var version = Environment.OSVersion.Version;
+        if(version.Major <= 6)
+        {
+            return null;
+        }
+        //Safe. Cannot execute on version 6 or below.
+#pragma warning disable CA1416 // Validate platform compatibility
+
+        Process? process = System.Diagnostics.Process
+        .GetProcessesByName(processName)
+        .FirstOrDefault();
+        if (process is null)
+        {
+            
+            return null;
+        }
+
+        if (process?.MainModule?.FileName is not { } path)
+            return null;
+        Icon? icon = Icon.ExtractAssociatedIcon(path);
+
+        if (icon is null) return null;
+
+        using Bitmap bitmap = icon.ToBitmap();
+        var ms = new MemoryStream();
+        bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+#pragma warning restore CA1416 // Validate platform compatibility
+
+        return ms;
     }
 }

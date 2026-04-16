@@ -66,4 +66,9 @@ public class MockDataProducer : IProgramDataProducer
     {
         return 12000 * 1024;
     }
+
+    public MemoryStream? GetProcessIcon(string processName)
+    {
+        return null;
+    }
 }
