@@ -8,9 +8,6 @@ namespace UI.ViewModels
 {
     public class ResourceService
     {
-        [DllImport("kernel32.dll")]
-        private static extern bool GlobalMemoryStatusEx(ref MemoryStatusEx lpBuffer);
-
         public static readonly ResourceService Instance = new();
 
         public double RAMTotal { get; private set; }
@@ -34,13 +31,7 @@ namespace UI.ViewModels
         private ResourceService()
         {
             SystemHistory.Instance.OnSnapshotTaken += OnSnapshot;
-            RAMTotal = GetRAMTotal();
-        }
-        private double GetRAMTotal()
-        {
-            var status = new MemoryStatusEx { dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>() };
-            GlobalMemoryStatusEx(ref status);
-            return status.ullTotalPhys / (1024.0 * 1024.0);
+            RAMTotal = SystemHistory.Instance.GetTotalRam();
         }
 
         private void OnSnapshot(List<IProgramData> data)
@@ -61,19 +52,7 @@ namespace UI.ViewModels
             DataUpdated?.Invoke();
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct MemoryStatusEx
-        {
-            public uint dwLength;
-            public uint dwMemoryLoad;
-            public ulong ullTotalPhys;
-            public ulong ullAvailPhys;
-            public ulong ullTotalPageFile;
-            public ulong ullAvailPageFile;
-            public ulong ullTotalVirtual;
-            public ulong ullAvailVirtual;
-            public ulong ullAvailExtendedVirtual;
-        }
+
 
     }
 }

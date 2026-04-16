@@ -121,4 +121,12 @@ public class SystemHistory : IDisposable
         ConfigManager.OnSettingChanged -= OnSettingChanged;
         _producer.Dispose();
     }
+    /// <summary>
+    /// Returns the machines total ammount of ram.
+    /// </summary>
+    public double GetTotalRam()
+    {
+        if (_producer is null) return 0;
+        return _producer.GetTotalRam();
+    }
 }
