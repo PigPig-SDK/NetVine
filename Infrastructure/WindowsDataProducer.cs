@@ -275,14 +275,9 @@ public class WindowsDataProducer : IProgramDataProducer
         Process? process = System.Diagnostics.Process
         .GetProcessesByName(processName)
         .FirstOrDefault();
-        if (process is null)
-        {
-            
-            return null;
-        }
+        if (process is null) return null;
 
-        if (process?.MainModule?.FileName is not { } path)
-            return null;
+        if (process?.MainModule?.FileName is not { } path) return null;
         Icon? icon = Icon.ExtractAssociatedIcon(path);
 
         if (icon is null) return null;

@@ -1,9 +1,11 @@
 ﻿using Core;
+using Infrastructure.Networking.Packets;
 using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace Infrastructure;
+
 public class DBInteract : DbContext
 {
     
@@ -12,7 +14,9 @@ public class DBInteract : DbContext
     public DbSet<User> UserTable { get; set; } = null!;
     
     public DbSet<ProgramDataHistorical> PDHTable { get; set; } = null!;
-    
+
+    public DbSet<CachedIcon> IconTable { get; set; } = null!;
+
     public static Action? OnProgramAdded;
     
     private static readonly object _dbLock;
@@ -57,6 +61,9 @@ public class DBInteract : DbContext
         
         modelBuilder.Entity<ProgramDataHistorical>()
             .HasKey(u => new {u.SystemName, u.ProcessName});
+
+        modelBuilder.Entity<CachedIcon>()
+            .HasKey(u => new { u.ProcessName });
     }
 
     /// <summary>
@@ -362,6 +369,8 @@ public class DBInteract : DbContext
         return this.PDHTable.Find(data.SystemName, data.ProcessName) != null;
     }
     
+    public byte[]? GetIcon(string processName) => IconTable.Find(processName)?.IconData;
+
     /// <summary>
     /// Adds entry to Program Data Historical Table
     /// </summary>
