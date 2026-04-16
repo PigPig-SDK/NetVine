@@ -340,7 +340,8 @@ public class ConfigManager
         public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
             ConnectionInfo connectionInfo = new("ParseFailure", 404);
-            string value = ((Scalar)parser.Current).Value;
+
+            string value = ((Scalar)parser.Current!).Value;
             parser.MoveNext();
             var split = value.Split(':');
 

@@ -8,7 +8,6 @@ namespace Infrastructure.Networking;
 
 public class Client : TcpClient
 {
-    private bool _shutdown = false;
     private MessageBuffer _messageBuffer = new();
     public ConnectionInfo? ConnectionInfo { get; private set; }
     public Client(IPAddress address, int port) : base(address, port) 
@@ -53,7 +52,6 @@ public class Client : TcpClient
 
     public void DisconnectShutdown()
     {
-        _shutdown = true;
         DisconnectAsync();
         while(IsConnected)
             Thread.Yield();//This Yield shouldn't take that long.

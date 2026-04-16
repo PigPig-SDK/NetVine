@@ -19,7 +19,7 @@ public class DBInteract : DbContext
 
     public static Action? OnProgramAdded;
     
-    private static readonly object _dbLock;
+    private static readonly Lock _dbLock = new();
 
     public delegate void ProgramListAddedDelegate(List<ProgramData> programs, bool isDataLocal);
 

@@ -6,8 +6,8 @@ namespace Core;
 
 public class SystemHistory : IDisposable
 {
-    private static SystemHistory _instance;
-    public static SystemHistory Instance { get { return _instance; } private set { _instance = value; } }
+    private static SystemHistory? _instance;
+    public static SystemHistory Instance { get { return _instance ?? throw new InvalidProgramException("Please Initialize SystemHistory before calling for instance."); } private set { _instance = value; } }
 
     private SystemTracker _tracker;
     private IProgramDataProducer _producer;

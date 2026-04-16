@@ -12,8 +12,8 @@ namespace UI.ViewModels
     public class TableRow : ObservableObject
     {
         // Existing properties
-        public string SystemName { get; set; }
-        public string AppName { get; set; }
+        public string SystemName { get; set; } = string.Empty;
+        public string AppName { get; set; } = string.Empty;
 
         private IProgramData? _liveData;
         public IProgramData? LiveData

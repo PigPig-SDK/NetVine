@@ -229,9 +229,7 @@ public class WindowsDataProducer : IProgramDataProducer
                     programs[process.ProcessName].NetworkUsage += networkUsage;
                 }
             }
-            catch (Win32Exception ex)
-            {
-            }
+            catch (Win32Exception) { }
             catch (InvalidOperationException ex)
             {
                 Core.Debug.Log($"Process {process.ProcessName} exited before reading: {ex.Message}");
