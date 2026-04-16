@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 
 namespace Core;
 
@@ -12,13 +13,18 @@ public interface IProgramDataProducer : IDisposable
     /// Resolve how much ram the machine has
     /// </summary>
     public double GetTotalRam();
-
     /// <summary>
     /// Gets a process icon as a memory stream.
     /// </summary>
     /// <param name="processName">The process to get an icon of</param>
     /// <returns>An MemoryStream of a PNG/BMP/JPG</returns>
     public MemoryStream? GetProcessIcon(string processName);
+    /// <summary>
+    /// Gets a process icon as a memory stream.
+    /// </summary>
+    /// <param name="processName">The process to get an icon of</param>
+    /// <returns>An MemoryStream of a PNG/BMP/JPG</returns>
+    public MemoryStream? GetProcessIcon(Process process);
     /// <summary>
     /// Calls to produce the instant program data
     /// </summary>

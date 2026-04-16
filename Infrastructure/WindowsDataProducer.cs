@@ -264,18 +264,19 @@ public class WindowsDataProducer : IProgramDataProducer
 
     public MemoryStream? GetProcessIcon(string processName)
     {
-        var version = Environment.OSVersion.Version;
-        if(version.Major <= 6)
-        {
-            return null;
-        }
-        //Safe. Cannot execute on version 6 or below.
-#pragma warning disable CA1416 // Validate platform compatibility
-
         Process? process = System.Diagnostics.Process
         .GetProcessesByName(processName)
         .FirstOrDefault();
         if (process is null) return null;
+        return (GetProcessIcon(process));
+    }
+
+    public MemoryStream? GetProcessIcon(Process process)
+    {
+        var version = Environment.OSVersion.Version;
+        if(version.Major <= 6) return null;
+        //Safe. Cannot execute on version 6 or below.
+#pragma warning disable CA1416 // Validate platform compatibility
 
         if (process?.MainModule?.FileName is not { } path) return null;
         Icon? icon = Icon.ExtractAssociatedIcon(path);

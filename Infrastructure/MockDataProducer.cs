@@ -1,4 +1,5 @@
 ﻿using Core;
+using System.Diagnostics;
 
 namespace Infrastructure;
 
@@ -68,6 +69,11 @@ public class MockDataProducer : IProgramDataProducer
     }
 
     public MemoryStream? GetProcessIcon(string processName)
+    {
+        return null;
+    }
+
+    public MemoryStream? GetProcessIcon(Process process)
     {
         return null;
     }
