@@ -8,5 +8,6 @@ public enum PacketType : byte
     DBUpdateResponse,
     UserInfo,
     InitiateLiveView,
-    ProgramData
+    ProgramData,
+    CloseProcessPacket
 }

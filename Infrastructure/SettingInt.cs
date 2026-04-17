@@ -15,5 +15,6 @@ public enum SettingInt
     LoadOnStartup,
     MinimizeOnClose,
     StartMinimized,
-    NetworkDisabled
+    NetworkDisabled,
+    AllowHostManipulation
 };

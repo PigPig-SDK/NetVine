@@ -18,6 +18,7 @@ public class Packet
             { PacketType.DBUpdateRequest, typeof(DateRequestPayload)},
             { PacketType.UserInfo, typeof(UserInfoPayload)},
             { PacketType.InitiateLiveView, typeof(SetLiveViewPayload)},
+            { PacketType.CloseProcessPacket, typeof(CloseProcessPayload)},
             { PacketType.ProgramData, typeof(ProgramDataPayload)}};
 
     private Packet() {
