@@ -316,15 +316,17 @@ public class DBInteract : DbContext
     /// <param name="programs"></param>
     public static void Store(IEnumerable<ProgramData> programs, bool isLocal)
     {
+        var programsAsList = programs.ToList();
+
         using (var db = new DBInteract())
         {
             foreach (var data in programs)
             {
                 SubmitEntry(data, db);
             }    
-            DBArithmetic.UpdatePDHTable(programs.ToList(), db);
+            DBArithmetic.UpdatePDHTable(programsAsList, db);
         }
-        OnProgramListAdded?.Invoke(programs.ToList() ,isLocal);
+        OnProgramListAdded?.Invoke(programsAsList, isLocal);
     }
 
     /// <summary>
@@ -369,7 +371,12 @@ public class DBInteract : DbContext
         return this.PDHTable.Find(data.SystemName, data.ProcessName) != null;
     }
     
-    public byte[]? GetIcon(string processName) => IconTable.Find(processName)?.IconData;
+    public CachedIcon? GetIconData(string processName) => IconTable.Find(processName);
+
+    public bool HasIcon(string processName) => IconTable.Any(x => x.ProcessName == processName);
+
+    /// <returns>True if the element gets added.</returns>
+    public bool AddIcon(string processName, byte[] iconData, IconFileType fileType) => IconTable.Add(new CachedIcon(processName, iconData, fileType)) != null;
 
     /// <summary>
     /// Adds entry to Program Data Historical Table

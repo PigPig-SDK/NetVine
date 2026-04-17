@@ -68,13 +68,13 @@ public class MockDataProducer : IProgramDataProducer
         return 12000 * 1024;
     }
 
-    public MemoryStream? GetProcessIcon(string processName)
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(string processName)
     {
-        return null;
+        return (null, IconFileType.None);
     }
 
-    public MemoryStream? GetProcessIcon(Process process)
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(Process process)
     {
-        return null;
+        return (null, IconFileType.None);
     }
 }

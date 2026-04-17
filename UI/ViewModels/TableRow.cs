@@ -75,10 +75,14 @@ namespace UI.ViewModels
             {
                 try
                 {
-                    using var ms = SystemHistory.Instance.GetIcon(AppName);
-                    if (ms is null) return null;
-                    ms.Position = 0;
-                    return new Bitmap(ms);
+                    (MemoryStream? image, IconFileType fileType) iconData = 
+                        SystemHistory.Instance.GetIcon(AppName);
+
+                    using var image = iconData.image;
+
+                    if (image is null) return null;
+                    image.Position = 0;
+                    return new Bitmap(image);
                 }
                 catch 
                 { 

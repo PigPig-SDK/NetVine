@@ -260,33 +260,40 @@ public class WindowsDataProducer : IProgramDataProducer
         return status.ullTotalPhys / (1024.0 * 1024.0);
     }
 
-    public MemoryStream? GetProcessIcon(string processName)
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(string processName)
     {
         Process? process = System.Diagnostics.Process
         .GetProcessesByName(processName)
         .FirstOrDefault();
-        if (process is null) return null;
-        return (GetProcessIcon(process));
+        if (process is null) return (null, IconFileType.None);
+        return GetProcessIcon(process);
     }
 
-    public MemoryStream? GetProcessIcon(Process process)
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(Process process)
     {
-        var version = Environment.OSVersion.Version;
-        if(version.Major <= 6) return null;
-        //Safe. Cannot execute on version 6 or below.
+        try
+        {
+            var version = Environment.OSVersion.Version;
+            if (version.Major <= 6) return (null, IconFileType.None);
+            //Safe. Cannot execute on version 6 or below.
 #pragma warning disable CA1416 // Validate platform compatibility
 
-        if (process?.MainModule?.FileName is not { } path) return null;
-        Icon? icon = Icon.ExtractAssociatedIcon(path);
+            if (process?.MainModule?.FileName is not { } path) return (null, IconFileType.None);
+            Icon? icon = Icon.ExtractAssociatedIcon(path);
 
-        if (icon is null) return null;
+            if (icon is null) return (null, IconFileType.None);
 
-        using Bitmap bitmap = icon.ToBitmap();
-        var ms = new MemoryStream();
-        bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            using Bitmap bitmap = icon.ToBitmap();
+            var ms = new MemoryStream();
+            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
 
 #pragma warning restore CA1416 // Validate platform compatibility
 
-        return ms;
+            return (ms, IconFileType.Png);
+        }
+        catch (Win32Exception)//Process exceptions. We don't have authority
+        {
+            return (null, IconFileType.None);
+        }
     }
 }

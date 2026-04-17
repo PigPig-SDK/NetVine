@@ -88,12 +88,16 @@ public class SystemHistory : IDisposable
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
             SnapshotIterationCount++;
+            //On DB Storage hit.
             if(SnapshotIterationCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
             {
-                var average = _tracker.GetAverage();
+                IEnumerable<ProgramData>? average = _tracker.GetAverage()?.Cast<ProgramData>();
                 if (average == null) return;
 
-                if (average != null) DBInteract.Store(average.Cast<ProgramData>(), true);
+                //Store data...
+                DBInteract.Store(average, true);
+                AddIcons();
+
                 SnapshotIterationCount = 0;
                 _tracker.ClearHistory();
             }
@@ -107,6 +111,34 @@ public class SystemHistory : IDisposable
             }
         }
     }
+
+    public void AddIcons()
+    {
+        using var db = new DBInteract();
+
+        var processes = Process.GetProcesses();
+
+        HashSet<string> iconNames = new HashSet<string>();
+        foreach(Process process in processes)
+        {
+            if (iconNames.Contains(process.ProcessName))
+                continue;
+
+            iconNames.Add(process.ProcessName);
+
+            if (db.HasIcon(process.ProcessName)) continue;
+
+            (MemoryStream? image, IconFileType fileType) icon 
+                = _producer.GetProcessIcon(process);
+
+            if (icon.image == null)//No file exists.
+                db.AddIcon(process.ProcessName, [], IconFileType.None);
+            else
+                db.AddIcon(process.ProcessName, icon.image.ToArray(), icon.fileType);
+        }
+        db.SaveChanges();
+    }
+
     /// <summary>
     /// Returns the averages of the last N snapshots. Returns null if no data exists.
     /// </summary>
@@ -131,5 +163,5 @@ public class SystemHistory : IDisposable
         return _producer.GetTotalRam();
     }
 
-    public MemoryStream? GetIcon(string processName) => _producer.GetProcessIcon(processName);
+    public (MemoryStream? image, IconFileType fileType) GetIcon(string processName) => _producer.GetProcessIcon(processName);
 }
