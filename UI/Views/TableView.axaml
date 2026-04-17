@@ -29,6 +29,12 @@
                     <Setter Property="ContextMenu">
                         <ContextMenu Opened="ContextMenuOpened" 
                                      Closed="ContextMenuClosed">
+                            <MenuItem Click="OnSaveIconClick" Header="Save Icon">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/save.png" 
+                                            Width="32" Height="32" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                             <MenuItem x:Name="EndProgramMenuItem" Click="OnEndProgramClick" Header="Kill program">
                                 <MenuItem.Icon>
                                     <Image Source="/Assets/close.png" 
