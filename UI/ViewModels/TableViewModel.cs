@@ -1,6 +1,10 @@
-﻿using Avalonia.Collections;
+﻿using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Shapes;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Core;
@@ -8,8 +12,6 @@ using Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using UI.Views;
 
 namespace UI.ViewModels
@@ -107,7 +109,14 @@ namespace UI.ViewModels
         public IRelayCommand ToggleNetworkCommand { get; }
         public IRelayCommand OpenTimeframeCommand { get; }
 
-
+        public static Bitmap UnknownIcon
+        { 
+            get 
+            {
+                var uri = new Uri("avares://NetVine/Assets/unknown.png");
+                return new Bitmap(AssetLoader.Open(uri));
+            }
+        }
 
         // Constructor
         public TableViewModel()

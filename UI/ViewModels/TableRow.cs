@@ -71,28 +71,30 @@ namespace UI.ViewModels
             Bitmap? bitmap = await Task.Run(() =>
             {
                 using var db = new DBInteract();
-
-                if(db.HasIcon(AppName))
+                bool useDefaultIcon = false;
+                MemoryStream? ms;
+                if (db.HasIcon(AppName))
                 {
                     CachedIcon? data = db.GetIconData(AppName);
-
                     if (data is null) return null;
+                    useDefaultIcon = data.IconFileType == IconFileType.None;//Has no icon.
+                    ms = new(data.IconData);
+                }
+                else//Get live icon if possible...
+                    ms = SystemHistory.Instance.GetIcon(AppName).image;
 
-                    MemoryStream? ms = new(data.IconData);
-                    ms.Position = 0;
-                    return new Bitmap(ms);
+                if (useDefaultIcon)
+                {
+                    return TableViewModel.UnknownIcon;
                 }
                 else
                 {
-                    (MemoryStream? image, IconFileType fileType) iconData =
-                        SystemHistory.Instance.GetIcon(AppName);
-
-                    using var ms = iconData.image;
-
                     if (ms is null) return null;
 
                     ms.Position = 0;
-                    return new Bitmap(ms);
+                    var bitmap = new Bitmap(ms);
+                    ms.Dispose();
+                    return bitmap;
                 }
             });
 
