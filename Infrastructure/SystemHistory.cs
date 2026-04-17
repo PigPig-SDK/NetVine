@@ -115,26 +115,18 @@ public class SystemHistory : IDisposable
     public void AddIcons()
     {
         using var db = new DBInteract();
-
         var processes = Process.GetProcesses();
+        HashSet<string> seen = new();
 
-        HashSet<string> iconNames = new HashSet<string>();
         foreach(Process process in processes)
         {
-            if (iconNames.Contains(process.ProcessName))
-                continue;
-
-            iconNames.Add(process.ProcessName);
-
+            if (!seen.Add(process.ProcessName)) continue;
             if (db.HasIcon(process.ProcessName)) continue;
 
-            (MemoryStream? image, IconFileType fileType) icon 
-                = _producer.GetProcessIcon(process);
-
-            if (icon.image == null)//No file exists.
-                db.AddIcon(process.ProcessName, [], IconFileType.None);
-            else
-                db.AddIcon(process.ProcessName, icon.image.ToArray(), icon.fileType);
+            var icon = _producer.GetProcessIcon(process);
+            db.AddIcon(process.ProcessName,
+                icon.image?.ToArray() ?? [],
+                icon.image == null ? IconFileType.None : icon.fileType);
         }
         db.SaveChanges();
     }
