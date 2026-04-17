@@ -30,6 +30,7 @@ public partial class TableView : UserControl
     private void OnViewChanged(bool isLive)
     {
         MyDataGrid.SelectedItem = null;
+        EndProgramMenuItem.IsEnabled = isLive;
     }
 
     private void DataGridLoaded(object? sender, RoutedEventArgs e)
