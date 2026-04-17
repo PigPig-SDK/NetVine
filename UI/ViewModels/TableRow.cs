@@ -32,9 +32,6 @@ namespace UI.ViewModels
                 OnPropertyChanged(nameof(HistoricalData));
             }
         }
-
-        
-        //icon stuff here is temporary and should later be handled by the database
         
         // Icon properties
         private Bitmap? _icon;
@@ -71,25 +68,35 @@ namespace UI.ViewModels
 
         private async Task LoadIconAsync()
         {
-            var bitmap = await Task.Run(() =>
+            Bitmap? bitmap = await Task.Run(() =>
             {
-                try
+                using var db = new DBInteract();
+
+                if(db.HasIcon(AppName))
                 {
-                    (MemoryStream? image, IconFileType fileType) iconData = 
+                    CachedIcon? data = db.GetIconData(AppName);
+
+                    if (data is null) return null;
+
+                    MemoryStream? ms = new(data.IconData);
+                    ms.Position = 0;
+                    return new Bitmap(ms);
+                }
+                else
+                {
+                    (MemoryStream? image, IconFileType fileType) iconData =
                         SystemHistory.Instance.GetIcon(AppName);
 
-                    using var image = iconData.image;
+                    using var ms = iconData.image;
 
-                    if (image is null) return null;
-                    image.Position = 0;
-                    return new Bitmap(image);
-                }
-                catch 
-                { 
-                    return null; 
-                }
+                    if (ms is null) return null;
 
+                    ms.Position = 0;
+                    return new Bitmap(ms);
+                }
             });
+
+            if(bitmap is null) return;
 
             await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
             {
