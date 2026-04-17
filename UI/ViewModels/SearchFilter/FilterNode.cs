@@ -7,24 +7,9 @@ namespace UI.ViewModels.SearchFilter
         public string FieldName { get; }
         public string FieldValue { get; }
         private string _op;
-        private IProgramData? _targetLive;
-        private IProgramDataHistorical? _targetHistorical;
 
-        public FilterNode(string fieldName, string fieldValue, string op, TableRow target)
+        public FilterNode(string fieldName, string fieldValue, string op)
         {
-            _targetHistorical = target.HistoricalData;
-            _targetLive = target.LiveData;
-            _op = op;
-            FieldValue = fieldValue;
-            FieldName = fieldName;
-        }
-
-        public FilterNode(string fieldName, string fieldValue, string op
-            , IProgramData targetLive
-            , IProgramDataHistorical targetHistorical)
-        {
-            _targetHistorical = targetHistorical;
-            _targetLive = targetLive;
             _op = op;
             FieldValue = fieldValue;
             FieldName = fieldName;
@@ -44,18 +29,22 @@ namespace UI.ViewModels.SearchFilter
         }
 
 
-        bool IFilterNode.Evaluate()
+        bool IFilterNode.Evaluate(TableRow target)
         {
-            if (_targetLive == null) return false;
+            var targetLive = target.LiveData;
+            var targetHistorical = target.HistoricalData;
+
+            if (targetLive == null) return false;
+            
             switch (FieldName)
             {
                 case "Process": case "process": case "proc":
-                    if (_targetLive.ProcessName == FieldValue && _op == "=")
+                    if (targetLive.ProcessName == FieldValue && _op == "=")
                         return true;
                     else return false;
 
                 case "System": case "system": case "sys": case "Sys":
-                    if (_targetLive.SystemName == FieldValue && _op == "=")
+                    if (targetLive.SystemName == FieldValue && _op == "=")
                         return true;
                     else return false;
             }
@@ -65,13 +54,13 @@ namespace UI.ViewModels.SearchFilter
                 switch(FieldName)
                 {
                     case "Cpu": case "CPU": case "cpu":
-                        return EvaluateField(_targetLive.CpuUsage, v);
+                        return EvaluateField(targetLive.CpuUsage, v);
                     case "Disk": case "disk":
-                        return EvaluateField(_targetLive.DiskUsage, v);
+                        return EvaluateField(targetLive.DiskUsage, v);
                     case "Memory": case "memory": case "mem": case "Mem":
-                        return EvaluateField(_targetLive.MemoryUsage, v);
+                        return EvaluateField(targetLive.MemoryUsage, v);
                     case "Network": case "network": case "net": case "Net":
-                        return EvaluateField(_targetLive.NetworkUsage, v);
+                        return EvaluateField(targetLive.NetworkUsage, v);
                 }
             }
 

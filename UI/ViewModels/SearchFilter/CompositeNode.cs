@@ -21,7 +21,7 @@ namespace UI.ViewModels.SearchFilter
         }
         public void AddChild(IFilterNode node) { _children.Add(node); }
 
-        public bool Evaluate()
+        public bool Evaluate(TableRow target)
         {
             bool result = true;
             if (_children.Count < 1) return false;
@@ -31,7 +31,7 @@ namespace UI.ViewModels.SearchFilter
                 result = true;
                 foreach (IFilterNode node in _children)
                     if (node != null)
-                        result = result && node.Evaluate();
+                        result = result && node.Evaluate(target);
             }
 
             else if (Type == CompositeType.OR)
@@ -39,7 +39,7 @@ namespace UI.ViewModels.SearchFilter
                 result = false;
                 foreach (IFilterNode node in _children)
                     if (node != null)
-                        result = result || node.Evaluate();
+                        result = result || node.Evaluate(target);
             }
 
             return result;

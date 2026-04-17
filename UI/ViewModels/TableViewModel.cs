@@ -1,6 +1,5 @@
 ﻿using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Core;
@@ -44,7 +43,7 @@ namespace UI.ViewModels
         private bool _showMemory = true;
         private bool _showDisk = true;
         private bool _showNetwork = true;
-
+        private ParseTree<TableRow> _searchTree;
         private bool _updatePaused = false;
 
         private DateTime? HistoricalStart = null;
@@ -69,6 +68,7 @@ namespace UI.ViewModels
             set
             {
                 _searchText = value;
+                _searchTree = CreateTree(_searchText);
                 OnPropertyChanged();
                 TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
                     ? null
@@ -114,7 +114,7 @@ namespace UI.ViewModels
         // Constructor
         public TableViewModel()
         {
-            _tableData = new TableDataManager(() => _updatePaused);
+            _tableData = new TableDataManager(() => _updatePaused, () => SearchText);
             TableRowsView = new DataGridCollectionView(_tableData.TableRows);
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
@@ -341,19 +341,19 @@ namespace UI.ViewModels
                 _tableViewActive = true;
                 //resubscribe to events
                 // should be able to delete the subscribing and unsubscribing
-                LiveViewModel.ViewChangedEvent += ViewChangedLive;
-                CombinationModel.ViewChangedEvent += ViewChangedCombination;
-                SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-                DBInteract.OnProgramListAdded += OnSnapshotHistorical;
+                //LiveViewModel.ViewChangedEvent += ViewChangedLive;
+                //CombinationModel.ViewChangedEvent += ViewChangedCombination;
+                //SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+                //DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             }
             else
             {
                 _tableViewActive = false;
                 //unsubscribe from events
-                LiveViewModel.ViewChangedEvent -= ViewChangedLive;
-                CombinationModel.ViewChangedEvent -= ViewChangedCombination;
-                SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
-                DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
+                //LiveViewModel.ViewChangedEvent -= ViewChangedLive;
+                //CombinationModel.ViewChangedEvent -= ViewChangedCombination;
+                //SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
+                //DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
             }
 
         }
@@ -367,32 +367,25 @@ namespace UI.ViewModels
                 TableRowsView.SortDescriptions.Add(sort);
         }
 
-        private bool TryParseExpression(string expression, TableRow target)
+        private bool TryParseSearchExpression(TableRow target)
         {
-            if (expression == null) return false;
-
-                var t = new TreeBuilder<TableRow>(target, '&');
-                return t.BuildTree(_searchText).Evaluate();
-
+            return _searchTree.Evaluate(target);
         }
 
-        
+        private ParseTree<TableRow>? CreateTree(string expression)
+        {
+            var t = new TreeBuilder<TableRow>('&');
+            return t.BuildTree(expression);
+        }
 
 
         private bool FilterRow(object obj)
         {
-
-
+            if (_searchTree == null) return false;
             if (obj is not TableRow row) return false;
-            if (obj is TableRow tr)
-            {
-                return TryParseExpression(_searchText, tr) 
-                    || row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
-                    || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);;
-            }
-            else return false;
-
-            //
+            return TryParseSearchExpression(row)
+                || row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
+                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
         }
 
     }

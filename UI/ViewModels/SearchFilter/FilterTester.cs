@@ -81,9 +81,9 @@ namespace UI.ViewModels.SearchFilter
 
                 foreach (var row in _testRows)
                 {
-                    var builder = new TreeBuilder<TableRow>(row);
+                    var builder = new TreeBuilder<TableRow>();
                     var tree = builder.BuildTree(expr);
-                    bool result = tree?.Evaluate() ?? false;
+                    bool result = tree?.Evaluate(row) ?? false;
 
                     if (result)
                     {
@@ -102,9 +102,6 @@ namespace UI.ViewModels.SearchFilter
         public void Run()
         {
             Console.WriteLine("=== FilterTester Start ===\n");
-            //PopulateTestRows();
-            //PopulateTestStrings();
-            //RunTests();
 
             while (true)
             {
@@ -124,8 +121,8 @@ namespace UI.ViewModels.SearchFilter
 
                 if (input == "quit" || input == "exit") break;
 
-                var builder = new TreeBuilder<TableRow>(t);
-                bool result = builder.BuildTree(input)?.Evaluate() ?? false;
+                var builder = new TreeBuilder<TableRow>();
+                bool result = builder.BuildTree(input)?.Evaluate(t) ?? false;
                 Console.WriteLine(result ? "PASS" : "FAIL");
             }
 

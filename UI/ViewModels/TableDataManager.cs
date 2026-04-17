@@ -15,6 +15,8 @@ namespace UI.ViewModels
     public class TableDataManager
     {
         private readonly Func<bool> _isPaused;
+        private readonly Func<string> _searchExpression;
+        
         public Action ClearSelection { get; set; } = () => { };
         /// <summary>
         /// ObservableCollection containing the rows for the table
@@ -24,9 +26,10 @@ namespace UI.ViewModels
         /// <summary>
         /// Constructor, creates a new collection for the rows
         /// </summary>
-        public TableDataManager(Func<bool> isPaused)
+        public TableDataManager(Func<bool> isPaused, Func<string> searchExpression)
         {
             _isPaused = isPaused;
+            _searchExpression = searchExpression;
             TableRows = new ObservableCollection<TableRow>();
         }
 

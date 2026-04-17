@@ -17,12 +17,9 @@ namespace UI.ViewModels.SearchFilter
         private char _leftP;
         private char _rightP;
         //private TableRow? _target;
-        private IProgramData? _targetLive;
-        private IProgramDataHistorical? _targetHistory;
-        public TreeBuilder(TableRow target, char and = '&', char or = '+', char lp = '(', char rp = ')')
+
+        public TreeBuilder( char and = '&', char or = '+', char lp = '(', char rp = ')')
         {
-            _targetLive = target.LiveData;
-            _targetHistory = target.HistoricalData;
             _and = and; _or = or; _leftP = lp; _rightP = rp;
         }
 
@@ -77,7 +74,7 @@ namespace UI.ViewModels.SearchFilter
                 {
                     string[] parts = expression.Split(op);
                     if (parts.Length == 2)
-                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _targetLive, _targetHistory);
+                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op);
                 }
 
 
@@ -86,7 +83,7 @@ namespace UI.ViewModels.SearchFilter
                 {
                     string[] parts = expression.Split(op);
                     if (parts.Length == 2)
-                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op, _targetLive, _targetHistory);
+                        return new FilterNode(parts[0].Trim(), parts[1].Trim(), op);
 
                 }
 

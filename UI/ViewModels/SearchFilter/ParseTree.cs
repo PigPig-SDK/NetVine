@@ -8,10 +8,10 @@
             _root = root;
         }
 
-        public bool Evaluate()
+        public bool Evaluate(TableRow target)
         {
             if (_root == null) return false;
-            return _root.Evaluate();
+            return _root.Evaluate(target);
         }
     }
 }
