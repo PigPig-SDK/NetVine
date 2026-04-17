@@ -7,7 +7,7 @@ using UI.ViewModels;
 
 namespace UI.ViewModels
 {
-    public class ComponentViewModel : INotifyPropertyChanged
+    public class ComponentViewModel : ViewModelBase
     {
         private readonly ChartService _chartService;
         private readonly ResourceService _resourceService;
@@ -17,16 +17,23 @@ namespace UI.ViewModels
         public ICommand SelectDiskCommand { get; }
         public ICommand SelectNetworkCommand { get; }
 
+        public bool ComponentIsLive => LiveViewModel.IsLive;
+        public bool ComponentIsNotLive => !LiveViewModel.IsLive;
+
         public ComponentViewModel(ChartService chartService, ResourceService resourceService)
         {
             _chartService = chartService;
             _resourceService = resourceService;
             _resourceService.DataUpdated += OnDataUpdated;
+            LiveViewModel.ViewChangedEvent -= ViewChangedLive;
+            LiveViewModel.ViewChangedEvent += ViewChangedLive;
 
             SelectCpuCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.CPU);
             SelectRamCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.RAM);
             SelectDiskCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.DISK);
             SelectNetworkCommand = new RelayCommand(() => _chartService.SelectedResource = ChartService.NET);
+            
+            
         }
 
         public List<string> ChartTypes { get; } = new() { "Line", "Bar", "Pie" };
@@ -53,6 +60,12 @@ namespace UI.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonRAMText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonDISKText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonNetworkText)));
+        }
+
+        private void ViewChangedLive(bool isLive)
+        {
+            OnPropertyChanged(nameof(ComponentIsLive));
+            OnPropertyChanged(nameof(ComponentIsNotLive));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
