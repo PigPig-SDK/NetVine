@@ -19,7 +19,7 @@ public class DBInteract : DbContext
 
     public static Action? OnProgramAdded;
     
-    private static readonly Lock _dbLock = new();
+    public static readonly Lock DBLock = new();
 
     public delegate void ProgramListAddedDelegate(List<ProgramData> programs, bool isDataLocal);
 
@@ -316,17 +316,20 @@ public class DBInteract : DbContext
     /// <param name="programs"></param>
     public static void Store(IEnumerable<ProgramData> programs, bool isLocal)
     {
-        var programsAsList = programs.ToList();
-
-        using (var db = new DBInteract())
+        lock (DBLock)
         {
-            foreach (var data in programs)
+            var programsAsList = programs.ToList();
+
+            using (var db = new DBInteract())
             {
-                SubmitEntry(data, db);
-            }    
-            DBArithmetic.UpdatePDHTable(programsAsList, db);
+                foreach (var data in programs)
+                {
+                    SubmitEntry(data, db);
+                }
+                DBArithmetic.UpdatePDHTable(programsAsList, db);
+            }
+            OnProgramListAdded?.Invoke(programsAsList, isLocal);
         }
-        OnProgramListAdded?.Invoke(programsAsList, isLocal);
     }
 
     /// <summary>
@@ -335,8 +338,11 @@ public class DBInteract : DbContext
     /// <remarks>This does not call save on the database, please use SaveChanges or SaveChangesAsync()</remarks>
     public void AddUser(User user)
     {
-        if (!EntryExists(user, this))
-            UserTable.Add(user);    
+        lock (DBLock)
+        {
+            if (!EntryExists(user, this))
+                UserTable.Add(user);
+        }
     }
 
     public static void Initialize()
