@@ -71,6 +71,11 @@ public static class UiSettings
                 "Disable all client connections and host connections. ",
                 SettingInt.NetworkDisabled,
                 "network", "usage"),
+
+            new SettingInputCheckbox("Allow host manipulation",
+                "Allows the host to kill processes on your machine.",
+                SettingInt.AllowHostManipulation,
+                "network", "usage", "host", "manipulation", "close"),
         ]),
         new SettingGroup ("Database Storage", [
 

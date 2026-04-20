@@ -1,4 +1,5 @@
 ﻿using Core;
+using System.Diagnostics;
 
 namespace Infrastructure;
 
@@ -65,5 +66,15 @@ public class MockDataProducer : IProgramDataProducer
     public double GetTotalRam()
     {
         return 12000 * 1024;
+    }
+
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(string processName)
+    {
+        return (null, IconFileType.None);
+    }
+
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(Process process)
+    {
+        return (null, IconFileType.None);
     }
 }

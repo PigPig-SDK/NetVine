@@ -11,6 +11,7 @@
         Background="#662D2D30"
         xmlns:views="clr-namespace:UI"
         xmlns:ui="using:UI"
+        x:DataType="local:MainWindow"
         ExtendClientAreaTitleBarHeightHint="{OnPlatform Default=-1, Windows=38}"
         ExtendClientAreaToDecorationsHint="{OnPlatform Default=False, Windows=True}"
         Title="{x:Static ui:Program.AppName}">
@@ -40,10 +41,16 @@
                 Padding="0"
                 x:Name="HomeButton"
                 Click="OnDudeClicked">
-			<Image x:Name="icon"
-				   Classes="app-iconTiny"
-				   Grid.Column="0"
-				   IsVisible="{OnPlatform Default=False, Windows=True}"/>
+            <Grid>
+			<Image Classes="app-iconTiny"
+                   x:Name="iconNormal"
+				   Grid.Column="0"/>
+            <Image
+                   ToolTip.Tip="Thinking?"
+                   x:Name="iconThinking"
+				   Classes="app-iconThinking"
+				   Grid.Column="0"/>
+           </Grid>
         </Button>
         <Button Grid.Column="1" Click="OnGraphClicked"
                 Classes="titlebar"
@@ -80,7 +87,7 @@
               Classes="dragRegion"
               Grid.Column="5"
               IsVisible="{OnPlatform Default=False, Windows=True}"/>
-    </Grid>
+        </Grid>
         <!--The program canvas starts here...-->
         <Grid Grid.Row="1" x:Name="MainGrid">
             <Grid.ColumnDefinitions>

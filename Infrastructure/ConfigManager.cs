@@ -60,6 +60,7 @@ public class ConfigManager
         {SettingInt.LoadOnStartup, 0 },
         {SettingInt.StartMinimized, 0 },
         {SettingInt.NetworkDisabled, 0 },
+        {SettingInt.AllowHostManipulation, 0 },
         {SettingInt.UseNetworkPassword, 0 }
     };
 

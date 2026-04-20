@@ -9,7 +9,6 @@ namespace Infrastructure.Networking;
 
 public class Client : SslClient
 {
-    private bool _shutdown = false;
     private MessageBuffer _messageBuffer = new();
     public ConnectionInfo ConnectionInfo { get; private set; }
     
@@ -59,9 +58,6 @@ public class Client : SslClient
 
     public void DisconnectShutdown()
     {
-        if (IsConnecting) return;
-
-        _shutdown = true;
         DisconnectAsync();
         while (IsConnected)
             Thread.Yield();//This Yield shouldn't take that long.

@@ -1,12 +1,13 @@
 ﻿using Infrastructure;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace Core;
 
 public class SystemHistory : IDisposable
 {
-    private static SystemHistory _instance;
-    public static SystemHistory Instance { get { return _instance; } private set { _instance = value; } }
+    private static SystemHistory? _instance;
+    public static SystemHistory Instance { get { return _instance ?? throw new InvalidProgramException("Please Initialize SystemHistory before calling for instance."); } private set { _instance = value; } }
 
     private SystemTracker _tracker;
     private IProgramDataProducer _producer;
@@ -87,12 +88,16 @@ public class SystemHistory : IDisposable
             var list = _tracker.MakeSnapshot(elapsed);
             OnSnapshotTaken?.Invoke(list);
             SnapshotIterationCount++;
+            //On DB Storage hit.
             if(SnapshotIterationCount * _snapshotInterval.TotalSeconds >= ConfigManager.ReadSetting(SettingFloat.DatabaseSaveInterval))
             {
-                var average = _tracker.GetAverage();
+                IEnumerable<ProgramData>? average = _tracker.GetAverage()?.Cast<ProgramData>();
                 if (average == null) return;
 
-                if (average != null) DBInteract.Store(average.Cast<ProgramData>(), true);
+                //Store data...
+                DBInteract.Store(average, true);
+                AddIcons();
+
                 SnapshotIterationCount = 0;
                 _tracker.ClearHistory();
             }
@@ -106,6 +111,29 @@ public class SystemHistory : IDisposable
             }
         }
     }
+
+    public void AddIcons()
+    {
+        lock (DBInteract.DBLock)
+        {
+            using var db = new DBInteract();
+            var processes = Process.GetProcesses();
+            HashSet<string> seen = new();
+
+            foreach (Process process in processes)
+            {
+                if (!seen.Add(process.ProcessName)) continue;
+                if (db.HasIcon(process.ProcessName)) continue;
+
+                var icon = _producer.GetProcessIcon(process);
+                db.AddIcon(process.ProcessName,
+                    icon.image?.ToArray() ?? [],
+                    icon.image == null ? IconFileType.None : icon.fileType);
+            }
+            db.SaveChanges();
+        }
+    }
+
     /// <summary>
     /// Returns the averages of the last N snapshots. Returns null if no data exists.
     /// </summary>
@@ -129,4 +157,6 @@ public class SystemHistory : IDisposable
         if (_producer is null) return 0;
         return _producer.GetTotalRam();
     }
+
+    public (MemoryStream? image, IconFileType fileType) GetIcon(string processName) => _producer.GetProcessIcon(processName);
 }

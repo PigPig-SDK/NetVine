@@ -12,8 +12,8 @@ namespace UI.ViewModels
     public class TableRow : ObservableObject
     {
         // Existing properties
-        public string SystemName { get; set; }
-        public string AppName { get; set; }
+        public string SystemName { get; set; } = string.Empty;
+        public string AppName { get; set; } = string.Empty;
 
         private IProgramData? _liveData;
         public IProgramData? LiveData
@@ -32,9 +32,6 @@ namespace UI.ViewModels
                 OnPropertyChanged(nameof(HistoricalData));
             }
         }
-
-        
-        //icon stuff here is temporary and should later be handled by the database
         
         // Icon properties
         private Bitmap? _icon;
@@ -71,28 +68,37 @@ namespace UI.ViewModels
 
         private async Task LoadIconAsync()
         {
-            var bitmap = await Task.Run(() =>
+            Bitmap? bitmap = await Task.Run(() =>
             {
-                try
+                using var db = new DBInteract();
+                bool useDefaultIcon = false;
+                MemoryStream? ms;
+                if (db.HasIcon(AppName))
                 {
-                    var process = System.Diagnostics.Process
-                        .GetProcessesByName(AppName)
-                        .FirstOrDefault();
-
-                    if (process?.MainModule?.FileName is not { } path)
-                        return null;
-
-                    var icon = System.Drawing.Icon.ExtractAssociatedIcon(path);
-                    if (icon == null) return null;
-
-                    using var bmp = icon.ToBitmap();
-                    using var ms = new System.IO.MemoryStream();
-                    bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                    ms.Position = 0;
-                    return new Bitmap(ms);
+                    CachedIcon? data = db.GetIconData(AppName);
+                    if (data is null) return null;
+                    useDefaultIcon = data.IconFileType == IconFileType.None;//Has no icon.
+                    ms = new(data.IconData);
                 }
-                catch { return null; }
+                else//Get live icon if possible...
+                    ms = SystemHistory.Instance.GetIcon(AppName).image;
+
+                if (useDefaultIcon)
+                {
+                    return TableViewModel.UnknownIcon;
+                }
+                else
+                {
+                    if (ms is null) return null;
+
+                    ms.Position = 0;
+                    var bitmap = new Bitmap(ms);
+                    ms.Dispose();
+                    return bitmap;
+                }
             });
+
+            if(bitmap is null) return;
 
             await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
             {
