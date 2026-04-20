@@ -19,7 +19,8 @@ public class Packet
             { PacketType.UserInfo, typeof(UserInfoPayload)},
             { PacketType.InitiateLiveView, typeof(SetLiveViewPayload)},
             { PacketType.CloseProcessPacket, typeof(CloseProcessPayload)},
-            { PacketType.ProgramData, typeof(ProgramDataPayload)}};
+            { PacketType.ProgramData, typeof(ProgramDataPayload)},
+            { PacketType.NetworkError, typeof(NetworkErrorPayload)}};
 
     private Packet() {
         Data = new byte[0];

@@ -10,4 +10,5 @@ public enum PacketType : byte
     InitiateLiveView,
     ProgramData,
     CloseProcessPacket
+    NetworkError
 }

@@ -5,18 +5,24 @@ using NetCoreServer;
 
 namespace Infrastructure.Networking;
 
-public class HostSession : TcpSession
+public class HostSession : SslSession
 {
-    public HostSession(TcpServer server) : base(server) { }
+    public HostSession(SslServer server) : base(server) { }
 
     private MessageBuffer _messageBuffer  = new();
 
-    protected override void OnConnected()
+    public bool IsPasswordAccepted = false;
+    public string Username = string.Empty;
+
+
+    public static event Action<HostSession>? OnAuthorized;
+
+    protected override void OnHandshaked()
     {
         Console.WriteLine($"Host session connected: {Id}");
-
-        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName)).ToBytes());
-
+        //Send disregard, as a server dosn't actually care what the client thinks.
+        //Possibly codesmell, but it prevents me from writing two different packets for basically the same action.
+        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName,  "Disregard")).ToBytes());
         //Send(Packet.CreatePacket(new DateRequestPayload(DateTime.Now, DateTime.Now.AddSeconds(1))).ToBytes());
     }
     protected override void OnDisconnected()
@@ -32,11 +38,32 @@ public class HostSession : TcpSession
         {
             if(Packet.TryFromBytes(packetbytes!, out Packet? packet))
             {
-                Task.Run(() => packet!.TryExecute(true, Id));
+                if(packet!.PacketInfo == PacketType.UserInfo)
+                {
+                    UserInfoPayload userInfo = packet.Deserialize<UserInfoPayload>();
+                    Username = userInfo.UserName;
+
+                    if(ConfigManager.ReadSettingBool(SettingInt.UseNetworkPassword))
+                    {
+                        if(ConfigManager.ReadSetting(SettingString.HostPassword).Equals(userInfo.Password)) IsPasswordAccepted = true;
+                    }
+                    else
+                        IsPasswordAccepted = true;
+
+                    if (IsPasswordAccepted)
+                        OnAuthorized?.Invoke(this);
+                    else
+                    {
+                        SendAsync(Packet.CreatePacket(new NetworkErrorPayload(NetworkErrorType.BadPassword)).ToBytes());
+                        Disconnect();
+                    }
+
+                }
+                if(IsPasswordAccepted) Task.Run(() => packet!.TryExecute(true, Id));
             }
             else
             {
-                Console.WriteLine("Malformed packet!");
+                Debug.Log("Malformed packet!");
             }
         }
     }
