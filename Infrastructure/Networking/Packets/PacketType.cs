@@ -9,6 +9,6 @@ public enum PacketType : byte
     UserInfo,
     InitiateLiveView,
     ProgramData,
-    CloseProcessPacket
-    NetworkError
+    CloseProcessPacket,
+    NetworkError,
 }
