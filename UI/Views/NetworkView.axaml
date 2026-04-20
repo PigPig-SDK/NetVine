@@ -27,12 +27,28 @@
 
             <Label Grid.Row="1" Classes="title">Add</Label>
 
-            <Grid Grid.Row="3" ColumnDefinitions="*,auto">
-                <TextBox Grid.Column="0"  MinWidth="0" Watermark="Ip:Port" UseFloatingWatermark="True" Margin="10,0,10,0" x:Name="AddConnectionInput"/>
-		        <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center" Click="TryAddConnection"/>	
-            </Grid>
+            <StackPanel Grid.Row="3">
+                <Grid ColumnDefinitions="*,auto">
+                    <TextBox Grid.Column="0"  MinWidth="0" 
+                             Watermark="Ip:Port:Password" UseFloatingWatermark="True" Margin="10,0,10,0" x:Name="AddConnectionInput">
+                        <ToolTip.Tip>
+                            <ToolTip>
+                                <TextBlock>
+                                    ':' Delimets between IP,Port and Password in that order.
+                                    <LineBreak/>
+                                    <Separator HorizontalAlignment="Stretch"/>
+                                    <LineBreak/>
+                                    For example : '192.168.0.1:999:password123' will connect you to '192.168.0.1' on port '999', trying with the password of 'password123'
+                                </TextBlock>
+                            </ToolTip>
+                        </ToolTip.Tip>
+                    </TextBox>
+		            <Button Grid.Column="1" Content="Connect"  Margin="0,0,10,0" HorizontalAlignment="Center" Click="TryAddConnection"/>	
+                </Grid>
+                <Label HorizontalAlignment="Stretch" IsVisible="False" x:Name="InvalidConnectDisplay" Foreground="Red">Error: Invalid input!</Label>
+            </StackPanel>
         </Grid>
-        <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+        <ScrollViewer Grid.Row="3" VerticalAlignment="Stretch" Padding="10" HorizontalAlignment="Stretch" >
 			<StackPanel x:Name="ConnectionPanel"/>
         </ScrollViewer>
 

@@ -10,14 +10,19 @@ public class UserInfoPayload : IPacketPayload
     [ProtoMember(1)]
     public string UserName { get; set; }
 
+    [ProtoMember(2)]
+    public string Password { get; set; }
+
     public UserInfoPayload() 
     { 
         UserName = string.Empty;
+        Password = string.Empty;
     }
 
-    public UserInfoPayload(string userName)
+    public UserInfoPayload(string userName, string password)
     {
         UserName = userName;
+        Password = password;
     }
     public async Task AddUser()
     {

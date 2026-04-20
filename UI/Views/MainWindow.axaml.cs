@@ -18,7 +18,7 @@ namespace UI.Views;
 public partial class MainWindow : Window
 {
     private Dictionary<int, Button> _tabBarMapping;
-    public bool IsInitialized = false;
+    public bool IsWindowInitialized = false;
 
     private int CurrentSidebarTab = 0;
     private bool isAnimatingSidebar = false;
@@ -63,12 +63,12 @@ public partial class MainWindow : Window
     {
         NetworkDataManager.Instance.HostSendLivePayload(LiveViewModel.IsLive);
 
-        if (!IsInitialized && ConfigManager.ReadSettingBool(SettingInt.StartMinimized))
+        if (!IsWindowInitialized && ConfigManager.ReadSettingBool(SettingInt.StartMinimized))
         {
             ShowInTaskbar = false;
             Hide();
         }
-        IsInitialized = true;
+        IsWindowInitialized = true;
         MainWindowViewModel.StartAnimation();
     }
 

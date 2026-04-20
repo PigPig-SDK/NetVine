@@ -4,4 +4,5 @@
 public enum SettingString
 {
     HostIP,
+    HostPassword,
 };

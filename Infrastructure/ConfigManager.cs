@@ -16,7 +16,7 @@ public class ConfigManager
 
     private static ConfigManager Instance
     {
-        get => _Instance ??= _Default;
+        get => _Instance ??= Default;
         set => _Instance = value;
     }
 
@@ -26,14 +26,14 @@ public class ConfigManager
     /// <remarks>This property creates a new instance of ConfigManager each time it is accessed. It is
     /// intended for scenarios where a single instance is not maintained, ensuring that configuration settings are
     /// retrieved fresh with each call.</remarks>
-    private static ConfigManager _Default { get => new ConfigManager(); }
+    private static ConfigManager Default { get => new ConfigManager(); }
 
     /// <summary>
     /// Gets the default file path for the application's configuration file in the user's application data folder.
     /// </summary>
     /// <remarks>The path is constructed by combining the application data directory with a subdirectory named
     /// 'NetVine' and the file name 'config.yaml'. The directory is created if it does not already exist.</remarks>
-    private static string _DefaultFilePath
+    private static string DefaultFilePath
     {
         get
         {
@@ -59,7 +59,8 @@ public class ConfigManager
         {SettingInt.MinimizeOnClose, 0 },
         {SettingInt.LoadOnStartup, 0 },
         {SettingInt.StartMinimized, 0 },
-        {SettingInt.NetworkDisabled, 0 }
+        {SettingInt.NetworkDisabled, 0 },
+        {SettingInt.UseNetworkPassword, 0 }
     };
 
 
@@ -75,7 +76,8 @@ public class ConfigManager
     /// <summary>Dictionary containing default string setting values.</summary>
     private static readonly Dictionary<SettingString, string> _DefaultStringValues = new()
     {
-        { SettingString.HostIP, NetworkManager.DefaultHost}
+        { SettingString.HostIP, NetworkManager.DefaultHost},
+        { SettingString.HostPassword, "password123" }
     };
     
     
@@ -84,7 +86,7 @@ public class ConfigManager
     
     
     /// <summary>Custom Config file path. If null, the default value is used.</summary>
-    public static string ResolvedFilePath => CustomFilePath ?? _DefaultFilePath;
+    public static string ResolvedFilePath => CustomFilePath ?? DefaultFilePath;
 
 
     /// <summary>
@@ -93,15 +95,15 @@ public class ConfigManager
     /// <remarks>This dictionary is intended for internal use within the class to manage application settings
     /// that require integer values. It should not be accessed directly from outside the containing class.</remarks>
     [YamlMember]
-    private Dictionary<SettingInt, int> _IntSettings { get; set; }
+    private Dictionary<SettingInt, int> IntSettings { get; set; }
     [YamlMember]
-    private Dictionary<SettingFloat, float> _FloatSettings { get; set; }
+    private Dictionary<SettingFloat, float> FloatSettings { get; set; }
     [YamlMember]
-    private Dictionary<SettingString, string> _StringSettings { get; set; }
+    private Dictionary<SettingString, string> StringSettings { get; set; }
     [YamlMember]
-    private List<ConnectionInfo> _ClientConnections { get; set; }
+    private List<ConnectionInfo> ClientConnections { get; set; }
 
-    public static IReadOnlyList<ConnectionInfo> ClientConnections => Instance._ClientConnections;
+    public static IReadOnlyList<ConnectionInfo> CurrentClientConnections => Instance.ClientConnections;
 
     /// <summary>
     /// Called when a setting is changed.
@@ -121,10 +123,10 @@ public class ConfigManager
     /// configuration files automatically.</remarks>
     public ConfigManager() 
     {
-        _IntSettings = [];
-        _FloatSettings = [];
-        _StringSettings = [];
-        _ClientConnections = [];
+        IntSettings = [];
+        FloatSettings = [];
+        StringSettings = [];
+        ClientConnections = [];
         InitializeDefaults();
     }
 
@@ -147,13 +149,13 @@ public class ConfigManager
     private void InitializeDefaults()
     {
         foreach (var setting in Enum.GetValues<SettingInt>())
-            _IntSettings.TryAdd(setting, _DefaultIntValues.GetValueOrDefault(setting));
+            IntSettings.TryAdd(setting, _DefaultIntValues.GetValueOrDefault(setting));
 
         foreach (var setting in Enum.GetValues<SettingFloat>())
-            _FloatSettings.TryAdd(setting, _DefaultFloatValues.GetValueOrDefault(setting));
+            FloatSettings.TryAdd(setting, _DefaultFloatValues.GetValueOrDefault(setting));
 
         foreach (var setting in Enum.GetValues<SettingString>())
-            _StringSettings.TryAdd(setting, _DefaultStringValues.GetValueOrDefault(setting, string.Empty));
+            StringSettings.TryAdd(setting, _DefaultStringValues.GetValueOrDefault(setting, string.Empty));
     }
 
     /// <summary>
@@ -163,10 +165,10 @@ public class ConfigManager
     /// setting exists in the configuration before calling this method.</remarks>
     /// <param name="setting">The setting for which to retrieve the integer value. Must be a valid member of the SettingInt enumeration.</param>
     /// <returns>The integer value corresponding to the specified setting.</returns>
-    public static int ReadSetting(SettingInt setting) => Instance._IntSettings[setting];
-    public static float ReadSetting(SettingFloat setting) => Instance._FloatSettings[setting];
-    public static string ReadSetting(SettingString setting) => Instance._StringSettings[setting];
-    public static bool ReadSettingBool(SettingInt setting) => Instance._IntSettings[setting] == 1;
+    public static int ReadSetting(SettingInt setting) => Instance.IntSettings[setting];
+    public static float ReadSetting(SettingFloat setting) => Instance.FloatSettings[setting];
+    public static string ReadSetting(SettingString setting) => Instance.StringSettings[setting];
+    public static bool ReadSettingBool(SettingInt setting) => Instance.IntSettings[setting] == 1;
 
     /// <summary>
     /// Assigns the specified integer value to the given integer setting.
@@ -177,7 +179,7 @@ public class ConfigManager
     /// <param name="value">The integer value to assign to the specified setting.</param>
     public static void WriteSetting(SettingInt setting, int value) 
     {
-        Instance._IntSettings[setting] = value;
+        Instance.IntSettings[setting] = value;
         OnSettingChanged?.Invoke(setting);
     }
 
@@ -186,7 +188,7 @@ public class ConfigManager
     /// </summary>
     public static void WriteSetting(SettingFloat setting, float value) 
     {  
-        Instance._FloatSettings[setting] = value;
+        Instance.FloatSettings[setting] = value;
         OnSettingChanged?.Invoke(setting);
     }
 
@@ -195,7 +197,7 @@ public class ConfigManager
     /// </summary>
     public static void WriteSetting(SettingString setting, string value) 
     {  
-        Instance._StringSettings[setting] = value;
+        Instance.StringSettings[setting] = value;
         OnSettingChanged?.Invoke(setting);
     }
     /// <summary>
@@ -203,10 +205,10 @@ public class ConfigManager
     /// </summary>
     public static void AddClientConnection(ConnectionInfo connectionInfo)
     {
-        if (Instance._ClientConnections.Contains(connectionInfo))
+        if (Instance.ClientConnections.Contains(connectionInfo))
             return;//Don't add duplicate.
 
-        Instance._ClientConnections.Add(connectionInfo);
+        Instance.ClientConnections.Add(connectionInfo);
         OnClientConnectionAdded?.Invoke(connectionInfo);
     }
     /// <summary>
@@ -214,7 +216,7 @@ public class ConfigManager
     /// </summary>
     public static void RemoveClientConnection(ConnectionInfo connectionInfo)
     {
-        if(Instance._ClientConnections.Remove(connectionInfo))
+        if(Instance.ClientConnections.Remove(connectionInfo))
         {
             OnClientConnectionRemoved?.Invoke(connectionInfo);
         }
@@ -283,7 +285,7 @@ public class ConfigManager
             Console.WriteLine($"Inner exception type: {ex.InnerException?.GetType().Name}");
             Console.WriteLine("Falling back to default configuration ... ");
 
-            Instance = _Default;
+            Instance = Default;
             TrySaveToFile();
 
             return false;
@@ -339,18 +341,20 @@ public class ConfigManager
 
         public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
         {
-            ConnectionInfo connectionInfo = new("ParseFailure", 404);
+            ConnectionInfo connectionInfo = new("ParseFailure", 404, "password");
+            if (parser.Current is null) return connectionInfo;
             string value = ((Scalar)parser.Current).Value;
             parser.MoveNext();
             var split = value.Split(':');
 
-            if (split.Length != 2)
+            if (split.Length != 3)
                 return connectionInfo;
 
             //Set connect info properly.
             connectionInfo.Ip = split[0];
             int.TryParse(split[1], out int expectedPort);
             connectionInfo.Port = expectedPort;
+            connectionInfo.Password = split[2];
             return connectionInfo;
         }
 
@@ -358,7 +362,7 @@ public class ConfigManager
         {
             var myType = (ConnectionInfo)value!;
 
-            emitter.Emit(new Scalar($"{myType.Ip}:{myType.Port}"));
+            emitter.Emit(new Scalar($"{myType.Ip}:{myType.Port}:{myType.Password}"));
         }
     }
 }
