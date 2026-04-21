@@ -96,7 +96,11 @@ public class NetworkManager
         DisconnectHost();
         StartHost();
     }
-    public static void AddClientConnection(ConnectionInfo info) => ConfigManager.AddClientConnection(info);
+    public static void AddClientConnection(ConnectionInfo info) { 
+        ConfigManager.AddClientConnection(info);
+        ConfigManager.TrySaveToFile();
+    }
+
     private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();
     private void OnRemoveClientConnection(ConnectionInfo info)
     {
