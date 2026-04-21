@@ -33,10 +33,11 @@ public class HelpCommand : Command
             );
         }
 
-        table.Border(TableBorder.Horizontal);
+        table.Border(TableBorder.Rounded);
         table.BorderColor(Color.Grey);
         table.Title("[bold white]Available Commands[/]");
         table.ShowRowSeparators();
+        table.Width(App.TableWidth);
         AnsiConsole.Write(table);
     }
 }

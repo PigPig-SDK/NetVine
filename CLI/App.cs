@@ -11,6 +11,8 @@ public class App
     private readonly Dictionary<string, Command> _commandList = [];
     public IReadOnlyDictionary<string, Command> CommandList => _commandList;
 
+    public int TableWidth => AnsiConsole.Profile.Width - 4;
+
     public App AddCommand<T>() where T : Command
     {
         T? command = (T?)Activator.CreateInstance(typeof(T), this);
