@@ -10,7 +10,7 @@ public class ListCommand : Command
 
     public override string Name => "list";
 
-    public override string Description => "Lists a user configuration, or all configurations.";
+    public override string Description => "Lists user settings.";
 
     public override string Usage => "'list', 'list connections', 'list int', 'list float', 'list string'";
 
