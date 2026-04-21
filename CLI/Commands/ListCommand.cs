@@ -34,7 +34,7 @@ public class ListCommand : Command
                 ListFloat();
                 break;
             case "int":
-                ListFloat();
+                ListInt();
                 break;
             case "connections":
                 ListConnections();
