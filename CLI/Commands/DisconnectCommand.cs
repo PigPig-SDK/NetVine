@@ -28,7 +28,7 @@ public class DisconnectCommand : Command
 
             Dictionary<string, ConnectionInfo> connections = ConfigManager.CurrentClientConnections.ToDictionary(c => c.ToString(), c => c);
             var prompt = new SelectionPrompt<string>()
-            .Title("What [green]size pizza[/] would you like?");
+            .Title("Select an [green]IP[/] to disconnect from?");
 
             foreach(var connection in ConfigManager.CurrentClientConnections)
             {
