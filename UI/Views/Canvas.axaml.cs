@@ -20,7 +20,7 @@ public partial class Canvas : UserControl
     private ScottPlot.Plottables.Annotation? _tooltip;
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
     //add to settings
-    int _topCount = 10;
+    private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
 
     public Canvas()
     {
@@ -115,7 +115,7 @@ public partial class Canvas : UserControl
             var bartop = snapshot
                 .OrderByDescending(p => GetValue(p))
                 .Where(p => GetValue(p) > 0)
-                .Take(_topCount)
+                .Take(TopCount)
                 .ToList();
 
             double cumulative = 0;
@@ -194,8 +194,8 @@ public partial class Canvas : UserControl
 
         return _vm.LatestSnapshot
             .OrderByDescending(p => GetValue(p))
-            .Take(_topCount)
-            .Where(p => GetValue(p) > 0)
+            .Take(TopCount)
+            .Where(p => GetValue(p) > 0) 
             .ToList();
     }
 

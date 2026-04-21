@@ -15,5 +15,7 @@ public enum SettingInt
     LoadOnStartup,
     MinimizeOnClose,
     StartMinimized,
-    NetworkDisabled
+    NetworkDisabled,
+    MaxHistory,
+    TopCount
 };
