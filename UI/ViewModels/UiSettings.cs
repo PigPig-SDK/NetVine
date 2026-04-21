@@ -15,7 +15,7 @@ public static class UiSettings
     public static List<SettingGroup> AllSettings => new()
     {
         new SettingGroup("Application", [
-            new SettingInputReporter($"Net-Vine version {Program.Version}",
+            new SettingInputReporter($"Net-Vine version {Netvine.Version}",
                 "This is your current netvine version.",
                 "version", "app", "application"),
 

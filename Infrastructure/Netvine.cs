@@ -1,0 +1,36 @@
+﻿using Core;
+using Infrastructure.Networking;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Infrastructure;
+
+public static class Netvine
+{
+    public const string Version = "0.0.1";
+    public const string AppName = "Net-Vine";
+
+    public static void Startup()
+    {
+        // Load configuration
+        ConfigManager.Initialize();
+
+        // Setup history tracker.
+        SystemHistory.SetupInstance();
+
+        // Emplace DB
+        DBInteract.Initialize();
+
+        // Setup network manager
+        NetworkManager.SetupInstance();
+
+        //Setup live data manager
+        NetworkDataManager.SetupInstance();
+
+        //OS startup binding configuration
+        SystemStartupBinder.Setup();
+    }
+}
