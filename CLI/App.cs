@@ -1,4 +1,5 @@
 ﻿using CLI.Commands;
+using Infrastructure;
 using Microsoft.Extensions.DependencyModel;
 using Spectre.Console;
 
@@ -54,4 +55,10 @@ public class App
     {
         AnsiConsole.MarkupLineInterpolated($"[bold red]{errorTitle}:[/]'{message}'");
     }
+    public void SystemMessage(string message)
+    {
+        AnsiConsole.MarkupLineInterpolated($"[bold grey]Netvine:'{message}'[/]");
+    }
+
+    internal void PrintIntro() => SystemMessage($"{Netvine.AppName} v{Netvine.Version}");
 }

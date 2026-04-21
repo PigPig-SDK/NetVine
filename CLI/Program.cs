@@ -13,7 +13,8 @@ var app = new App()
     .AddCommand<DisconnectCommand>()
     .AddCommand<ClearCommand>()
     .AddCommand<ListCommand>()
-    .AddCommand<HelpCommand>()
-    .Execute("help", []);
+    .AddCommand<HelpCommand>();
 
+
+app.PrintIntro();
 app.Run();

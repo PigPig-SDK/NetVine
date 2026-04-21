@@ -35,5 +35,6 @@ public class ConnectCommand : Command
             password: args[2]);
 
         NetworkManager.AddClientConnection(info);
+
     }
 }

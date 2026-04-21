@@ -89,11 +89,12 @@ public class ListCommand : Command
         table.AddColumn("[bold]Address[/]");
         table.AddColumn("[bold]Password[/]");
 
-        foreach (ConnectionInfo setting in ConfigManager.CurrentClientConnections)
+        foreach (ConnectionInfo info in ConfigManager.CurrentClientConnections)
         {
+            string color = (NetworkManager.Instance.IsOnline(info)) ? "green]": "red] !! (Offline) !! ";
             table.AddRow(
-                $"[green]{setting.Ip}:{setting.Port}[/]",
-                $"[grey]{setting.Password}[/]"
+                $"[{color}{info.Ip}:{info.Port}[/]",
+                $"[grey]{info.Password}[/]"
             );
         }
 

@@ -15,5 +15,6 @@ public class ClearCommand : Command
     public override void Execute(string[] args)
     {
         AnsiConsole.Clear();
+        App.PrintIntro();
     }
 }
