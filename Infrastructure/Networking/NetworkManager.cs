@@ -100,7 +100,11 @@ public class NetworkManager
         ConfigManager.AddClientConnection(info);
         ConfigManager.TrySaveToFile();
     }
-
+    public static void RemoveClientConnection(ConnectionInfo info)
+    {
+        ConfigManager.RemoveClientConnection(info);
+        ConfigManager.TrySaveToFile();
+    }
     private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();
     private void OnRemoveClientConnection(ConnectionInfo info)
     {
@@ -109,9 +113,9 @@ public class NetworkManager
 
         (IPAddress, int) infoTuple = (ip, info.Port);
 
-        if (!EstablishedClientConnections.ContainsKey(infoTuple)) return;
+        if (!EstablishedClientConnections.TryGetValue(infoTuple, out Client? client)) return;
         //Shutdown the client connection!
-        EstablishedClientConnections[infoTuple].Disconnect();
+        if(client.IsConnected) client?.Disconnect();
         EstablishedClientConnections.Remove(infoTuple);
     }
 
