@@ -83,7 +83,7 @@ public class WindowsDataProducer : IProgramDataProducer
         }
         else
         {
-            Console.WriteLine("Cannot enable network tracing without admin privileges. Network data will not be collected.");
+			Core.Debug.Log("Cannot enable network tracing without admin privileges. Network data will not be collected.");
         }
     }
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using Infrastructure.Networking;
+﻿using Core;
+using Infrastructure.Networking;
 using NetCoreServer;
 using System;
 using YamlDotNet.Core;
@@ -272,7 +273,6 @@ public class ConfigManager
     /// <returns>true if the configuration was successfully loaded from the file; otherwise, false.</returns>
     public static bool TryLoadFromFile()
     {
-        Console.WriteLine($"pulling from {ResolvedFilePath}");
         try
         {
             Instance = LoadFromFile(ResolvedFilePath);
@@ -280,11 +280,12 @@ public class ConfigManager
         }
         catch (Exception ex) when (ex is YamlException || ex is FileNotFoundException || ex is DirectoryNotFoundException)
         {
-            Console.WriteLine($"Exception type: {ex.GetType().Name}");
-            Console.WriteLine($"Message: {ex.Message}");
-            Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
-            Console.WriteLine($"Inner exception type: {ex.InnerException?.GetType().Name}");
-            Console.WriteLine("Falling back to default configuration ... ");
+
+            Debug.Log($"Exception type: {ex.GetType().Name}");
+            Debug.Log($"Message: {ex.Message}");
+            Debug.Log($"Inner exception: {ex.InnerException?.Message}");
+            Debug.Log($"Inner exception type: {ex.InnerException?.GetType().Name}");
+            Debug.Log("Falling back to default configuration ... ");
 
             Instance = Default;
             TrySaveToFile();
@@ -303,7 +304,7 @@ public class ConfigManager
     /// <returns>true if the configuration is successfully saved; otherwise, false.</returns>
     public static bool TrySaveToFile()
     {
-        Console.WriteLine($"writing to {ResolvedFilePath}");
+        Debug.Log($"writing to {ResolvedFilePath}");
         try
         {
             SaveToFile(ResolvedFilePath, Instance);
@@ -311,7 +312,7 @@ public class ConfigManager
         }
         catch(IOException ex)
         {
-            Console.WriteLine($"Failed to save config: {ex.Message}");
+            Debug.Log($"Failed to save config: {ex.Message}");
             return false;
         }
 

@@ -16,7 +16,7 @@ public class MockDataProducer : IProgramDataProducer
 
     public MockDataProducer()
     {
-        Console.WriteLine("Mock data producer is being used!");
+        Core.Debug.Log("Mock data producer is being used!");
     }
 
     public void Dispose() { }

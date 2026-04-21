@@ -19,7 +19,7 @@ public class Client : SslClient
 
     protected override void OnHandshaked()
     {
-        Console.WriteLine($"Client connected: {Id}");
+        Debug.Log($"Client connected: {Id}");
         SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName, ConnectionInfo.Password)).ToBytes());
     }
     protected override void OnConnected()
@@ -52,7 +52,7 @@ public class Client : SslClient
     
     protected override void OnError(System.Net.Sockets.SocketError error)
     {
-        Console.WriteLine($"Client error: {Id} - {error}");
+        Debug.Log($"Client error: {Id} - {error}");
         NetworkManager.Instance.OnSocketError?.Invoke(Id, ConnectionInfo, error);
     }
 

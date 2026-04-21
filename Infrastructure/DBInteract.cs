@@ -101,19 +101,19 @@ public class DBInteract : DbContext
             if(!(db.ProgramDataTable.ToList().Count == 0))
             {
                 foreach(var entry in db.ProgramDataTable.ToList()){;
-                    Console.WriteLine("System Name: " + entry.SystemName);
-                    Console.WriteLine("Date: " + entry.Date);
-                    Console.WriteLine("Process Name: " + entry.ProcessName);
-                    Console.WriteLine("Cpu Usage: " + entry.CpuUsage);
-                    Console.WriteLine("Disk Usage: " + entry.DiskUsage);
-                    Console.WriteLine("Network Usage: " + entry.NetworkUsage);
-                    Console.WriteLine("Memory Usage: " + entry.MemoryUsage + "\n");
+                    Debug.Log("System Name: " + entry.SystemName);
+                    Debug.Log("Date: " + entry.Date);
+                    Debug.Log("Process Name: " + entry.ProcessName);
+                    Debug.Log("Cpu Usage: " + entry.CpuUsage);
+                    Debug.Log("Disk Usage: " + entry.DiskUsage);
+                    Debug.Log("Network Usage: " + entry.NetworkUsage);
+                    Debug.Log("Memory Usage: " + entry.MemoryUsage + "\n");
                     
                 }
             }
             else
             {
-                Console.WriteLine("DB is empty\n");
+                Debug.Log("DB is empty\n");
             }
         }
     }
@@ -197,7 +197,7 @@ public class DBInteract : DbContext
     {
         if(EntryExists(entry, db))
         {
-            //Console.WriteLine("Entry already exists!");
+            //Debug.Log("Entry already exists!");
             return;
         }
         db.Set<T>().Add(entry);
@@ -307,7 +307,7 @@ public class DBInteract : DbContext
         }
         else
         {
-            Console.WriteLine("DB must be empty to populate dummy data;");
+            Debug.Log("DB must be empty to populate dummy data;");
         }
     }
     /// <summary>

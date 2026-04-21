@@ -265,7 +265,6 @@ namespace UI.ViewModels
                 return;
             }
             
-            Console.WriteLine(dateRange);
             HistoricalStart = dateRange.Value.date1;
             HistoricalEnd = dateRange.Value.date2;
             

@@ -126,7 +126,7 @@ public partial class FolderView : UserControl
 
     public void CombinedCheckChanged(object? sender, bool isChecked)
     {
-        Console.WriteLine($"Combination box changed: {isChecked}");
+        Debug.Log($"Combination box changed: {isChecked}");
         CombinationModel.IsCombination = isChecked;
     }
 }

@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using Core;
+using ProtoBuf;
 using System.Reflection;
 
 namespace Infrastructure.Networking.Packets;
@@ -77,7 +78,7 @@ public class Packet
         }
         catch (Exception ex) when (ex is InvalidOperationException || ex is TargetInvocationException || ex is InvalidOperationException)
         {
-            Console.WriteLine(ex.ToString());
+            Debug.Log(ex.ToString());
             return false;
         }
     }
@@ -107,7 +108,7 @@ public class Packet
         }
         catch (Exception ex) when (ex is ProtoException || ex is EndOfStreamException || ex is InvalidOperationException) {
         
-            Console.WriteLine(ex.ToString());
+            Debug.Log(ex.ToString());
             return false;
         }
     }

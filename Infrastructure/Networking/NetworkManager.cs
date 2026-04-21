@@ -154,7 +154,7 @@ public class NetworkManager
             IPAddress.TryParse(connectionContext.Ip, out IPAddress? ip);
             if (ip == null)
             {
-                Console.WriteLine($"Invalid IP address: {connectionContext.Ip}");
+                Core.Debug.Log($"Invalid IP address: {connectionContext.Ip}");
                 continue;
             }
             var connectionIdentity = (ip, connectionContext.Port);
