@@ -1,7 +1,9 @@
 ﻿using CLI;
 using CLI.Commands;
+using Core;
 using Infrastructure;
 
+Debug.ConsoleEnabled = false;
 Netvine.Startup();
 Console.Title = $"{Netvine.AppName} v{Netvine.Version} - CLI";
 
@@ -12,8 +14,10 @@ var app = new App()
     .AddCommand<ConnectCommand>()
     .AddCommand<DisconnectCommand>()
     .AddCommand<ClearCommand>()
+    .AddCommand<RefreshCommand>()
     .AddCommand<ListCommand>()
     .AddCommand<QuitCommand>()
+    .AddCommand<ConfigCommand>()
     .AddCommand<HelpCommand>();
 
 

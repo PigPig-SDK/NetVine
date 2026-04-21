@@ -34,7 +34,7 @@ public class ConfigManager
     /// </summary>
     /// <remarks>The path is constructed by combining the application data directory with a subdirectory named
     /// 'NetVine' and the file name 'config.yaml'. The directory is created if it does not already exist.</remarks>
-    private static string DefaultFilePath
+    public static string DefaultFilePath
     {
         get
         {
