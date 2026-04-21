@@ -11,10 +11,11 @@
         Background="#662D2D30"
         xmlns:views="clr-namespace:UI"
         xmlns:ui="using:UI"
+        xmlns:infrastructure="using:Infrastructure"
         x:DataType="local:MainWindow"
         ExtendClientAreaTitleBarHeightHint="{OnPlatform Default=-1, Windows=38}"
         ExtendClientAreaToDecorationsHint="{OnPlatform Default=False, Windows=True}"
-        Title="{x:Static ui:Program.AppName}">
+        Title="{x:Static infrastructure:Netvine.AppName}">
 
     <!-- Styles -->
     <Window.Styles>
