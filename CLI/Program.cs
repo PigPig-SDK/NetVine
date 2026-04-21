@@ -13,6 +13,7 @@ var app = new App()
     .AddCommand<DisconnectCommand>()
     .AddCommand<ClearCommand>()
     .AddCommand<ListCommand>()
+    .AddCommand<QuitCommand>()
     .AddCommand<HelpCommand>();
 
 
