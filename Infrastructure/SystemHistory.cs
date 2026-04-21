@@ -43,6 +43,10 @@ public class SystemHistory : IDisposable
         {
             producer = new WindowsDataProducer();
         }
+        else if(OperatingSystem.IsLinux())
+        {
+            producer = new LinuxDataProducer();
+        }
 
         if (producer == null)
             throw new InvalidOperationException("No valid producer for your operating system exists!");
