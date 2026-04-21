@@ -59,7 +59,9 @@ public class ConfigManager
         {SettingInt.MinimizeOnClose, 0 },
         {SettingInt.LoadOnStartup, 0 },
         {SettingInt.StartMinimized, 0 },
-        {SettingInt.NetworkDisabled, 0 }
+        {SettingInt.NetworkDisabled, 0 },
+        {SettingInt.MaxHistory, 100 },
+        {SettingInt.TopCount, 10 }
     };
 
 
