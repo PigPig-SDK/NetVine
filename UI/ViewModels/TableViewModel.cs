@@ -1,5 +1,7 @@
-﻿using Avalonia.Collections;
+﻿using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Core;
@@ -7,10 +9,9 @@ using Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using UI.Views;
 using UI.ViewModels.SearchFilter;
+using UI.Views;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UI.ViewModels
 {
@@ -71,11 +72,13 @@ namespace UI.ViewModels
                 Console.WriteLine("Search text updated: " + _searchText);
                 TableFilter.SearchExpression = _searchText;
                 TableFilter.UpdateSearchTree(_searchText);
+
                 OnPropertyChanged();
-                if (LiveViewModel.IsLive)TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                if (LiveViewModel.IsLive) TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
                     ? null
                     : FilterRow;
-                else OnSwitchToHistorical();
+                else OnSearchHistorical();
+
                 TableRowsView.Refresh();
             }
         }
@@ -143,19 +146,10 @@ namespace UI.ViewModels
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
             if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-            //if (!LiveViewModel.IsLive || !_tableViewActive) return;
-            //var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-            //    DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
-            //    DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
-
-            var data = TableFilter.GetTableRowsHistorical(CombinationModel.IsCombination
-                , [.. FolderViewData.SelectedUsers()]
-                , HistoricalStart
-                , HistoricalEnd);
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
-                _tableData.UpdateHistoricalData(data);
+                _tableData.UpdateHistoricalData(GetHistoricalData());
                 TableRowsView.Refresh();
                 ReapplySort();
                 Debug.Log("OnSnapshot historical update completed");
@@ -178,6 +172,17 @@ namespace UI.ViewModels
         }
 
         ////////
+
+        public void OnSearchHistorical()
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateHistoricalData(GetHistoricalData());
+                TableRowsView.Refresh();
+                ReapplySort();
+                Debug.Log("OnSnapshot historical update completed");
+            });
+        }
 
 
         public void OnSearchKeyStroke(string? search)
@@ -226,57 +231,37 @@ namespace UI.ViewModels
             OnPropertyChanged(nameof(ShowNetworkHistorical));
         }
 
-        private void OnIsVisiblePropertiesChangedCpu()
-        {
-            OnPropertyChanged(nameof(ShowCpuLive));
-            OnPropertyChanged(nameof(ShowCpuHistorical));
-        }
-
-        private void OnIsVisiblePropertiesChangedMemory()
-        {
-            OnPropertyChanged(nameof(ShowMemoryLive));
-            OnPropertyChanged(nameof(ShowMemoryHistorical));
-        }
-
-        private void OnIsVisiblePropertiesChangedDisk()
-        {
-            OnPropertyChanged(nameof(ShowDiskLive));
-            OnPropertyChanged(nameof(ShowDiskHistorical));
-        }
-
-        private void OnIsVisiblePropertiesChangedNetwork()
-        {
-            OnPropertyChanged(nameof(ShowNetworkLive));
-            OnPropertyChanged(nameof(ShowNetworkHistorical));
-        }
-
         //commands for context menu
         private void ToggleCpu()
         {
             _showCpu = !_showCpu;
             OnPropertyChanged(nameof(CpuMenuText));
-            OnIsVisiblePropertiesChangedCpu();
+            OnPropertyChanged(nameof(ShowCpuLive));
+            OnPropertyChanged(nameof(ShowCpuHistorical));
         }
 
         private void ToggleMemory()
         {
             _showMemory = !_showMemory;
             OnPropertyChanged(nameof(MemoryMenuText));
-            OnIsVisiblePropertiesChangedMemory();
+            OnPropertyChanged(nameof(ShowMemoryLive));
+            OnPropertyChanged(nameof(ShowMemoryHistorical));
         }
 
         private void ToggleDisk()
         {
             _showDisk = !_showDisk;
             OnPropertyChanged(nameof(DiskMenuText));
-            OnIsVisiblePropertiesChangedDisk();
+            OnPropertyChanged(nameof(ShowDiskLive));
+            OnPropertyChanged(nameof(ShowDiskHistorical));
         }
 
         private void ToggleNetwork()
         {
             _showNetwork = !_showNetwork;
             OnPropertyChanged(nameof(NetworkMenuText));
-            OnIsVisiblePropertiesChangedNetwork();
+            OnPropertyChanged(nameof(ShowNetworkLive));
+            OnPropertyChanged(nameof(ShowNetworkHistorical));
         }
         
         private async void OpenTimeframe()
@@ -336,7 +321,8 @@ namespace UI.ViewModels
 
         private void OnSwitchToLive()
         {
-            Debug.Log("OnSwitchToLive called");
+            Debug.Log($"OnSwitchToLive called. TableViewActive: {_tableViewActive}");
+            if (!_tableViewActive) return;
             var data = SystemHistory.Instance.GetLatestPoll();
 
             Debug.Log($"GetLatestPoll returned {data?.Count ?? 0} items");
@@ -352,9 +338,9 @@ namespace UI.ViewModels
 
         private void OnSwitchToHistorical()
         {
-            //var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-            //DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
-            //DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
+            Debug.Log($"OnSwitchToHistorical called. TableViewActive: {_tableViewActive}");
+
+            if (!_tableViewActive) return;
 
             Dispatcher.UIThread.Post(() =>
             {
@@ -376,17 +362,12 @@ namespace UI.ViewModels
 
         private void OnTabChanged(int tab)
         {
+             _tableViewActive = tab == MainWindowViewModel.TableView;
             if (tab == MainWindowViewModel.TableView)
             {
-                _tableViewActive = true;
-                //resubscribe to events
+                if (LiveViewModel.IsLive) OnSwitchToLive();
+                else OnSwitchToHistorical();
             }
-            else
-            {
-                _tableViewActive = false;
-                //unsubscribe from events
-            }
-
         }
 
         private void ReapplySort()
@@ -398,7 +379,7 @@ namespace UI.ViewModels
                 TableRowsView.SortDescriptions.Add(sort);
         }
 
-        private bool TryParseSearchExpression(TableRow target)
+        private static bool TryParseSearchExpression(TableRow target)
         {
             if (TableFilter.SearchExpressionTree == null) return true;
             return TableFilter.SearchExpressionTree.Evaluate(target);

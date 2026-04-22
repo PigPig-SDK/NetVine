@@ -11,7 +11,7 @@ namespace UI;
 
 public partial class TableView : UserControl
 {
-    private Dictionary<string, bool> _sortDirections = new();
+    private readonly Dictionary<string, bool> _sortDirections = [];
     private Tuple<string, string>? _selectedRowKey = null;
 
 
@@ -46,9 +46,9 @@ public partial class TableView : UserControl
         if (DataContext is TableViewModel vm)
         {
             string header = e.Column.Header?.ToString() ?? "";
-            if (!_sortDirections.ContainsKey(header)) return;
-            vm.SetSort(header, _sortDirections[header]);
-            _sortDirections[header] = !_sortDirections[header];
+            if (!_sortDirections.TryGetValue(header, out bool value)) return;
+            vm.SetSort(header, value);
+            _sortDirections[header] = _sortDirections[header] = !value;
             e.Handled = true;
         }
     }
@@ -59,6 +59,7 @@ public partial class TableView : UserControl
         {
             TimeFrameSelectionOption.IsEnabled = false;
         }
+
         else
         {
             TimeFrameSelectionOption.IsEnabled = true;
