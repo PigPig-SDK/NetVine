@@ -34,7 +34,7 @@ namespace UI.ViewModels
             ["Network Total"] = "HistoricalData.NetworkUsageTotal",
         };
 
-        private TableDataManager _tableData;
+        private readonly TableDataManager _tableData;
         private bool _tableViewActive = false;
         private string _searchText = "";
 
@@ -43,7 +43,7 @@ namespace UI.ViewModels
         private bool _showMemory = true;
         private bool _showDisk = true;
         private bool _showNetwork = true;
-        private ParseTree<TableRow> _searchTree;
+        private readonly ParseTree? _searchTree;
         private bool _updatePaused = false;
 
         private DateTime? HistoricalStart = null;
@@ -68,11 +68,13 @@ namespace UI.ViewModels
             set
             {
                 _searchText = value;
-                _searchTree = CreateTree(_searchText);
+                TableFilter.SearchExpression = _searchText;
+                TableFilter.UpdateSearchTree(_searchText);
                 OnPropertyChanged();
-                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                if (LiveViewModel.IsLive)TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
                     ? null
                     : FilterRow;
+                else OnSwitchToHistorical();
                 TableRowsView.Refresh();
             }
         }
@@ -139,11 +141,16 @@ namespace UI.ViewModels
 
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
-            if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+            if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
             //if (!LiveViewModel.IsLive || !_tableViewActive) return;
-            var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
-                DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd); 
+            //var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
+            //    DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
+            //    DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);
+
+            var data = TableFilter.GetTableRowsHistorical(CombinationModel.IsCombination
+                , [.. FolderViewData.SelectedUsers()]
+                , HistoricalStart
+                , HistoricalEnd);
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -181,7 +188,7 @@ namespace UI.ViewModels
         {
             {
                 if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-            
+                
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
                     _tableData.UpdateLiveData(data);
@@ -304,6 +311,7 @@ namespace UI.ViewModels
         {
             Debug.Log("OnSwitchToLive called");
             var data = SystemHistory.Instance.GetLatestPoll();
+
             Debug.Log($"GetLatestPoll returned {data?.Count ?? 0} items");
             Dispatcher.UIThread.Post(() =>
             {
@@ -317,10 +325,15 @@ namespace UI.ViewModels
 
         private void OnSwitchToHistorical()
         {
-            var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
-            DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
-            
+            //var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
+            //DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
+            //DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
+
+            var data = TableFilter.GetTableRowsHistorical(CombinationModel.IsCombination
+                , [.. FolderViewData.SelectedUsers()]
+                , HistoricalStart
+                , HistoricalEnd);
+
             Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data!);
@@ -340,20 +353,11 @@ namespace UI.ViewModels
             {
                 _tableViewActive = true;
                 //resubscribe to events
-                // should be able to delete the subscribing and unsubscribing
-                //LiveViewModel.ViewChangedEvent += ViewChangedLive;
-                //CombinationModel.ViewChangedEvent += ViewChangedCombination;
-                //SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-                //DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             }
             else
             {
                 _tableViewActive = false;
                 //unsubscribe from events
-                //LiveViewModel.ViewChangedEvent -= ViewChangedLive;
-                //CombinationModel.ViewChangedEvent -= ViewChangedCombination;
-                //SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
-                //DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
             }
 
         }
@@ -369,19 +373,14 @@ namespace UI.ViewModels
 
         private bool TryParseSearchExpression(TableRow target)
         {
-            return _searchTree.Evaluate(target);
+            if (TableFilter.SearchExpressionTree == null) return true;
+            return TableFilter.SearchExpressionTree.Evaluate(target);
         }
-
-        private ParseTree<TableRow>? CreateTree(string expression)
-        {
-            var t = new TreeBuilder<TableRow>('&');
-            return t.BuildTree(expression);
-        }
-
 
         private bool FilterRow(object obj)
         {
-            if (_searchTree == null) return false;
+            if (!LiveViewModel.IsLive) return true;
+            if (TableFilter.SearchExpressionTree == null) return false;
             if (obj is not TableRow row) return false;
             return TryParseSearchExpression(row)
                 || row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)

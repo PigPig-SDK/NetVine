@@ -2,6 +2,7 @@
 using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
 
 namespace Infrastructure;
 public class DBInteract : DbContext
@@ -136,7 +137,9 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
-    
+
+
+
     /// <summary>
     /// Wipes ProgramDataTable data
     /// </summary>

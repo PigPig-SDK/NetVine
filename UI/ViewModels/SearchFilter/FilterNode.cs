@@ -1,4 +1,7 @@
 ﻿using Core;
+using Infrastructure;
+using System;
+using System.Linq.Expressions;
 
 namespace UI.ViewModels.SearchFilter
 {
@@ -6,7 +9,7 @@ namespace UI.ViewModels.SearchFilter
     {
         public string FieldName { get; }
         public string FieldValue { get; }
-        private string _op;
+        private readonly string _op;
 
         public FilterNode(string fieldName, string fieldValue, string op)
         {
@@ -15,15 +18,30 @@ namespace UI.ViewModels.SearchFilter
             FieldName = fieldName;
         }
 
-        bool EvaluateField(float expected, float actual)
+        //bool EvaluateField(float expected, float actual)
+        //{
+        //    return _op switch
+        //    {
+        //        ">=" => expected >= actual,
+        //        ">" => actual < expected,
+        //        "<" => expected < actual,
+        //        "<=" => expected <= actual,
+        //        "=" => actual == expected,
+        //        _ => false
+        //    };
+        //}
+
+
+        private bool EvaluateNumerical(float targetValue)
         {
+            if (!float.TryParse(FieldValue, out float v)) return false;
             return _op switch
             {
-                ">=" => expected >= actual,
-                ">" => actual < expected,
-                "<" => expected < actual,
-                "<=" => expected <= actual,
-                "=" => actual == expected,
+                ">=" => targetValue >= v,
+                ">" => targetValue > v,
+                "<" => targetValue < v,
+                "<=" => targetValue <= v,
+                "=" => targetValue == v,
                 _ => false
             };
         }
@@ -36,35 +54,125 @@ namespace UI.ViewModels.SearchFilter
 
             if (targetLive == null) return false;
             
+            //switch (FieldName)
+            //{
+            //    case "Process": case "process": case "proc":
+            //        if (targetLive.ProcessName == FieldValue && _op == "=")
+            //            return true;
+            //        else return false;
+            //    case "System": case "system": case "sys": case "Sys":
+            //        if (targetLive.SystemName == FieldValue && _op == "=")
+            //            return true;
+            //        else return false;
+            //    case "Cpu": case "CPU": case "cpu":
+            //        return EvaluateNumerical(targetLive.CpuUsage);
+            //    case "Disk": case "disk":
+            //        return EvaluateNumerical(targetLive.DiskUsage);
+            //    case "Memory": case "memory": case "mem": case "Mem":
+            //        return EvaluateNumerical(targetLive.MemoryUsage);
+            //    case "Network": case "network": case "net": case "Net":
+            //        return EvaluateNumerical(targetLive.NetworkUsage);
+            //}
+
+            return FieldName switch
+            {
+                "Process" or "process" or "proc" =>
+                    (targetLive.ProcessName == FieldValue && _op == "="),
+                "System" or "system" or "sys" or "Sys" =>
+                    (targetLive.SystemName == FieldValue && _op == "="),
+                "Cpu" or "CPU" or "cpu" =>
+                    EvaluateNumerical(targetLive.CpuUsage),
+                "Disk" or "disk" =>
+                    EvaluateNumerical(targetLive.DiskUsage),
+                "Memory" or "memory" or "mem" or "Mem" =>
+                    EvaluateNumerical(targetLive.MemoryUsage),
+                "Network" or "network" or "net" or "Net" =>
+                    EvaluateNumerical(targetLive.NetworkUsage),
+                _ => false
+            };
+        }
+
+        //helper for switch statement in ToExpression, to avoid repeating the same code for each numerical field
+        private Expression ToNumericalExpression(ParameterExpression param, string propertyName)
+        {
+            if (param == null) return Expression.Constant(false);
+            if (propertyName == null) return Expression.Constant(false);
+
+            if (!float.TryParse(FieldValue, out float v))
+                return Expression.Constant(false);
+
+            var prop = Expression.Property(param, propertyName);
+
+            return _op switch
+            {
+                ">=" => Expression.GreaterThanOrEqual(prop, Expression.Constant(v)),
+                ">" => Expression.GreaterThan(prop, Expression.Constant(v)),
+                "<" => Expression.LessThan(prop, Expression.Constant(v)),
+                "<=" => Expression.LessThanOrEqual(prop, Expression.Constant(v)),
+                "=" => Expression.Equal(prop, Expression.Constant(v)),
+                _ => Expression.Constant(false)
+            };
+        }
+
+
+        //for historical data, only equality is supported for Process and System, and numerical comparisons for the rest
+        Expression<Func<ProgramDataHistorical, bool>> IFilterNode.ToExpression(ParameterExpression param)
+        {
+            //var param = Expression.Parameter(typeof(ProgramDataHistorical), "ProgramDataHistorical");
+            var procName = Expression.Property(param, nameof(ProgramDataHistorical.ProcessName));
+
+            Expression? body = null;
+
             switch (FieldName)
             {
-                case "Process": case "process": case "proc":
-                    if (targetLive.ProcessName == FieldValue && _op == "=")
-                        return true;
-                    else return false;
-
+                case "Process":case "process":case "proc":
+                    if (_op == "=")
+                        body = Expression.Equal(
+                        Expression.Property(param, nameof(ProgramDataHistorical.ProcessName)),
+                        Expression.Constant(FieldValue));
+                    break;
                 case "System": case "system": case "sys": case "Sys":
-                    if (targetLive.SystemName == FieldValue && _op == "=")
-                        return true;
-                    else return false;
+                    if (_op == "=")
+                        body = Expression.Equal(
+                        Expression.Property(param, nameof(ProgramDataHistorical.SystemName)),
+                        Expression.Constant(FieldValue)
+                    );
+                    break;
+                case "CpuAvg":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.CpuUsageAvg));
+                    break;
+                case "DiskAvg":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.DiskUsageAvg));
+                    break;
+                case "MemoryAvg": case "MemAvg": case "memAvg":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.MemoryUsageAvg));
+                    break;
+                case "NetworkAvg": case "NetAvg": case "netAvg":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.NetworkUsageAvg));
+                    break;
+                case "CpuPeak":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.CpuUsagePeak));
+                    break;
+                case "DiskPeak":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.DiskUsagePeak));
+                    break;
+                case "MemoryPeak": case "MemPeak": case "memPeak":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.MemoryUsagePeak));
+                    break;
+                case "NetworkPeak": case "NetPeak": case "netPeak":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.NetworkUsagePeak));
+                    break;
+                case "NetworkTotal": case "NetTotal": case "netTotal":
+                    body = ToNumericalExpression(param, nameof(ProgramDataHistorical.NetworkUsageTotal));
+                    break;
             }
 
-            if (float.TryParse(FieldValue, out float v)) 
-            {
-                switch(FieldName)
-                {
-                    case "Cpu": case "CPU": case "cpu":
-                        return EvaluateField(targetLive.CpuUsage, v);
-                    case "Disk": case "disk":
-                        return EvaluateField(targetLive.DiskUsage, v);
-                    case "Memory": case "memory": case "mem": case "Mem":
-                        return EvaluateField(targetLive.MemoryUsage, v);
-                    case "Network": case "network": case "net": case "Net":
-                        return EvaluateField(targetLive.NetworkUsage, v);
-                }
-            }
+            if (body == null)
+                return x => false;
 
-            return false;
+            return Expression.Lambda<Func<ProgramDataHistorical, bool>>(body, param);
+
         }
+
     }
 }

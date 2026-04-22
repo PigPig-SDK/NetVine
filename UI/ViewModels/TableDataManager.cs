@@ -66,10 +66,7 @@ namespace UI.ViewModels
                     for (int i = 0; i < toRemove.Count; i++)
                     {
                         var item = toRemove[i];
-                        if (TableRows.Contains(item))
-                        {
-                            TableRows.Remove(item);
-                        }
+                        TableRows.Remove(item);
                     }
 
                 }, DispatcherPriority.Background);

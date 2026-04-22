@@ -10,18 +10,12 @@ namespace UI.ViewModels.SearchFilter
 {
 
 
-    public class TreeBuilder<TypeRow>
+    public class TreeBuilder(char and = '&', char or = '+', char lp = '(', char rp = ')')
     {
-        private char _and;
-        private char _or;
-        private char _leftP;
-        private char _rightP;
-        //private TableRow? _target;
-
-        public TreeBuilder( char and = '&', char or = '+', char lp = '(', char rp = ')')
-        {
-            _and = and; _or = or; _leftP = lp; _rightP = rp;
-        }
+        private readonly char _and = and;
+        private readonly char _or = or;
+        private readonly char _leftP = lp;
+        private readonly char _rightP = rp;
 
         private List<string> SplitByLevel0(string input, char op)
         {
@@ -43,7 +37,7 @@ namespace UI.ViewModels.SearchFilter
             return parts;
         }
 
-        private bool ValidateLeafExpressionOperation(string expression)
+        private static bool ValidateLeafExpressionOperation(string expression)
         {
             if (expression == null) return false;
             string[] comboOps = { ">=", "<=" };
@@ -63,7 +57,7 @@ namespace UI.ViewModels.SearchFilter
 
         }
 
-        private FilterNode? BuildLeafNode(string expression)
+        private static FilterNode? BuildLeafNode(string expression)
         {
             if (ValidateLeafExpressionOperation(expression) == false) return null;
             string[] comboOps = { ">=", "<=" };
@@ -94,33 +88,36 @@ namespace UI.ViewModels.SearchFilter
         {
             expression = expression.Trim();
             if (string.IsNullOrEmpty(expression)) return new CompositeNode(); //safe empty
-            if (expression[0] == '(' && expression[expression.Length - 1] == ')')
-            {
-                expression = expression.Substring(1, expression.Length - 2);
-            }
+
+            if (expression[0] == '(' && expression[^1] == ')')
+                expression = expression[1..^1];
 
             var parts = SplitByLevel0(expression, _or);
+
             if (parts.Count > 1)
             {
                 var node = new CompositeNode(CompositeType.OR);
                 foreach (var p in parts) node.AddChild(Parse(p));
                 return node;
             }
+
             parts = SplitByLevel0(expression, _and);
+            
             if (parts.Count > 1)
             {
                 var node = new CompositeNode(CompositeType.AND);
                 foreach (var p in parts) node.AddChild(Parse(p));
                 return node;
             }
+
             return BuildLeafNode(expression)!;
         }
 
 
-        public ParseTree<TypeRow>? BuildTree(string expression)
+        public ParseTree? BuildTree(string expression)
         {
             if (expression == null) return null;
-            return new ParseTree<TypeRow>(this.Parse(expression));
+            return new ParseTree(this.Parse(expression));
         }
 
     }

@@ -1,4 +1,13 @@
-﻿namespace UI.ViewModels.SearchFilter
+﻿using System;
+using System.Linq.Expressions;
+using Infrastructure;
+
+namespace UI.ViewModels.SearchFilter
 {
-    public interface IFilterNode { public bool Evaluate(TableRow target); }
+    public interface IFilterNode 
+    {
+        public bool Evaluate(TableRow target);
+       public Expression<Func<ProgramDataHistorical, bool>> ToExpression(ParameterExpression param);
+    }
+
 }

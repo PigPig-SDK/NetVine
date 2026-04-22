@@ -12,7 +12,6 @@ namespace UI;
 public partial class TableView : UserControl
 {
     private Dictionary<string, bool> _sortDirections = new();
-    //private TableRow? _selectedRow;
     private Tuple<string, string>? _selectedRowKey = null;
 
 

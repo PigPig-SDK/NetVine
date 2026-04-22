@@ -81,7 +81,7 @@ namespace UI.ViewModels.SearchFilter
 
                 foreach (var row in _testRows)
                 {
-                    var builder = new TreeBuilder<TableRow>();
+                    var builder = new TreeBuilder();
                     var tree = builder.BuildTree(expr);
                     bool result = tree?.Evaluate(row) ?? false;
 
@@ -121,7 +121,7 @@ namespace UI.ViewModels.SearchFilter
 
                 if (input == "quit" || input == "exit") break;
 
-                var builder = new TreeBuilder<TableRow>();
+                var builder = new TreeBuilder();
                 bool result = builder.BuildTree(input)?.Evaluate(t) ?? false;
                 Console.WriteLine(result ? "PASS" : "FAIL");
             }
