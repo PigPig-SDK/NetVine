@@ -68,6 +68,7 @@ namespace UI.ViewModels
             set
             {
                 _searchText = value;
+                Console.WriteLine("Search text updated: " + _searchText);
                 TableFilter.SearchExpression = _searchText;
                 TableFilter.UpdateSearchTree(_searchText);
                 OnPropertyChanged();
@@ -184,6 +185,7 @@ namespace UI.ViewModels
             if (search == null) return;
             SearchText = search;
         }
+
         public void OnSnapshotLive(List<IProgramData> data)
         {
             {
@@ -197,6 +199,7 @@ namespace UI.ViewModels
                 });
             }
         }
+
         public void SetSort(string? header, bool isAscending)
         {
             if (header == null || !_headerToProperty.TryGetValue(header, out var path)) return;
@@ -223,33 +226,57 @@ namespace UI.ViewModels
             OnPropertyChanged(nameof(ShowNetworkHistorical));
         }
 
+        private void OnIsVisiblePropertiesChangedCpu()
+        {
+            OnPropertyChanged(nameof(ShowCpuLive));
+            OnPropertyChanged(nameof(ShowCpuHistorical));
+        }
+
+        private void OnIsVisiblePropertiesChangedMemory()
+        {
+            OnPropertyChanged(nameof(ShowMemoryLive));
+            OnPropertyChanged(nameof(ShowMemoryHistorical));
+        }
+
+        private void OnIsVisiblePropertiesChangedDisk()
+        {
+            OnPropertyChanged(nameof(ShowDiskLive));
+            OnPropertyChanged(nameof(ShowDiskHistorical));
+        }
+
+        private void OnIsVisiblePropertiesChangedNetwork()
+        {
+            OnPropertyChanged(nameof(ShowNetworkLive));
+            OnPropertyChanged(nameof(ShowNetworkHistorical));
+        }
+
         //commands for context menu
         private void ToggleCpu()
         {
             _showCpu = !_showCpu;
             OnPropertyChanged(nameof(CpuMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnIsVisiblePropertiesChangedCpu();
         }
 
         private void ToggleMemory()
         {
             _showMemory = !_showMemory;
             OnPropertyChanged(nameof(MemoryMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnIsVisiblePropertiesChangedMemory();
         }
 
         private void ToggleDisk()
         {
             _showDisk = !_showDisk;
             OnPropertyChanged(nameof(DiskMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnIsVisiblePropertiesChangedDisk();
         }
 
         private void ToggleNetwork()
         {
             _showNetwork = !_showNetwork;
             OnPropertyChanged(nameof(NetworkMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnIsVisiblePropertiesChangedNetwork();
         }
         
         private async void OpenTimeframe()
@@ -329,22 +356,22 @@ namespace UI.ViewModels
             //DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
             //DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
 
-            var data = TableFilter.GetTableRowsHistorical(CombinationModel.IsCombination
-                , [.. FolderViewData.SelectedUsers()]
-                , HistoricalStart
-                , HistoricalEnd);
-
             Dispatcher.UIThread.Post(() =>
             {
-                _tableData.UpdateHistoricalData(data!);
+                _tableData.UpdateHistoricalData(GetHistoricalData());
                 OnIsVisiblePropertiesChanged();
-
                 TableRowsView.Refresh();
                 Debug.Log($"historical data update complete");
             });
         }
         
-        
+        private List<ProgramDataHistorical> GetHistoricalData()
+        {
+            return TableFilter.GetTableRowsHistorical(CombinationModel.IsCombination
+                , [.. FolderViewData.SelectedUsers()]
+                , HistoricalStart
+                , HistoricalEnd);
+        }
         
 
         private void OnTabChanged(int tab)
