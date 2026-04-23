@@ -255,12 +255,14 @@ public partial class Canvas : UserControl
 
     private void SetLimits()
     {
+        _canvasPlot.Plot.Axes.Bottom.Min = double.NaN;
+        _canvasPlot.Plot.Axes.Bottom.Max = double.NaN;
+        _canvasPlot.Plot.Axes.Left.Min = double.NaN;
+        _canvasPlot.Plot.Axes.Left.Max = double.NaN;
+
         if (_vm.SelectedResource == ChartService.RAM)
         {
-            _canvasPlot.Plot.Axes.Bottom.Min = double.NaN;
-            _canvasPlot.Plot.Axes.Bottom.Max = double.NaN;
-            _canvasPlot.Plot.Axes.Left.Min = double.NaN;
-            _canvasPlot.Plot.Axes.Left.Max = double.NaN;
+
 
             _canvasPlot.Plot.Axes.SetLimitsY(0, _vm.RAMTotal);
             _canvasPlot.Plot.Axes.AutoScaleX();
