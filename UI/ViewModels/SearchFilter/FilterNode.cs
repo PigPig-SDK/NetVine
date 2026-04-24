@@ -33,26 +33,6 @@ namespace UI.ViewModels.SearchFilter
 
             if (targetLive == null) return false;
             
-            //switch (FieldName)
-            //{
-            //    case "Process": case "process": case "proc":
-            //        if (targetLive.ProcessName == FieldValue && _op == "=")
-            //            return true;
-            //        else return false;
-            //    case "System": case "system": case "sys": case "Sys":
-            //        if (targetLive.SystemName == FieldValue && _op == "=")
-            //            return true;
-            //        else return false;
-            //    case "Cpu": case "CPU": case "cpu":
-            //        return EvaluateNumerical(targetLive.CpuUsage);
-            //    case "Disk": case "disk":
-            //        return EvaluateNumerical(targetLive.DiskUsage);
-            //    case "Memory": case "memory": case "mem": case "Mem":
-            //        return EvaluateNumerical(targetLive.MemoryUsage);
-            //    case "Network": case "network": case "net": case "Net":
-            //        return EvaluateNumerical(targetLive.NetworkUsage);
-            //}
-
             return FieldName switch
             {
                 "Process" or "process" or "proc" =>
@@ -67,6 +47,24 @@ namespace UI.ViewModels.SearchFilter
                     EvaluateNumerical(targetLive.MemoryUsage),
                 "Network" or "network" or "net" or "Net" =>
                     EvaluateNumerical(targetLive.NetworkUsage),
+                "CpuAvg" or "CPUAvg" or "cpuAvg" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.CpuUsageAvg),
+                "DiskAvg" or "diskAvg" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.DiskUsageAvg),
+                "MemoryAvg" or "memoryAvg" or "memAvg" or "MemAvg" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.MemoryUsageAvg),
+                "NetworkAvg" or "networkAvg" or "netAvg" or "NetAvg" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.NetworkUsageAvg),
+                "CpuPeak" or "CPUPeak" or "cpuPeak" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.CpuUsagePeak),
+                "DiskPeak" or "diskPeak" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.DiskUsagePeak),
+                "MemoryPeak" or "memoryPeak" or "memPeak" or "MemPeak" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.MemoryUsagePeak),
+                "NetworkPeak" or "networkPeak" or "netPeak" or "NetPeak" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.NetworkUsagePeak),
+                "NetworkUsageTotal" or "networkTotal" or "netTotal" or "NetTotal" =>
+                    targetHistorical != null && EvaluateNumerical(targetHistorical.NetworkUsageTotal),
                 _ => false
             };
         }

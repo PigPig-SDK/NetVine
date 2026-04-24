@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UI.ViewModels.SearchFilter;
 using UI.Views;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UI.ViewModels
 {
@@ -74,10 +73,10 @@ namespace UI.ViewModels
                 TableFilter.Instance.UpdateSearchExpression(_searchText);
 
                 OnPropertyChanged();
-                //if (LiveViewModel.IsLive) TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
-                //    ? null
-                //    : FilterRow;
-                //OnSearchHistorical();
+                if (LiveViewModel.IsLive) TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                    ? null
+                    : FilterRow;
+                OnSearchHistorical();
 
                 TableRowsView.Refresh();
             }
@@ -381,14 +380,12 @@ namespace UI.ViewModels
 
         private static bool TryParseSearchExpression(TableRow target)
         {
-            if (TableFilter.SearchExpressionTree == null) return true;
-            return TableFilter.SearchExpressionTree.Evaluate(target);
+            return TableFilter.Instance.Evaluate(target);
         }
 
         private bool FilterRow(object obj)
         {
             if (!LiveViewModel.IsLive) return true;
-            if (TableFilter.SearchExpressionTree == null) return false;
             if (obj is not TableRow row) return false;
             return TryParseSearchExpression(row)
                 || row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)

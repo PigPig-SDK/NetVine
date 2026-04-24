@@ -1,14 +1,6 @@
-﻿using Core;
-using Infrastructure;
-using Microsoft.Diagnostics.Tracing.Parsers.Clr;
+﻿using Infrastructure;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace UI.ViewModels.SearchFilter
 {
@@ -16,9 +8,15 @@ namespace UI.ViewModels.SearchFilter
     public class TableFilter : TableFilterBase<TableFilter>
     {
         private static readonly TreeBuilder _treeBuilder = new();
-        public static ParseTree? SearchExpressionTree { get; set; } = null;
+        private static ParseTree? SearchExpressionTree { get; set; } = null;
 
         public TableFilter() { }
+
+        public override bool Evaluate(TableRow target)
+        {
+            return SearchExpressionTree == null
+                || SearchExpressionTree.Evaluate(target);
+        }
 
         protected override Expression<Func<ProgramDataHistorical, bool>> CreateExpression(string expression)
         {
@@ -44,6 +42,6 @@ namespace UI.ViewModels.SearchFilter
             GetOrCreateCachedExpression(newExpression, out _, out _);
         }
 
-        
+
     }
 }

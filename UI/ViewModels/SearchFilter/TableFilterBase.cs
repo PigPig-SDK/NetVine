@@ -10,67 +10,48 @@ namespace UI.ViewModels.SearchFilter
 {
     public abstract class TableFilterBase<T>
     {
+        //lazy needed to ensure thread safety
         private static readonly Lazy<T> _lazyInstance = new(() => Activator.CreateInstance<T>(), LazyThreadSafetyMode.ExecutionAndPublication);
         public static T Instance => _lazyInstance.Value;
         public static string SearchExpression { get; set; } = string.Empty;
 
         public ConcurrentDictionary<string, Func<ProgramDataHistorical, bool>> _cachedPredicates = new();
         public ConcurrentDictionary<string, Expression<Func<ProgramDataHistorical, bool>>> _cachedExpressions = new();
-        public ConcurrentDictionary<string, ParseTree> _cachedTrees = new();
-
-        protected abstract Expression<Func<ProgramDataHistorical, bool>>? CreateExpression(string expression);
 
         /// <summary>
         /// Update the search tree expression by parsing in a new string expression.
         /// </summary>
         /// <param name="newExpression"></param>
         public abstract void UpdateSearchExpression(string newExpression);
-        protected bool TryCreateExpression(string newExpression, out Expression<Func<ProgramDataHistorical, bool>> expression)
-        {
-            expression = CreateExpression(newExpression) ?? (x => true);
-            return expression != null;
-        }
+
+        /// <summary>
+        /// Uses the provided string to create a new expression tree that can be used to filter ProgramDataHistorical objects.
+        /// Parsing logic implemented in derived classes, allowing for different expression formats or languages. 
+        /// The resulting expression is cached for future use to optimize performance on repeated queries with the same expression.
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        protected abstract Expression<Func<ProgramDataHistorical, bool>>? CreateExpression(string expression);
+
+        //Evaluates the current search expression against a given TableRow, returning true if the row matches the criteria defined by the expression.
+        public abstract bool Evaluate(TableRow target);
 
         protected void GetOrCreateCachedExpression(string newExpression
             , out Expression<Func<ProgramDataHistorical, bool>> cachedExpression
             , out Func<ProgramDataHistorical, bool> cachedPredicate)
         {
-            if (!_cachedExpressions.TryGetValue(newExpression, out var cachedExpr))
-            {
-                if (!TryCreateExpression(newExpression, out var expr))
-                {
-                    Console.WriteLine("Failed to build expression from search expression.");
-                    cachedExpression = (x => true);
-                    cachedPredicate = cachedExpression.Compile();
-                    return;
-                }
-                cachedExpr = expr;
-                Console.WriteLine("Search expression loaded from cache.");
-            }
-            if (!_cachedPredicates.TryGetValue(newExpression, out var predicate))
-            {
-                predicate = cachedExpr.Compile();
-            }
-            else
-            {
-                Console.WriteLine("Search expression loaded from cache.");
-            }
-            _cachedExpressions[newExpression] = cachedExpr;
-            _cachedPredicates[newExpression] = predicate;
+            var expr = _cachedExpressions.GetOrAdd(newExpression, key => CreateExpression(key) ?? (x => true));
+            var predicate = _cachedPredicates.GetOrAdd(newExpression, key => expr.Compile());
+            cachedExpression = expr;
             cachedPredicate = predicate;
-            cachedExpression = cachedExpr;
         }
 
         /// <summary>
         /// Retrieves a list of historical program data rows filtered by the specified criteria, including system
         /// selection, date range, and combination mode.
         /// </summary>
-        /// <remarks>If both date1 and date2 are null, all available historical data is returned for the
-        /// specified system(s) and combination mode. The method applies additional filtering based on a search
-        /// expression if one is defined.
-        /// 
+        /// <remarks>
         /// Used in the TableViewModel to fetch historical data for display in the UI, based on filters provided by the user.
-        /// 
         /// </remarks>
         /// <param name="isCombination">true to retrieve data for combination systems; otherwise, false to retrieve data for individual systems.</param>
         /// <param name="systemList">A list of system names to include in the results when combination mode is enabled. Ignored if isCombination
