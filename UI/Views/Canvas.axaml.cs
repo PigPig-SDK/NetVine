@@ -19,7 +19,6 @@ public partial class Canvas : UserControl
     private List<string> _barProcessNames = new();
     private ScottPlot.Plottables.Annotation? _tooltip;
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
-    //add to settings
     private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
 
     public Canvas()
@@ -55,9 +54,11 @@ public partial class Canvas : UserControl
     {
         Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
+            RemoveTooltip();
             _canvasPlot.Plot.Clear();
+            _canvasPlot.Plot.Axes.SquareUnits(false);
             _canvasPlot.Plot.YLabel("");
-            
+
             switch (_vm.CurrentChartType)
             {
                 case "Line": DrawLineChart(); break;
@@ -92,10 +93,9 @@ public partial class Canvas : UserControl
         signal.LegendText = history.title;
         signal.Color = ScottPlot.Colors.White;
 
-        SetLimits();
-
         _canvasPlot.Plot.YLabel(history.title);
         _canvasPlot.Plot.ShowLegend();
+        SetLimits();
     }
 
     private void DrawBarChart()
@@ -151,6 +151,7 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.YLabel(label);
     }
     private void DrawPieChart() {
+        _canvasPlot.Plot.Axes.SquareUnits(true);
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(1);
         _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
@@ -175,7 +176,6 @@ public partial class Canvas : UserControl
             pie.Slices[i].LegendText = $"{pietop[i].ProcessName} ({GetValue(pietop[i]):0.0})";
         }
 
-        
         _canvasPlot.Plot.ShowLegend();
         _canvasPlot.Plot.Axes.AutoScale();
     }
@@ -255,22 +255,16 @@ public partial class Canvas : UserControl
 
     private void SetLimits()
     {
-        _canvasPlot.Plot.Axes.Bottom.Min = double.NaN;
-        _canvasPlot.Plot.Axes.Bottom.Max = double.NaN;
-        _canvasPlot.Plot.Axes.Left.Min = double.NaN;
-        _canvasPlot.Plot.Axes.Left.Max = double.NaN;
+
+        _canvasPlot.Plot.Axes.SetLimitsX(0, ConfigManager.ReadSetting(SettingInt.MaxHistory));
 
         if (_vm.SelectedResource == ChartService.RAM)
         {
-
-
             _canvasPlot.Plot.Axes.SetLimitsY(0, _vm.RAMTotal);
-            _canvasPlot.Plot.Axes.AutoScaleX();
         }
         else
         {
             _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
-            _canvasPlot.Plot.Axes.AutoScaleX();
         }
     }
 
