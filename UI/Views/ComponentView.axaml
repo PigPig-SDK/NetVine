@@ -23,10 +23,10 @@
             <TextBlock Text="{Binding ButtonCPUText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectCpuCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectCpuAvgCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="CPU Avg" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonCPUText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonCPUAvgText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>    
 </Grid>   
@@ -38,10 +38,10 @@
             <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectCpuPeakCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="CPU Peak" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonCPUPeakText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
 </Grid> 
@@ -53,10 +53,10 @@
             <TextBlock Text="{Binding ButtonDISKText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamAvgCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="RAM Avg" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonRAMAvgText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
 </Grid>      
@@ -68,39 +68,39 @@
             <TextBlock Text="{Binding ButtonNetworkText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamPeakCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="RAM Peak" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonRAMPeakText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
 </Grid>   
     
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectDiskAvgCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="DISK Avg" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonDISKAvgText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
     
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectDiskPeakCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="DISK Peak" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonDISKPeakText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
     
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectNetworkAvgCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="NET Avg" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonNetworkAvgText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
     
-    <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}" IsVisible="{Binding ComponentIsNotLive}">
+    <Button HorizontalAlignment="Stretch" Command="{Binding SelectNetworkPeakCommand}" IsVisible="{Binding ComponentIsNotLive}">
         <StackPanel>
             <TextBlock Text="NET Peak" FontWeight="Bold" />
-            <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+            <TextBlock Text="{Binding ButtonNetworkPeakText}" FontSize="11" Opacity="0.8" />
         </StackPanel>
     </Button>
     
