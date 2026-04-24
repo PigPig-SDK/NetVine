@@ -8,16 +8,18 @@ public class ChartService
     public const string CPU = "CPU";
     public const string CPUAvg = "CPU Avg";
     public const string CPUPeak = "CPU Peak";
+    
     public const string RAM = "RAM";
     public const string RAMAvg = "RAM Avg";
     public const string RAMPeak = "RAM Peak";
+    
     public const string DISK = "DISK";
     public const string DISKAvg = "DISK Avg";
     public const string DISKPeak = "DISK Peak";
+    
     public const string NET = "NET";
     public const string NETAvg = "NET Avg";
     public const string NETPeak = "NET Peak";
-    public const string NETTotal = "NET Total";
     
 
     public const string Line = "Line";
