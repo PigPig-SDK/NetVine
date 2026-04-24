@@ -70,14 +70,14 @@ namespace UI.ViewModels
             {
                 _searchText = value;
                 Console.WriteLine("Search text updated: " + _searchText);
-                TableFilter.SearchExpression = _searchText;
-                TableFilter.UpdateSearchTree(_searchText);
+                
+                TableFilter.Instance.UpdateSearchExpression(_searchText);
 
                 OnPropertyChanged();
-                if (LiveViewModel.IsLive) TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
-                    ? null
-                    : FilterRow;
-                else OnSearchHistorical();
+                //if (LiveViewModel.IsLive) TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                //    ? null
+                //    : FilterRow;
+                //OnSearchHistorical();
 
                 TableRowsView.Refresh();
             }
@@ -353,7 +353,7 @@ namespace UI.ViewModels
         
         private List<ProgramDataHistorical> GetHistoricalData()
         {
-            return TableFilter.GetTableRowsHistorical(CombinationModel.IsCombination
+            return TableFilter.Instance.GetTableRowsHistorical(CombinationModel.IsCombination
                 , [.. FolderViewData.SelectedUsers()]
                 , HistoricalStart
                 , HistoricalEnd);

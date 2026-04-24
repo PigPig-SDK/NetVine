@@ -5,32 +5,11 @@ using System.Linq.Expressions;
 
 namespace UI.ViewModels.SearchFilter
 {
-    public class FilterNode : IFilterNode
+    public class FilterNode(string fieldName, string fieldValue, string op) : IFilterNode
     {
-        public string FieldName { get; }
-        public string FieldValue { get; }
-        private readonly string _op;
-
-        public FilterNode(string fieldName, string fieldValue, string op)
-        {
-            _op = op;
-            FieldValue = fieldValue;
-            FieldName = fieldName;
-        }
-
-        //bool EvaluateField(float expected, float actual)
-        //{
-        //    return _op switch
-        //    {
-        //        ">=" => expected >= actual,
-        //        ">" => actual < expected,
-        //        "<" => expected < actual,
-        //        "<=" => expected <= actual,
-        //        "=" => actual == expected,
-        //        _ => false
-        //    };
-        //}
-
+        public string FieldName { get; } = fieldName;
+        public string FieldValue { get; } = fieldValue;
+        private readonly string _op = op;
 
         private bool EvaluateNumerical(float targetValue)
         {
@@ -118,11 +97,8 @@ namespace UI.ViewModels.SearchFilter
         //for historical data, only equality is supported for Process and System, and numerical comparisons for the rest
         Expression<Func<ProgramDataHistorical, bool>> IFilterNode.ToExpression(ParameterExpression param)
         {
-            //var param = Expression.Parameter(typeof(ProgramDataHistorical), "ProgramDataHistorical");
             var procName = Expression.Property(param, nameof(ProgramDataHistorical.ProcessName));
-
             Expression? body = null;
-
             switch (FieldName)
             {
                 case "Process":case "process":case "proc":
