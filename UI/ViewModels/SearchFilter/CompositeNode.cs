@@ -42,22 +42,6 @@ namespace UI.ViewModels.SearchFilter
                 }
             }
 
-            //if (Type == CompositeType.AND)
-            //{
-            //    result = true;
-            //    foreach (IFilterNode node in _children)
-            //        if (node != null)
-            //            result = result && node.Evaluate(target);
-            //}
-
-            //else if (Type == CompositeType.OR)
-            //{
-            //    result = false;
-            //    foreach (IFilterNode node in _children)
-            //        if (node != null)
-            //            result = result || node.Evaluate(target);
-            //}
-
             return result;
         }
 
