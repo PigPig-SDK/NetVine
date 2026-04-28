@@ -51,6 +51,10 @@ namespace UI.ViewModels.SearchFilter
 
                 false => FieldName switch
                 {
+                    "Process" or "process" or "proc" =>
+                        (targetLive.ProcessName == FieldValue && _op == "="),
+                    "System" or "system" or "sys" or "Sys" =>
+                        (targetLive.SystemName == FieldValue && _op == "="),
                     "CpuAvg" or "CPUAvg" or "cpuAvg" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.CpuUsageAvg),
                     "DiskAvg" or "diskAvg" =>
