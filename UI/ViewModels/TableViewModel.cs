@@ -2,7 +2,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Shapes;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -12,6 +11,7 @@ using Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UI.ViewModels.SearchFilter;
 using UI.Views;
 
 namespace UI.ViewModels
@@ -52,6 +52,7 @@ namespace UI.ViewModels
         private DateTime? HistoricalEnd = null;
 
         // Properties
+        public TableDataManager TableData { get { return _tableData; } }
         public string AllMenuText => (_showCpu && _showMemory && _showDisk && _showNetwork) ? "Hide All" : "Show All";
         public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
         public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
@@ -62,21 +63,26 @@ namespace UI.ViewModels
         public bool IsSystemNameVisible => true;
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
-
+        public Action ClearSelection { get; set; } = () => { };
         public string SearchText
         {
             get => _searchText;
             set
             {
                 _searchText = value;
+                ClearSelection();
+                TableFilter.Instance.UpdateSearchExpression(_searchText);
+
                 OnPropertyChanged();
                 TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
                     ? null
                     : FilterRow;
+
+
                 TableRowsView.Refresh();
             }
         }
-        
+
 
         // Context menu properties
         public bool ShowCpuLive => _showCpu && LiveViewModel.IsLive;
@@ -121,11 +127,11 @@ namespace UI.ViewModels
         // Constructor
         public TableViewModel()
         {
-            _tableData = new TableDataManager();
+            _tableData = new TableDataManager(() => _updatePaused);
             TableRowsView = new DataGridCollectionView(_tableData.TableRows);
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
-            _tableViewActive = lastActiveTab == MainWindowViewModel.TableView ? true : false;
+            _tableViewActive = lastActiveTab == MainWindowViewModel.TableView;
 
             //Event Subscriptions
             MainWindowViewModel.OnTabChanged += OnTabChanged;
@@ -219,34 +225,40 @@ namespace UI.ViewModels
         }
 
         //commands for context menu
+        //commands for context menu
         private void ToggleCpu()
         {
             _showCpu = !_showCpu;
             OnPropertyChanged(nameof(CpuMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnPropertyChanged(nameof(ShowCpuLive));
+            OnPropertyChanged(nameof(ShowCpuHistorical));
         }
 
         private void ToggleMemory()
         {
             _showMemory = !_showMemory;
             OnPropertyChanged(nameof(MemoryMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnPropertyChanged(nameof(ShowMemoryLive));
+            OnPropertyChanged(nameof(ShowMemoryHistorical));
         }
 
         private void ToggleDisk()
         {
             _showDisk = !_showDisk;
             OnPropertyChanged(nameof(DiskMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnPropertyChanged(nameof(ShowDiskLive));
+            OnPropertyChanged(nameof(ShowDiskHistorical));
         }
 
         private void ToggleNetwork()
         {
             _showNetwork = !_showNetwork;
             OnPropertyChanged(nameof(NetworkMenuText));
-            OnIsVisiblePropertiesChanged();
+            OnPropertyChanged(nameof(ShowNetworkLive));
+            OnPropertyChanged(nameof(ShowNetworkHistorical));
         }
-        
+
+
         private async void OpenTimeframe()
         {
             Debug.Log("OpenTimeFrame called");
@@ -303,6 +315,9 @@ namespace UI.ViewModels
 
         }
 
+
+
+
         private void OnSwitchToLive()
         {
             Debug.Log("OnSwitchToLive called");
@@ -333,9 +348,7 @@ namespace UI.ViewModels
                 Debug.Log($"historical data update complete");
             });
         }
-        
-        
-        
+
 
         private void OnTabChanged(int tab)
         {
@@ -370,13 +383,17 @@ namespace UI.ViewModels
                 TableRowsView.SortDescriptions.Add(sort);
         }
 
+        private static bool TryParseSearchExpression(TableRow target)
+        {
+            return TableFilter.Instance.Evaluate(target);
+        }
+
+
         private bool FilterRow(object obj)
         {
-            
-
             if (obj is not TableRow row) return false;
-            return row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
-                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+            return TryParseSearchExpression(row) ||
+                row.AppName.Contains(SearchText);
         }
 
     }

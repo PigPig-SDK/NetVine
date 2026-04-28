@@ -1,8 +1,4 @@
-﻿using Infrastructure;
-using System;
-using System.Collections.Specialized;
-using System.Linq.Expressions;
-
+﻿
 namespace UI.ViewModels.SearchFilter
 {
 

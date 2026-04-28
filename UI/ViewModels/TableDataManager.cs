@@ -15,7 +15,6 @@ namespace UI.ViewModels
     public class TableDataManager
     {
         private readonly Func<bool> _isPaused;
-        private readonly Func<string> _searchExpression;
         
         public Action ClearSelection { get; set; } = () => { };
         /// <summary>

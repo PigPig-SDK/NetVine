@@ -1,10 +1,4 @@
-﻿using Core;
-using Microsoft.Diagnostics.Tracing.Parsers.Clr;
-using System.Globalization;
-using System.IO.Enumeration;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using YamlDotNet.Core.Tokens;
+﻿
 
 namespace Infrastructure;
 
@@ -159,20 +153,6 @@ public static class DBArithmetic
 
 
 
-    /// <summary>
-    /// Added here for use by search filter string.
-    /// </summary>
-    /// <param name="filterExpression"></param> "CPU > 1 && CPU < 100" etc
-    /// <returns></returns>
-    public static List<ProgramDataHistorical> HistotricalDataProducerSearch(string filterExpression)
-    {
-        using var db = new DBInteract();
-        var query = db.PDHTable.Where(x => x.SystemName != "Combination").AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(filterExpression))
-            query = query.Where(filterExpression);
-
-        return [.. query];
-    }
 
 }

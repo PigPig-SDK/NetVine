@@ -1,14 +1,8 @@
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Avalonia.VisualTree;
-using Infrastructure;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UI.ViewModels;
 
 namespace UI;
@@ -22,9 +16,14 @@ public partial class TableView : UserControl
     {
         InitializeComponent();
         DataContext = new TableViewModel();
-
+        if (DataContext is TableViewModel vm)
+        {
+            vm.TableData.ClearSelection = () => MyDataGrid.SelectedItem = null;
+            vm.ClearSelection = () => MyDataGrid.SelectedItem = null;
+        }
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
+
     }
 
     /// <summary>

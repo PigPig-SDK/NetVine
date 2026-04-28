@@ -1,8 +1,4 @@
-﻿using Core;
-using Infrastructure;
-using System;
-using System.Linq.Expressions;
-
+﻿
 namespace UI.ViewModels.SearchFilter
 {
     public class FilterNode(string fieldName, string fieldValue, string op) : IFilterNode
