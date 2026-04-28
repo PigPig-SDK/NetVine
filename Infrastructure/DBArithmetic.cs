@@ -1,10 +1,4 @@
-﻿using System.Globalization;
-using System.IO.Enumeration;
-using System.Linq;
-using Core;
-using Microsoft.Diagnostics.Tracing.Parsers.Clr;
-using YamlDotNet.Core.Tokens;
-
+﻿
 namespace Infrastructure;
 
 public static class DBArithmetic

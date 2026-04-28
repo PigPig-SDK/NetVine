@@ -3,6 +3,7 @@ using Core;
 using Infrastructure;
 using Infrastructure.Networking;
 using System;
+using UI.ViewModels;
 
 namespace UI;
 
@@ -17,6 +18,7 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+
         // Load configuration
         ConfigManager.Initialize();
 

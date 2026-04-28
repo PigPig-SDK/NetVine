@@ -1,15 +1,10 @@
 ﻿using Core;
-using Infrastructure;
 using Infrastructure.Networking;
 using Infrastructure.Networking.Packets;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+
 namespace UI.ViewModels
 {
 
@@ -52,6 +47,29 @@ namespace UI.ViewModels
             }
 
             await Task.Run(() => KillProcessByName(row.AppName));
+
+        }
+
+        public static async Task KillProcessByKeyAsync(Tuple<string, string>? key)
+        {
+            if (key == null)
+            {
+                Core.Debug.Log("null key");
+                return;
+            }
+
+
+            string sysName = SystemHistory.Instance.SystemName;
+
+            if (key.Item1 != sysName)
+            {
+                //some networking logic can be put here for other systems.
+                Core.Debug.Log($"Permission to kill process denied -- must be on your own machine {key.Item1} != {sysName} ");
+            }
+            else
+            {
+                await Task.Run(() => KillProcessByName(key.Item2));
+            }
 
         }
 

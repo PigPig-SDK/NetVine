@@ -4,7 +4,6 @@ using Core;
 using Infrastructure;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace UI.ViewModels
@@ -14,6 +13,12 @@ namespace UI.ViewModels
         // Existing properties
         public string SystemName { get; set; } = string.Empty;
         public string AppName { get; set; } = string.Empty;
+
+        //access for the filter
+        public float Cpu { get => LiveData!.CpuUsage; }
+        public float Memory { get => LiveData!.MemoryUsage; }
+        public float Disk {  get => LiveData!.DiskUsage; }
+        public float Network {  get => LiveData!.NetworkUsage; }
 
         private IProgramData? _liveData;
         public IProgramData? LiveData
