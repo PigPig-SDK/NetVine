@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UI.ViewModels;
@@ -23,7 +25,23 @@ public partial class TableView : UserControl
         }
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
+    }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (DataContext is TableViewModel vm)
+        {
+            vm.ToggleEvents(true);
+        }
+        base.OnAttachedToVisualTree(e);
+    }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (DataContext is TableViewModel vm)
+        {
+            vm.ToggleEvents(false);
+        }
+        base.OnDetachedFromVisualTree(e);
     }
 
     /// <summary>
