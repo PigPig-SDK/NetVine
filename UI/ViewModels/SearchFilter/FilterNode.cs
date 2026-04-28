@@ -32,44 +32,44 @@ namespace UI.ViewModels.SearchFilter
 
             return LiveViewModel.IsLive switch
             {
-                true => FieldName switch
+                true => FieldName.ToLower() switch
                 {
-                    "Process" or "process" or "proc" =>
+                    "process" or "proc" =>
                         (targetLive.ProcessName == FieldValue && _op == "="),
-                    "System" or "system" or "sys" or "Sys" =>
+                    "system" or "sys" =>
                         (targetLive.SystemName == FieldValue && _op == "="),
-                    "Cpu" or "CPU" or "cpu" =>
+                    "cpu" =>
                         EvaluateNumerical(targetLive.CpuUsage),
-                    "Disk" or "disk" =>
+                    "disk" =>
                         EvaluateNumerical(targetLive.DiskUsage),
-                    "Memory" or "memory" or "mem" or "Mem" =>
+                    "memory" or "mem" =>
                         EvaluateNumerical(targetLive.MemoryUsage),
-                    "Network" or "network" or "net" or "Net" =>
+                    "network" or "net" =>
                         EvaluateNumerical(targetLive.NetworkUsage),
                     _ => false
                 },
 
-                false => FieldName switch
+                false => FieldName.ToLower() switch
                 {
-                    "Process" or "process" or "proc" =>
+                    "process" or "proc" =>
                         (targetLive.ProcessName == FieldValue && _op == "="),
-                    "System" or "system" or "sys" or "Sys" =>
+                    "system" or "sys" =>
                         (targetLive.SystemName == FieldValue && _op == "="),
-                    "CpuAvg" or "CPUAvg" or "cpuAvg" =>
+                    "cpuavg" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.CpuUsageAvg),
-                    "DiskAvg" or "diskAvg" =>
+                    "diskavg" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.DiskUsageAvg),
-                    "MemoryAvg" or "memoryAvg" or "memAvg" or "MemAvg" =>
+                    "memoryavg" or "memavg" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.MemoryUsageAvg),
-                    "NetworkAvg" or "networkAvg" or "netAvg" or "NetAvg" =>
+                    "networkavg" or "netavg" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.NetworkUsageAvg),
-                    "CpuPeak" or "CPUPeak" or "cpuPeak" =>
+                    "cpupeak" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.CpuUsagePeak),
-                    "DiskPeak" or "diskPeak" =>
+                    "diskpeak" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.DiskUsagePeak),
-                    "MemoryPeak" or "memoryPeak" or "memPeak" or "MemPeak" =>
+                    "memorypeak" or "mempeak" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.MemoryUsagePeak),
-                    "NetworkPeak" or "networkPeak" or "netPeak" or "NetPeak" =>
+                    "networkpeak" or "netpeak" =>
                         targetHistorical != null && EvaluateNumerical(targetHistorical.NetworkUsagePeak),
                     _ => false
                 }

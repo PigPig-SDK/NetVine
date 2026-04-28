@@ -133,14 +133,6 @@ namespace UI.ViewModels
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
             _tableViewActive = lastActiveTab == MainWindowViewModel.TableView;
 
-            //Event Subscriptions
-            MainWindowViewModel.OnTabChanged += OnTabChanged;
-            LiveViewModel.ViewChangedEvent += ViewChangedLive;
-            CombinationModel.ViewChangedEvent += ViewChangedCombination;
-            SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
-            DBInteract.OnProgramListAdded += OnSnapshotHistorical;
-            MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
-
             //Commands
             ToggleCpuCommand = new RelayCommand(ToggleCpu);
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
@@ -315,9 +307,6 @@ namespace UI.ViewModels
 
         }
 
-
-
-
         private void OnSwitchToLive()
         {
             Debug.Log("OnSwitchToLive called");
@@ -350,9 +339,11 @@ namespace UI.ViewModels
         }
 
 
-        private void OnTabChanged(int tab)
+        public void ToggleEvents(bool isActive)
         {
-            if (tab == MainWindowViewModel.TableView)
+            Debug.Log($"{isActive} : activity changed");
+
+            if (isActive)
             {
                 _tableViewActive = true;
                 //resubscribe to events
@@ -361,6 +352,7 @@ namespace UI.ViewModels
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnProgramListAdded += OnSnapshotHistorical;
+                MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
             }
             else
             {
@@ -370,8 +362,8 @@ namespace UI.ViewModels
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
+                MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
             }
-
         }
 
         private void ReapplySort()
