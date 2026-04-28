@@ -3,6 +3,7 @@ using Microsoft.Diagnostics.Tracing.Parsers;
 using Microsoft.Diagnostics.Tracing.Session;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 
@@ -228,9 +229,7 @@ public class WindowsDataProducer : IProgramDataProducer
                     programs[process.ProcessName].NetworkUsage += networkUsage;
                 }
             }
-            catch (Win32Exception ex)
-            {
-            }
+            catch (Win32Exception) { }
             catch (InvalidOperationException ex)
             {
                 Core.Debug.Log($"Process {process.ProcessName} exited before reading: {ex.Message}");
@@ -259,5 +258,42 @@ public class WindowsDataProducer : IProgramDataProducer
         var status = new MemoryStatusEx { dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>() };
         GlobalMemoryStatusEx(ref status);
         return status.ullTotalPhys / (1024.0 * 1024.0);
+    }
+
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(string processName)
+    {
+        Process? process = System.Diagnostics.Process
+        .GetProcessesByName(processName)
+        .FirstOrDefault();
+        if (process is null) return (null, IconFileType.None);
+        return GetProcessIcon(process);
+    }
+
+    public (MemoryStream? image, IconFileType fileType) GetProcessIcon(Process process)
+    {
+        try
+        {
+            var version = Environment.OSVersion.Version;
+            if (version.Major <= 6) return (null, IconFileType.None);
+            //Safe. Cannot execute on version 6 or below.
+#pragma warning disable CA1416 // Validate platform compatibility
+
+            if (process?.MainModule?.FileName is not { } path) return (null, IconFileType.None);
+            Icon? icon = Icon.ExtractAssociatedIcon(path);
+
+            if (icon is null) return (null, IconFileType.None);
+
+            using Bitmap bitmap = icon.ToBitmap();
+            var ms = new MemoryStream();
+            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+#pragma warning restore CA1416 // Validate platform compatibility
+
+            return (ms, IconFileType.Png);
+        }
+        catch (Win32Exception)//Process exceptions. We don't have authority
+        {
+            return (null, IconFileType.None);
+        }
     }
 }

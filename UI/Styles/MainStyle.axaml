@@ -118,6 +118,16 @@
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
+    
+    <Style Selector="Image.app-iconThinking">
+        <Setter Property="Source" Value="/Assets/netvine_unknown_tiny.png"/>
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Margin" Value="4,0"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
     <!-- Sidebar -->
     <Style Selector="TabControl.sidebar TabItem:selected /template/ Border#PART_SelectedPipe">
         <Setter Property="Background" Value="#A5C882"/>

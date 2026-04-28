@@ -1,27 +1,28 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
+using Infrastructure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UI.ViewModels;
 
 namespace UI;
 
 public partial class TableView : UserControl
 {
-    private readonly Dictionary<string, bool> _sortDirections = [];
-    private Tuple<string, string>? _selectedRowKey = null;
-
-
+    private Dictionary<string, bool> _sortDirections = new();
+    private TableRow? _selectedRow;
 
     public TableView()
     {
         InitializeComponent();
         DataContext = new TableViewModel();
-        if (DataContext is TableViewModel vm)
-        {
-            vm.TableData.ClearSelection = () => MyDataGrid.SelectedItem = null;
-            vm.ClearSelection = () => MyDataGrid.SelectedItem = null;
-        }
+
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
     }
@@ -33,6 +34,7 @@ public partial class TableView : UserControl
     private void OnViewChanged(bool isLive)
     {
         MyDataGrid.SelectedItem = null;
+        EndProgramMenuItem.IsEnabled = isLive;
     }
 
     private void DataGridLoaded(object? sender, RoutedEventArgs e)
@@ -46,9 +48,9 @@ public partial class TableView : UserControl
         if (DataContext is TableViewModel vm)
         {
             string header = e.Column.Header?.ToString() ?? "";
-            if (!_sortDirections.TryGetValue(header, out bool value)) return;
-            vm.SetSort(header, value);
-            _sortDirections[header] = _sortDirections[header] = !value;
+            if (!_sortDirections.ContainsKey(header)) return;
+            vm.SetSort(header, _sortDirections[header]);
+            _sortDirections[header] = !_sortDirections[header];
             e.Handled = true;
         }
     }
@@ -59,7 +61,6 @@ public partial class TableView : UserControl
         {
             TimeFrameSelectionOption.IsEnabled = false;
         }
-
         else
         {
             TimeFrameSelectionOption.IsEnabled = true;
@@ -68,30 +69,58 @@ public partial class TableView : UserControl
 
     private void ContextMenuOpened(object? sender, RoutedEventArgs e)
     {
-        var selectedRow = MyDataGrid.SelectedItem as TableRow;
-        if (selectedRow == null) return;
-
-        _selectedRowKey = new Tuple<string, string>(selectedRow.SystemName, selectedRow.AppName);
+        _selectedRow = MyDataGrid.SelectedItem as TableRow;
 
         if (DataContext is TableViewModel vm)
-            vm.PauseUpdate();
+        {
+            if (!string.IsNullOrWhiteSpace(vm.SearchText))
+            {
+                //turn off update temporarily to ensure context menu stays open
+
+                vm.PauseUpdate();
+
+            }
+        }
     }
-
-
     private void OnEndProgramClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is TableViewModel vm)
-        {
             vm.ResumeUpdate();
+        if (_selectedRow == null) return;//Don't do anything.
+        _ = AppQuitter.KillProcessesByRowAsync(_selectedRow);
 
-            if (_selectedRowKey == null) return;
-            _ = vm.TableData.KillAndRemoveByKey(_selectedRowKey.Item1, _selectedRowKey.Item2);
-        }
     }
 
     private void ContextMenuClosed(object? sender, RoutedEventArgs e)
     {
         if (DataContext is TableViewModel vm)
             vm.ResumeUpdate();
+    }
+
+    private async void OnSaveIconClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is TableViewModel vm)
+            vm.ResumeUpdate();
+        if (_selectedRow == null) return;//Don't do anything.
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if(topLevel == null) return;
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save Your Icon",
+            SuggestedFileName = "icon.png",
+            DefaultExtension = "png",
+            FileTypeChoices = new[]
+            {
+            new FilePickerFileType("Icon") { Patterns = new[] { "*.png" } }
+        }
+        });
+
+        if (file is null) return;
+
+        await using var stream = await file.OpenWriteAsync();
+        using var writer = new StreamWriter(stream);
+        _selectedRow.AppIcon?.Save(stream, 100);
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Core;
 using Infrastructure;
+using Infrastructure.Networking;
+using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,16 +44,14 @@ namespace UI.ViewModels
         {
             Core.Debug.Log($"Ending processes: {row.AppName}");
 
-            string sysName = SystemHistory.Instance.SystemName;//?
-            if (row.SystemName != sysName)
+            Host? host = NetworkManager.Instance.Host;
+            if(host is not null)
             {
-                //some networking logic can be put here for other systems.
-                Core.Debug.Log($"Permission to kill process denied -- must be on your own machine {row.SystemName} != {sysName} ");
+                var packet = Packet.CreatePacket(new CloseProcessPayload(row.AppName));
+                host.Multicast(packet.ToBytes());
             }
-            else
-            {
-                await Task.Run(() => KillProcessByName(row.AppName));
-            }
+
+            await Task.Run(() => KillProcessByName(row.AppName));
 
         }
 

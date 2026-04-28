@@ -14,12 +14,12 @@ public partial class FolderUser : UserControl
 {
     public bool IsSelected = true;
 
-    private readonly static SolidColorBrush _selectedColor = new(Color.Parse("#A5C882"));
-    private readonly static SolidColorBrush _deselectColor = new(new Color(255, 82, 82, 86));
-    private readonly static SolidColorBrush _onlineColor = new(Colors.White);
-    private readonly static SolidColorBrush _offlineColor = new(Colors.Black);
-    private readonly static SolidColorBrush _lightText = new(Colors.White);
-    private readonly static SolidColorBrush _darkText = new(Color.Parse("#1E152A"));
+    public readonly static SolidColorBrush SelectedColor = new(Color.Parse("#A5C882"));
+    public readonly static SolidColorBrush DeselectColor = new(new Color(255, 82, 82, 86));
+    public readonly static SolidColorBrush OnlineColor = new(Colors.White);
+    public readonly static SolidColorBrush OfflineColor = new(Colors.Black);
+    public readonly static SolidColorBrush LightText = new(Colors.White);
+    public readonly static SolidColorBrush DarkText = new(Color.Parse("#1E152A"));
 
     private readonly User _user;
 
@@ -56,10 +56,10 @@ public partial class FolderUser : UserControl
     {
         if (SelectionButton is null || OnlineCircle is null) return;
 
-        SelectionButton.Background = IsSelected ? _selectedColor : _deselectColor;
-        OnlineCircle.Fill = IsOnline ? _onlineColor : _offlineColor;
+        SelectionButton.Background = IsSelected ? SelectedColor : DeselectColor;
+        OnlineCircle.Fill = IsOnline ? OnlineColor : OfflineColor;
         OnlineCircle.StrokeThickness = IsOnline ? 2 : 0;
-        UsernameLabel.Foreground = IsSelected ? _darkText : _lightText;
+        UsernameLabel.Foreground = IsSelected ? DarkText : LightText;
 
         ToolTip.SetTip(OnlineCircle, IsOnline ? "Online" : "Offline");
     }

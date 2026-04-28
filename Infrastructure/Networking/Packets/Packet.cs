@@ -18,7 +18,9 @@ public class Packet
             { PacketType.DBUpdateRequest, typeof(DateRequestPayload)},
             { PacketType.UserInfo, typeof(UserInfoPayload)},
             { PacketType.InitiateLiveView, typeof(SetLiveViewPayload)},
-            { PacketType.ProgramData, typeof(ProgramDataPayload)}};
+            { PacketType.CloseProcessPacket, typeof(CloseProcessPayload)},
+            { PacketType.ProgramData, typeof(ProgramDataPayload)},
+            { PacketType.NetworkError, typeof(NetworkErrorPayload)}};
 
     private Packet() {
         Data = new byte[0];

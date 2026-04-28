@@ -2,31 +2,35 @@
 using Infrastructure.Networking.Packets;
 using NetCoreServer;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace Infrastructure.Networking;
 
-public class Client : TcpClient
+public class Client : SslClient
 {
-    private bool _shutdown = false;
     private MessageBuffer _messageBuffer = new();
-    public ConnectionInfo? ConnectionInfo { get; private set; }
-    public Client(IPAddress address, int port) : base(address, port) 
+    public ConnectionInfo ConnectionInfo { get; private set; }
+    
+    public Client(SslContext context, IPAddress address, int port, string password, ConnectionInfo connectionInfo) : base(context, address, port)
     {
-        ConnectionInfo = new ConnectionInfo(address.ToString(), port);
+        ConnectionInfo = connectionInfo;
     }
 
-    protected override void OnConnected()
+    protected override void OnHandshaked()
     {
         Console.WriteLine($"Client connected: {Id}");
-        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName)).ToBytes());
+        SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName, ConnectionInfo.Password)).ToBytes());
     }
-
+    protected override void OnConnected()
+    {
+        NetworkManager.Instance.OnConnectToHost?.Invoke(Id, ConnectionInfo);
+    }
     override protected void OnDisconnected()
     {
         ConnectedUserInfo.RemoveUserData(Id, out string? username);
-        Console.WriteLine($"Client disconnected: {Id} {username}");
-        NetworkManager.Instance.OnDisconnectFromHost?.Invoke(Id);
+        NetworkManager.Instance.OnSocketError?.Invoke(Id, ConnectionInfo, SocketError.NotConnected);
+        NetworkManager.Instance.OnDisconnectFromHost?.Invoke(Id, ConnectionInfo);
     }
 
     override protected void OnReceived(byte[] buffer, long offset, long size)
@@ -41,21 +45,21 @@ public class Client : TcpClient
             }
             else
             {
-                Console.WriteLine("Malformed packet!");
+                Debug.Log("Malformed packet!");
             }
         }
     }
-
+    
     protected override void OnError(System.Net.Sockets.SocketError error)
     {
         Console.WriteLine($"Client error: {Id} - {error}");
+        NetworkManager.Instance.OnSocketError?.Invoke(Id, ConnectionInfo, error);
     }
 
     public void DisconnectShutdown()
     {
-        _shutdown = true;
         DisconnectAsync();
-        while(IsConnected)
+        while (IsConnected)
             Thread.Yield();//This Yield shouldn't take that long.
     }
 }
