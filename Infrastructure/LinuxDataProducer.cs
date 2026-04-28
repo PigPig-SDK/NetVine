@@ -4,7 +4,6 @@ using System.Diagnostics;
 
 namespace Core;
 
-/// /mnt/c/users/djpig/documents/github/netvine/CLI
 public class LinuxDataProducer : IProgramDataProducer
 {
     public string SystemName => "MR.Linux";
