@@ -11,7 +11,7 @@ public interface IProgramDataProducer : IDisposable
     /// </summary>
     public string SystemName { get;}
     /// <summary>
-    /// Resolve how much ram the machine has
+    /// Resolve how much ram the machine has in MB
     /// </summary>
     public double GetTotalRam();
     /// <summary>

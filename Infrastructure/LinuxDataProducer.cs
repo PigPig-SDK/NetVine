@@ -11,6 +11,7 @@ public class LinuxDataProducer : IProgramDataProducer
 
     public void Dispose()
     {
+
     }
 
     public (MemoryStream? image, IconFileType fileType) GetProcessIcon(string processName)
@@ -25,6 +26,15 @@ public class LinuxDataProducer : IProgramDataProducer
     
     public double GetTotalRam()
     {
+        string[] memInfo = File.ReadAllLines("/proc/meminfo");
+        var totalMemLine = memInfo.FirstOrDefault(line => line.StartsWith("MemTotal:"));
+
+        if (totalMemLine != null)
+        {
+            var parts = totalMemLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2 && long.TryParse(parts[1], out long memory))
+                return memory * 1024;//KB to MB
+        }
         return 0;
     }
 
