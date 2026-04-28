@@ -1,5 +1,4 @@
 ﻿
-
 namespace Infrastructure;
 
 public static class DBArithmetic
@@ -150,9 +149,4 @@ public static class DBArithmetic
         existingEntry.NetworkUsageTotal +=  newEntry.NetworkUsage;
         
     }
-
-
-
-
-
 }
