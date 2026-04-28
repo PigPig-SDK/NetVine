@@ -14,11 +14,5 @@ namespace UI.ViewModels.SearchFilter
             return _root.Evaluate(target);
         }
 
-        public Expression<Func<ProgramDataHistorical, bool>> ToExpression()
-        {
-            var parameter = Expression.Parameter(typeof(ProgramDataHistorical), "x");
-            if (_root == null) return x => true;
-            return _root.ToExpression(parameter);
-        }
     }
 }

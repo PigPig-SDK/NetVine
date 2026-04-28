@@ -1,5 +1,6 @@
 ﻿using Infrastructure;
 using System;
+using System.Collections.Specialized;
 using System.Linq.Expressions;
 
 namespace UI.ViewModels.SearchFilter
@@ -14,32 +15,18 @@ namespace UI.ViewModels.SearchFilter
 
         public override bool Evaluate(TableRow target)
         {
+            if (string.IsNullOrEmpty(SearchExpression)) { return false; } 
             return SearchExpressionTree == null
                 || SearchExpressionTree.Evaluate(target);
         }
 
-        protected override Expression<Func<ProgramDataHistorical, bool>> CreateExpression(string expression)
-        {
-            var tree = _treeBuilder.BuildTree(expression);
-            if (tree == null)
-            {
-                Console.WriteLine("Failed to parse search expression.");
-                return x => true;
-            }
-            var expr = tree.ToExpression();
-            if (expr == null)
-            {
-                Console.WriteLine("Failed to build expression from search expression.");
-                return x => true;
-            }
-            return expr;
-        }
+
+
 
         public override void UpdateSearchExpression(string newExpression)
         {
             SearchExpression = newExpression;
             SearchExpressionTree = _treeBuilder.BuildTree(newExpression);
-            GetOrCreateCachedExpression(newExpression, out _, out _);
         }
 
 

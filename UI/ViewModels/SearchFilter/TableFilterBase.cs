@@ -15,36 +15,15 @@ namespace UI.ViewModels.SearchFilter
         public static T Instance => _lazyInstance.Value;
         public static string SearchExpression { get; set; } = string.Empty;
 
-        public ConcurrentDictionary<string, Func<ProgramDataHistorical, bool>> _cachedPredicates = new();
-        public ConcurrentDictionary<string, Expression<Func<ProgramDataHistorical, bool>>> _cachedExpressions = new();
-
         /// <summary>
         /// Update the search tree expression by parsing in a new string expression.
         /// </summary>
         /// <param name="newExpression"></param>
         public abstract void UpdateSearchExpression(string newExpression);
 
-        /// <summary>
-        /// Uses the provided string to create a new expression tree that can be used to filter ProgramDataHistorical objects.
-        /// Parsing logic implemented in derived classes, allowing for different expression formats or languages. 
-        /// The resulting expression is cached for future use to optimize performance on repeated queries with the same expression.
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        protected abstract Expression<Func<ProgramDataHistorical, bool>>? CreateExpression(string expression);
 
         //Evaluates the current search expression against a given TableRow, returning true if the row matches the criteria defined by the expression.
         public abstract bool Evaluate(TableRow target);
-
-        protected void GetOrCreateCachedExpression(string newExpression
-            , out Expression<Func<ProgramDataHistorical, bool>> cachedExpression
-            , out Func<ProgramDataHistorical, bool> cachedPredicate)
-        {
-            var expr = _cachedExpressions.GetOrAdd(newExpression, key => CreateExpression(key) ?? (x => true));
-            var predicate = _cachedPredicates.GetOrAdd(newExpression, key => expr.Compile());
-            cachedExpression = expr;
-            cachedPredicate = predicate;
-        }
 
         /// <summary>
         /// Retrieves a list of historical program data rows filtered by the specified criteria, including system
@@ -65,27 +44,11 @@ namespace UI.ViewModels.SearchFilter
             , DateTime? date1
             , DateTime? date2)
         {
-            List<ProgramDataHistorical> data;
 
-            if (string.IsNullOrWhiteSpace(SearchExpression))
                 return isCombination ? DBArithmetic.HistoricalDataProducer(systemList, date1, date2)
                     : DBArithmetic.HistoricalDataProducer(date1, date2);
 
-            GetOrCreateCachedExpression(SearchExpression, out var expr, out var predicate);
 
-            if (!date1.HasValue && !date2.HasValue)
-            {
-                using var db = new DBInteract();
-                return [.. db.PDHTable.Where(expr).Where(x => isCombination == (x.SystemName == "Combination"))];
-            }
-
-            if (isCombination)
-                data = DBArithmetic.HistoricalDataProducer(systemList, date1, date2);
-            else
-                data = DBArithmetic.HistoricalDataProducer(date1, date2);
-
-            var dataQueryable = data.Where(predicate);
-            return [.. dataQueryable];
         }
     }
 }

@@ -7,7 +7,6 @@ namespace UI.ViewModels.SearchFilter
     public interface IFilterNode 
     {
         public bool Evaluate(TableRow target);
-       public Expression<Func<ProgramDataHistorical, bool>> ToExpression(ParameterExpression param);
     }
 
 }

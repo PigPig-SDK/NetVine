@@ -45,23 +45,5 @@ namespace UI.ViewModels.SearchFilter
             return result;
         }
 
-
-        Expression<Func<ProgramDataHistorical, bool>> IFilterNode.ToExpression(ParameterExpression param)
-        {
-            Expression result = Expression.Constant(Type == CompositeType.AND); //true if and, false if or
-
-
-            foreach (var child in _children)
-            {
-                bool isAnd = Type == CompositeType.AND;
-                var childExprBody = child == null ? Expression.Constant(isAnd) : child.ToExpression(param).Body;
-                if (isAnd)
-                    result = Expression.AndAlso(result, childExprBody);
-                else
-                    result = Expression.OrElse(result, childExprBody);
-            }
-
-            return Expression.Lambda<Func<ProgramDataHistorical, bool>>(result, param);
-        }
     }
 }

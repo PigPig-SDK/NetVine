@@ -26,10 +26,9 @@ namespace UI.ViewModels
         /// <summary>
         /// Constructor, creates a new collection for the rows
         /// </summary>
-        public TableDataManager(Func<bool> isPaused, Func<string> searchExpression)
+        public TableDataManager(Func<bool> isPaused)
         {
             _isPaused = isPaused;
-            _searchExpression = searchExpression;
             TableRows = new ObservableCollection<TableRow>();
         }
 

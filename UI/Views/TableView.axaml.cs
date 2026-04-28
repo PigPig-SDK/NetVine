@@ -18,7 +18,10 @@ public partial class TableView : UserControl
         InitializeComponent();
         DataContext = new TableViewModel();
         if (DataContext is TableViewModel vm)
+        {
             vm.TableData.ClearSelection = () => MyDataGrid.SelectedItem = null;
+            vm.ClearSelection = () => MyDataGrid.SelectedItem = null;
+        }
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
     }

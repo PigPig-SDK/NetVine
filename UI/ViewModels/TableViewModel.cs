@@ -61,6 +61,7 @@ namespace UI.ViewModels
         public bool IsSystemNameVisible => true;
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
+        public Action ClearSelection { get; set; } = () => { };
 
         public string SearchText
         {
@@ -68,15 +69,14 @@ namespace UI.ViewModels
             set
             {
                 _searchText = value;
-                Console.WriteLine("Search text updated: " + _searchText);
-                
+                ClearSelection();
                 TableFilter.Instance.UpdateSearchExpression(_searchText);
 
                 OnPropertyChanged();
-                if (LiveViewModel.IsLive) TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
+                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
                     ? null
                     : FilterRow;
-                OnSearchHistorical();
+                
 
                 TableRowsView.Refresh();
             }
@@ -119,7 +119,7 @@ namespace UI.ViewModels
         // Constructor
         public TableViewModel()
         {
-            _tableData = new TableDataManager(() => _updatePaused, () => SearchText);
+            _tableData = new TableDataManager(() => _updatePaused);
             TableRowsView = new DataGridCollectionView(_tableData.TableRows);
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
@@ -385,11 +385,10 @@ namespace UI.ViewModels
 
         private bool FilterRow(object obj)
         {
-            if (!LiveViewModel.IsLive) return true;
+            //if (!LiveViewModel.IsLive) return true;
             if (obj is not TableRow row) return false;
-            return TryParseSearchExpression(row)
-                || row.SystemName.Contains(_searchText, StringComparison.OrdinalIgnoreCase)
-                || row.AppName.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+            return TryParseSearchExpression(row) || 
+                row.AppName.Contains(SearchText);
         }
 
     }
