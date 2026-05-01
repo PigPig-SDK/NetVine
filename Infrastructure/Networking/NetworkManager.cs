@@ -35,8 +35,8 @@ public class NetworkManager
     {
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
         _instance = new NetworkManager();
-        ConfigManager.OnClientConnectionAdded += _instance.AddClientConnection;
-        ConfigManager.OnClientConnectionRemoved += _instance.RemoveClientConnection;
+        ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
+        ConfigManager.OnClientConnectionRemoved += _instance.OnRemoveClientConnection;
         ConfigManager.OnSettingChanged += _instance.OnSettingChanged;
     }
 
@@ -96,17 +96,26 @@ public class NetworkManager
         DisconnectHost();
         StartHost();
     }
-    private void AddClientConnection(ConnectionInfo info) => RefreshClientConnections();
-    private void RemoveClientConnection(ConnectionInfo info)
+    public static void AddClientConnection(ConnectionInfo info) { 
+        ConfigManager.AddClientConnection(info);
+        ConfigManager.TrySaveToFile();
+    }
+    public static void RemoveClientConnection(ConnectionInfo info)
+    {
+        ConfigManager.RemoveClientConnection(info);
+        ConfigManager.TrySaveToFile();
+    }
+    private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();
+    private void OnRemoveClientConnection(ConnectionInfo info)
     {
         IPAddress? ip = info.GetIP();
         if(ip is null) return;
 
         (IPAddress, int) infoTuple = (ip, info.Port);
 
-        if (!EstablishedClientConnections.ContainsKey(infoTuple)) return;
+        if (!EstablishedClientConnections.TryGetValue(infoTuple, out Client? client)) return;
         //Shutdown the client connection!
-        EstablishedClientConnections[infoTuple].Disconnect();
+        if(client.IsConnected) client?.Disconnect();
         EstablishedClientConnections.Remove(infoTuple);
     }
 
@@ -145,7 +154,7 @@ public class NetworkManager
             IPAddress.TryParse(connectionContext.Ip, out IPAddress? ip);
             if (ip == null)
             {
-                Console.WriteLine($"Invalid IP address: {connectionContext.Ip}");
+                Core.Debug.Log($"Invalid IP address: {connectionContext.Ip}");
                 continue;
             }
             var connectionIdentity = (ip, connectionContext.Port);
@@ -220,7 +229,7 @@ public class NetworkManager
     ~NetworkManager()
     {
         Disconnect();
-        ConfigManager.OnClientConnectionAdded -= _instance.AddClientConnection;
+        ConfigManager.OnClientConnectionAdded -= _instance.OnAddClientConnection;
     }
 
     public static X509Certificate2 GenerateSelfSignedCertificate()
