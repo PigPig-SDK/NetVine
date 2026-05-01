@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Avalonia.Threading;
+using Core;
+using Infrastructure;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Core;
-using Infrastructure;
+using System.Threading.Tasks;
 
 namespace UI.ViewModels
 {
@@ -12,7 +14,9 @@ namespace UI.ViewModels
     /// </summary>
     public class TableDataManager
     {
-
+        private readonly Func<bool> _isPaused;
+        
+        public Action ClearSelection { get; set; } = () => { };
         /// <summary>
         /// ObservableCollection containing the rows for the table
         /// </summary>
@@ -21,8 +25,9 @@ namespace UI.ViewModels
         /// <summary>
         /// Constructor, creates a new collection for the rows
         /// </summary>
-        public TableDataManager()
+        public TableDataManager(Func<bool> isPaused)
         {
+            _isPaused = isPaused;
             TableRows = new ObservableCollection<TableRow>();
         }
 
@@ -32,7 +37,7 @@ namespace UI.ViewModels
         /// <param name="data"></param> new data to take in
         public void UpdateLiveData(List<IProgramData> data)
         {
-            Debug.Log("Table Live updated");
+            //Debug.Log("Table Live updated");
             var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
             var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
 
@@ -48,8 +53,22 @@ namespace UI.ViewModels
 
             // Remove stale rows -- I guess that this is needed in order to keep things sorted. If not we can figure out a fix like dummy rows or something
             var toRemove = TableRows.Where(r => !incoming.ContainsKey((r.SystemName, r.AppName))).ToList();
-            foreach (var row in toRemove)
-                TableRows.Remove(row);
+           
+            if (toRemove.Count > 0)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (_isPaused()) return;
+                    ClearSelection();
+
+                    for (int i = 0; i < toRemove.Count; i++)
+                    {
+                        var item = toRemove[i];
+                        TableRows.Remove(item);
+                    }
+
+                }, DispatcherPriority.Background);
+            }
         }
 
 
@@ -82,6 +101,27 @@ namespace UI.ViewModels
             foreach (var row in toRemove)
                 TableRows.Remove(row);
         }
+
+
+        /// <summary>
+        /// Kills an application by its primary key (system, app)
+        /// </summary>
+        /// <param name="systemName"></param>
+        /// <param name="appName"></param>
+        /// <returns></returns>
+        public async Task KillAndRemoveByKey(string systemName, string appName)
+        {
+            await AppQuitter.KillProcessByNameAsync(appName);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                ClearSelection();
+                var row = TableRows.FirstOrDefault(r => r.SystemName == systemName && r.AppName == appName);
+                if (row != null)
+                    TableRows.Remove(row);
+            }, DispatcherPriority.Background);
+        }
+
 
     }
 }

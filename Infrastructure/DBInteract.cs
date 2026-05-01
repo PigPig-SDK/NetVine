@@ -143,7 +143,9 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
-    
+
+
+
     /// <summary>
     /// Wipes ProgramDataTable data
     /// </summary>

@@ -3,6 +3,7 @@ using Core;
 using Infrastructure;
 using Infrastructure.Networking;
 using System;
+using UI.ViewModels;
 
 namespace UI;
 
@@ -15,9 +16,6 @@ internal sealed class Program
     public static void Main(string[] args)
     {
         Netvine.Startup();
-
-
-
         BuildAvaloniaApp()
         .StartWithClassicDesktopLifetime(args);
     }

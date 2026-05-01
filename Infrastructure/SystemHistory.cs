@@ -59,8 +59,10 @@ public class SystemHistory : IDisposable
     private void OnSettingChanged(Enum setting)
     {
         if (setting is not SettingFloat settingfloat) return;
-
-        ChangeSnapshotInterval(TimeSpan.FromSeconds(ConfigManager.ReadSetting(settingfloat)));
+        if (SettingFloat.TickRate == settingfloat)
+        {
+            ChangeSnapshotInterval(TimeSpan.FromSeconds(ConfigManager.ReadSetting(settingfloat)));
+        }
     }
 
     /// <summary>
