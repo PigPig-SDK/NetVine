@@ -80,9 +80,20 @@ public partial class Canvas : UserControl
         var history = _vm.SelectedResource switch
         {
             ChartService.CPU => (data: _vm.CpuHistory, title: "CPU (%)"),
+            ChartService.CPUAvg =>  (data: _vm.CpuAvgHistory, title: "CPU Avg (%)"),
+            ChartService.CPUPeak =>  (data: _vm.CpuPeakHistory, title: "CPU Peak (%)"),
+            
             ChartService.RAM => (data: _vm.RamHistory, title: "RAM (MB)"),
+            ChartService.RAMAvg => (data: _vm.RamAvgHistory, title: "RAM Avg (MB)"),
+            ChartService.RAMPeak => (data: _vm.RamPeakHistory, title: "RAM Peak (MB)"),
+            
             ChartService.DISK => (data: _vm.DiskHistory, title: "Disk (%)"),
+            ChartService.DISKAvg => (data: _vm.DiskAvgHistory, title: "Disk Avg (%)"),
+            ChartService.DISKPeak => (data: _vm.DiskPeakHistory, title: "Disk Peak(%)"),
+            
             ChartService.NET => (data: _vm.NetworkHistory, title: "Network (MB/s)"),
+            ChartService.NETAvg => (data: _vm.NetworkAvgHistory, title: "Network Avg (MB/s)"),
+            ChartService.NETPeak => (data: _vm.NetworkPeakHistory, title: "Network Peak (MB/s)"),
             _ => (data: _vm.CpuHistory, title: "CPU (%)")
         };
 
@@ -255,7 +266,7 @@ public partial class Canvas : UserControl
 
     private void SetLimits()
     {
-        if (_vm.SelectedResource == ChartService.RAM)
+        if (_vm.SelectedResource == ChartService.RAM || _vm.SelectedResource == ChartService.RAMAvg || _vm.SelectedResource == ChartService.RAMPeak)
         {
             _canvasPlot.Plot.Axes.SetLimitsY(0, _vm.RAMTotal);
             _canvasPlot.Plot.Axes.AutoScaleX();
