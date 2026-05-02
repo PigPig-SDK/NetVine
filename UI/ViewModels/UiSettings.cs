@@ -111,6 +111,19 @@ public static class UiSettings
                 SettingFloat.TickRate,
                 "memory", "usage", "interval", "db", "database"),
         ]),
+        new SettingGroup("Graph", [
+            new SettingInputField<SettingInt>("Max history",
+                "How many data points to keep in the graph history. At 1 poll/second, 60 = 60 seconds of history.",
+                StringInputMethod.IntInput,
+                SettingInt.MaxHistory,
+                "graph", "history", "chart") { MaxAcceptedNumericalSize = 300 },
+
+            new SettingInputField<SettingInt>("Max chart listings",
+                "How many processes to display on pie and bar charts.",
+                StringInputMethod.IntInput,
+                SettingInt.TopCount,
+                "graph", "chart", "process", "pie", "bar") { MaxAcceptedNumericalSize = 20 },
+        ]),
     };
 
     public static SettingInput? GetInputField<T>(T inputType) where T : Enum

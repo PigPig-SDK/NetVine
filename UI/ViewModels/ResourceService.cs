@@ -1,4 +1,5 @@
 using Core;
+using Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,6 +53,9 @@ namespace UI.ViewModels
 
         public event Action? DataUpdated;
 
+        private int MaxHistory => ConfigManager.ReadSetting(SettingInt.MaxHistory) is int m && m > 0 ? m : 60;
+
+
         private ResourceService()
         {
             SystemHistory.Instance.OnSnapshotTaken -= OnSnapshot;
@@ -62,8 +66,9 @@ namespace UI.ViewModels
         private void OnSnapshot(List<IProgramData> data)
         {
             LatestSnapshot = data;
-            
-            SnapshotHistory.Add(data.ToList());
+
+            AddCappedSnapshot(SnapshotHistory, data.ToList());
+
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
             CpuUsageAvg = data.Average(p => p.CpuUsage);
             CpuUsagePeak = Math.Max(CpuUsage, CpuUsagePeak);
@@ -96,11 +101,30 @@ namespace UI.ViewModels
             NetworkAvgHistory.Add(NetworkUsageAvg);
             NetworkPeakHistory.Add(NetworkUsagePeak);
 
+            AddCapped(CpuHistory, CpuUsage);
+            AddCapped(RamHistory, RamUsage);
+            AddCapped(DiskHistory, DiskUsage);
+            AddCapped(NetworkHistory, NetworkUsage);
+
             DataUpdated?.Invoke();
         }
         
 
 
+        private void AddCapped(List<double> list, double value)
+        {
+            list.Add(value);
+            //trim to current machistoty in case it was reduced in settings
+            while (list.Count > MaxHistory)
+                list.RemoveAt(0);
+        }
+
+        private void AddCappedSnapshot(List<List<IProgramData>> list, List<IProgramData> value)
+        {
+            list.Add(value);
+            while (list.Count > MaxHistory)
+                list.RemoveAt(0);
+        }
 
     }
 }
