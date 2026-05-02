@@ -22,6 +22,6 @@ public class StringPayload : IPacketPayload
 
     public void Execute(bool isServer, Guid id)
     {
-        Console.WriteLine($"{id} : {Value}");
+        Core.Debug.Log($"{id} : {Value}");
     }
 }

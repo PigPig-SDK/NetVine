@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using Core;
+using ProtoBuf;
 using System.Reflection;
 
 namespace Infrastructure.Networking.Packets;
@@ -18,7 +19,9 @@ public class Packet
             { PacketType.DBUpdateRequest, typeof(DateRequestPayload)},
             { PacketType.UserInfo, typeof(UserInfoPayload)},
             { PacketType.InitiateLiveView, typeof(SetLiveViewPayload)},
-            { PacketType.ProgramData, typeof(ProgramDataPayload)}};
+            { PacketType.CloseProcessPacket, typeof(CloseProcessPayload)},
+            { PacketType.ProgramData, typeof(ProgramDataPayload)},
+            { PacketType.NetworkError, typeof(NetworkErrorPayload)}};
 
     private Packet() {
         Data = new byte[0];
@@ -75,7 +78,7 @@ public class Packet
         }
         catch (Exception ex) when (ex is InvalidOperationException || ex is TargetInvocationException || ex is InvalidOperationException)
         {
-            Console.WriteLine(ex.ToString());
+            Debug.Log(ex.ToString());
             return false;
         }
     }
@@ -105,7 +108,7 @@ public class Packet
         }
         catch (Exception ex) when (ex is ProtoException || ex is EndOfStreamException || ex is InvalidOperationException) {
         
-            Console.WriteLine(ex.ToString());
+            Debug.Log(ex.ToString());
             return false;
         }
     }

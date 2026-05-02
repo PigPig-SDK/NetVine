@@ -12,16 +12,6 @@
                   CanUserSortColumns="True"
                   IsReadOnly="True"
                   GridLinesVisibility="All">
-            <!--<DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="{Binding CpuMenuText}" Command="{Binding ToggleCpuCommand}"/>
-                    <MenuItem Header="{Binding MemoryMenuText}" Command="{Binding ToggleMemoryCommand}"/>
-                    <MenuItem Header="{Binding DiskMenuText}" Command="{Binding ToggleDiskCommand}"/>
-                    <MenuItem Header="{Binding NetworkMenuText}" Command="{Binding ToggleNetworkCommand}"/>
-                    <MenuItem Header="Select Timeframe" x:Name="TimeFrameSelectionOption" IsEnabled="False" Command="{Binding OpenTimeframeCommand}"/>
-                    <MenuItem Header="{Binding AllMenuText}" Command="{Binding ToggleAllCommand}"/>
-                </ContextMenu>
-            </DataGrid.ContextMenu>-->
 
             <DataGrid.Styles>
                 <!-- 1. Context Menu for the BODY (Rows) -->
@@ -29,8 +19,18 @@
                     <Setter Property="ContextMenu">
                         <ContextMenu Opened="ContextMenuOpened" 
                                      Closed="ContextMenuClosed">
-                            
-                            <MenuItem Header="End Program" Click="OnEndProgramClick"/>
+                            <MenuItem Click="OnSaveIconClick" Header="Save Icon">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/save.png" 
+                                            Width="32" Height="32" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="EndProgramMenuItem" Click="OnEndProgramClick" Header="Kill program">
+                                <MenuItem.Icon>
+                                    <Image Source="/Assets/close.png" 
+                                            Width="32" Height="32" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </ContextMenu>
                     </Setter>
                 </Style>
@@ -57,8 +57,8 @@
                                     Binding="{Binding (vm:TableRow).SystemName}" 
                                     IsVisible="True"
                                     Width="Auto"/>
-                
-                <DataGridTemplateColumn Header="Process" Width="*" MinWidth="100"
+                                    
+                <DataGridTemplateColumn Header="Process" Width="1.5*" MinWidth="100"
                                         CanUserSort="True"
                                         SortMemberPath="AppName">
                     <DataGridTemplateColumn.CellTemplate>
@@ -77,12 +77,12 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 
-                <DataGridTextColumn Header="CPU"     
+                <DataGridTextColumn Header="CPU (%)"     
                                     Binding="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" 
                                     IsVisible="{Binding ShowCpuLive}"
                                     Width="*" MinWidth="100"/>
                 
-                <DataGridTextColumn Header="Memory"  
+                <DataGridTextColumn Header="Memory (MB)"  
                                     Binding="{Binding (vm:TableRow).LiveData.MemoryUsage, StringFormat={}{0:F2}}" 
                                     IsVisible="{Binding ShowMemoryLive}"
                                     Width="*" MinWidth="100"/>

@@ -1,4 +1,10 @@
-﻿using System.Net;
+﻿using Infrastructure.Networking.Packets;
+using NetCoreServer;
+using System.Net;
+using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Infrastructure.Networking;
 
@@ -11,20 +17,26 @@ public class NetworkManager
     public const int DefaultPort = 54236;
     public const string DefaultHost = "0.0.0.0";
 
+    private static readonly X509Certificate2 ServerCertificate = GenerateSelfSignedCertificate();
+    private static readonly X509Certificate2 ClientCertificate = GenerateSelfSignedCertificate();
+
     public Dictionary<(IPAddress connection, int port), Client> EstablishedClientConnections { get; private set; } = [];
     public Host? Host { get; private set; }
 
     /// <summary>
     /// Called when a client loses their connection with the host.
     /// </summary>
-    public Action<Guid> OnDisconnectFromHost;
+    public Action<Guid, ConnectionInfo>? OnDisconnectFromHost;
+    public Action<Guid, ConnectionInfo, SocketError>? OnSocketError;
+    public Action<Guid, ConnectionInfo>? OnConnectToHost;
+    public Action<Guid, NetworkErrorType>? OnNetworkError; 
 
     public static void SetupInstance()
     {
         if (_instance != null) throw new InvalidOperationException($"Cannot call {nameof(SetupInstance)} more than once!");
         _instance = new NetworkManager();
-        ConfigManager.OnClientConnectionAdded += _instance.AddClientConnection;
-        ConfigManager.OnClientConnectionRemoved += _instance.RemoveClientConnection;
+        ConfigManager.OnClientConnectionAdded += _instance.OnAddClientConnection;
+        ConfigManager.OnClientConnectionRemoved += _instance.OnRemoveClientConnection;
         ConfigManager.OnSettingChanged += _instance.OnSettingChanged;
     }
 
@@ -84,17 +96,26 @@ public class NetworkManager
         DisconnectHost();
         StartHost();
     }
-    private void AddClientConnection(ConnectionInfo info) => RefreshClientConnections();
-    private void RemoveClientConnection(ConnectionInfo info)
+    public static void AddClientConnection(ConnectionInfo info) { 
+        ConfigManager.AddClientConnection(info);
+        ConfigManager.TrySaveToFile();
+    }
+    public static void RemoveClientConnection(ConnectionInfo info)
+    {
+        ConfigManager.RemoveClientConnection(info);
+        ConfigManager.TrySaveToFile();
+    }
+    private void OnAddClientConnection(ConnectionInfo info) => RefreshClientConnections();
+    private void OnRemoveClientConnection(ConnectionInfo info)
     {
         IPAddress? ip = info.GetIP();
         if(ip is null) return;
 
         (IPAddress, int) infoTuple = (ip, info.Port);
 
-        if (!EstablishedClientConnections.ContainsKey(infoTuple)) return;
+        if (!EstablishedClientConnections.TryGetValue(infoTuple, out Client? client)) return;
         //Shutdown the client connection!
-        EstablishedClientConnections[infoTuple].Disconnect();
+        if(client.IsConnected) client?.Disconnect();
         EstablishedClientConnections.Remove(infoTuple);
     }
 
@@ -116,7 +137,8 @@ public class NetworkManager
         if (!ConfigManager.ReadSettingBool(SettingInt.IsHosting)) return;
         if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled)) return;
 
-        Host = new Host(IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
+        var context = new SslContext(SslProtocols.Tls12, ServerCertificate, (sender, certificate, chain, sslPolicyErrors) => true);
+        Host = new Host(context, IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
         Host.Start();
 
     }
@@ -125,14 +147,14 @@ public class NetworkManager
     {
         if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled)) return;
 
-        foreach (ConnectionInfo connectionContext in ConfigManager.ClientConnections)
+        foreach (ConnectionInfo connectionContext in ConfigManager.CurrentClientConnections)
         {
             connectionContext.GetIP();
 
             IPAddress.TryParse(connectionContext.Ip, out IPAddress? ip);
             if (ip == null)
             {
-                Console.WriteLine($"Invalid IP address: {connectionContext.Ip}");
+                Core.Debug.Log($"Invalid IP address: {connectionContext.Ip}");
                 continue;
             }
             var connectionIdentity = (ip, connectionContext.Port);
@@ -146,7 +168,8 @@ public class NetworkManager
             }
             else//No Connection
             {
-                Client client = new(ip, connectionContext.Port);
+                var context = new SslContext(SslProtocols.Tls12, ClientCertificate, (sender, certificate, chain, sslPolicyErrors) => true);
+                Client client = new(context, ip, connectionContext.Port, connectionContext.Password, connectionContext);
                 client.ConnectAsync();
                 EstablishedClientConnections.Add(connectionIdentity, client);
             }
@@ -185,9 +208,35 @@ public class NetworkManager
         DisconnectHost();
     }
 
+    public Client? GuidToClient(Guid id)
+    {
+        foreach (Client client in EstablishedClientConnections.Values)
+        {
+            if (client.Id == id) return client;
+        }
+        return null;
+    }
+
+    public bool IsOnline(ConnectionInfo connectionInfo)
+    {
+        foreach (Client info in EstablishedClientConnections.Values)
+        {
+            if (info.ConnectionInfo == connectionInfo) return info.IsConnected;
+        }
+
+        return false;
+    }
     ~NetworkManager()
     {
         Disconnect();
-        ConfigManager.OnClientConnectionAdded -= _instance.AddClientConnection;
+        ConfigManager.OnClientConnectionAdded -= _instance.OnAddClientConnection;
+    }
+
+    public static X509Certificate2 GenerateSelfSignedCertificate()
+    {
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest("cn=netvine", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        var cert = request.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(1));
+        return new X509Certificate2(cert.Export(X509ContentType.Pfx));
     }
 }

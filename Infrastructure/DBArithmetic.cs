@@ -1,10 +1,4 @@
-﻿using System.Globalization;
-using System.IO.Enumeration;
-using System.Linq;
-using Core;
-using Microsoft.Diagnostics.Tracing.Parsers.Clr;
-using YamlDotNet.Core.Tokens;
-
+﻿
 namespace Infrastructure;
 
 public static class DBArithmetic
@@ -118,7 +112,7 @@ public static class DBArithmetic
             ProcessName = y.First().ProcessName,
             TimeFrame = y.Min(z => z.Date).ToString("MMMM d, yyyy h:mm tt")
                         + " - " + y.Max(z => z.Date).ToString("MMMM d, yyyy h:mm tt"),
-            valueCount =  y.Count(),
+            ValueCount =  y.Count(),
             
             CpuUsageAvg = y.Average(z => z.CpuUsage),
             DiskUsageAvg = y.Average(z => z.DiskUsage),
@@ -140,12 +134,12 @@ public static class DBArithmetic
     /// <returns>Historical Data</returns>
     static void HistoricalCumulativeUpdater(ProgramDataHistorical existingEntry, ProgramData newEntry)
     {
-        existingEntry.valueCount++;
+        existingEntry.ValueCount++;
         
-        existingEntry.CpuUsageAvg += (newEntry.CpuUsage - existingEntry.CpuUsageAvg) / existingEntry.valueCount;
-        existingEntry.DiskUsageAvg += (newEntry.DiskUsage - existingEntry.DiskUsageAvg) / existingEntry.valueCount;
-        existingEntry.NetworkUsageAvg += (newEntry.NetworkUsage - existingEntry.NetworkUsageAvg) / existingEntry.valueCount;
-        existingEntry.MemoryUsageAvg += (newEntry.MemoryUsage - existingEntry.MemoryUsageAvg) / existingEntry.valueCount;
+        existingEntry.CpuUsageAvg += (newEntry.CpuUsage - existingEntry.CpuUsageAvg) / existingEntry.ValueCount;
+        existingEntry.DiskUsageAvg += (newEntry.DiskUsage - existingEntry.DiskUsageAvg) / existingEntry.ValueCount;
+        existingEntry.NetworkUsageAvg += (newEntry.NetworkUsage - existingEntry.NetworkUsageAvg) / existingEntry.ValueCount;
+        existingEntry.MemoryUsageAvg += (newEntry.MemoryUsage - existingEntry.MemoryUsageAvg) / existingEntry.ValueCount;
 
         existingEntry.CpuUsagePeak = MathF.Max(existingEntry.CpuUsagePeak, newEntry.CpuUsage);
         existingEntry.DiskUsagePeak = MathF.Max(existingEntry.DiskUsagePeak, newEntry.DiskUsage);

@@ -1,10 +1,7 @@
 ﻿
-using Avalonia;
 using Core;
 using Microsoft.Win32;
-using System;
 using System.Reflection;
-using UI;
 
 namespace Infrastructure;
 
@@ -53,9 +50,9 @@ public class SystemStartupBinder
         }
 
         if (ConfigManager.ReadSettingBool(SettingInt.LoadOnStartup))
-            key?.SetValue(Program.AppName, $"\"{exePath}\"");
+            key?.SetValue(Netvine.AppName, $"\"{exePath}\"");
         else
-            key?.DeleteValue(Program.AppName, throwOnMissingValue: false);
+            key?.DeleteValue(Netvine.AppName, throwOnMissingValue: false);
 
     }
 

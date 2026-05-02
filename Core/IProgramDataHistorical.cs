@@ -13,7 +13,7 @@ public interface IProgramDataHistorical
     /// <summary>
     /// The amount of items that have been averaged
     /// </summary>
-    public int valueCount { get; set; }
+    public int ValueCount { get; set; }
     /// <summary>
     /// The name of the process
     /// </summary>

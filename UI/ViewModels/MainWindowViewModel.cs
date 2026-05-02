@@ -17,6 +17,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private static System.Timers.Timer? _animationTimer;
     private static double _animationTime = 0;
     private static double _animationRefire = 0.015;
+    /// <summary>
+    /// CAREFUL! THIS IS A STATIC EVENT.
+    /// FAILURE TO UNBIND FROM THIS EVENT WILL CAUSE A MEMORY LEAK.
+    /// </summary>
     public static event Action<double>? OnAnimateFrame;
 
     // I guess events can't be invoked from outside the class,

@@ -3,8 +3,10 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Infrastructure;
 using Infrastructure.Networking;
 using System;
@@ -18,15 +20,29 @@ namespace UI.Views;
 public partial class MainWindow : Window
 {
     private Dictionary<int, Button> _tabBarMapping;
-    public bool IsInitialized = false;
+    public bool IsWindowInitialized = false;
 
     private int CurrentSidebarTab = 0;
     private bool isAnimatingSidebar = false;
     private const int SidebarMinSize = 40;
 
+    private bool _isThinking = false;
+    public bool IsIconThinking
+    {
+        get => _isThinking;
+        set
+        {
+            _isThinking = value;
+            iconThinking.IsVisible = _isThinking;
+            iconNormal.IsVisible = !_isThinking;
+        }
+    }
+
     public MainWindow()
     {
+        
         _ = ResourceService.Instance;
+        DataContext = this;
 
         InitializeComponent();
 
@@ -34,7 +50,8 @@ public partial class MainWindow : Window
             { MainWindowViewModel.GraphView,  GraphButton},
             { MainWindowViewModel.TableView,TableButton },
             { MainWindowViewModel.SettingView, SettingsButton },
-            { MainWindowViewModel.HomeView, HomeButton } };
+            { MainWindowViewModel.HomeView, HomeButton } 
+        };
 
         Width = ConfigManager.ReadSetting(SettingInt.WindowWidth);
         Height = ConfigManager.ReadSetting(SettingInt.WindowHeight);
@@ -57,18 +74,19 @@ public partial class MainWindow : Window
                 ExpanderRight.IsVisible = SideBar.Bounds.Width == SidebarMinSize;
             }
         };
+        
     }
 
     private void OnOpenedEvent(object? sender, EventArgs e)
     {
         NetworkDataManager.Instance.HostSendLivePayload(LiveViewModel.IsLive);
 
-        if (!IsInitialized && ConfigManager.ReadSettingBool(SettingInt.StartMinimized))
+        if (!IsWindowInitialized && ConfigManager.ReadSettingBool(SettingInt.StartMinimized))
         {
             ShowInTaskbar = false;
             Hide();
         }
-        IsInitialized = true;
+        IsWindowInitialized = true;
         MainWindowViewModel.StartAnimation();
     }
 
@@ -132,6 +150,8 @@ public partial class MainWindow : Window
         if (tab != ConfigManager.ReadSetting(SettingInt.LastActivePage))//Tab has infact changed. 
             MainWindowViewModel.RaiseTabChanged(tab); //invokes OnTabChanged
 
+        IsIconThinking = tab == MainWindowViewModel.SettingView;
+
         MainWindowViewModel.ActiveTab = tab;
 
         SearchBoxInput.Text = string.Empty;
@@ -152,7 +172,6 @@ public partial class MainWindow : Window
                 tabButton.Value.Classes.Add("deselected");
             }
         }
-
         switch (tab)
         {
             case MainWindowViewModel.TableView:

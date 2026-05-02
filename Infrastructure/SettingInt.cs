@@ -18,4 +18,6 @@ public enum SettingInt
     NetworkDisabled,
     MaxHistory,
     TopCount
+    AllowHostManipulation,
+    UseNetworkPassword,
 };

@@ -7,8 +7,7 @@ public class ProgramDataHistorical : IProgramDataHistorical
     public string SystemName { get; set; }
     public string ProcessName { get; set; }
     public string TimeFrame { get; set; }
-
-    public int valueCount { get; set; } = 0;
+    public int ValueCount { get; set; } = 0;
     public float CpuUsageAvg { get; set; }
     public float DiskUsageAvg { get; set; }
     public float NetworkUsageAvg { get; set; }
@@ -18,4 +17,11 @@ public class ProgramDataHistorical : IProgramDataHistorical
     public float NetworkUsagePeak { get; set; }
     public float MemoryUsagePeak { get; set; }
     public float NetworkUsageTotal { get; set; }
+
+    public ProgramDataHistorical()
+    {
+        SystemName = string.Empty;
+        ProcessName = string.Empty;
+        TimeFrame = string.Empty;
+    }
 }

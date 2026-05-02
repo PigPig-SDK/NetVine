@@ -1,9 +1,11 @@
 ﻿using Core;
+using Infrastructure.Networking.Packets;
 using Microsoft.Diagnostics.Tracing.Parsers.Clr;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace Infrastructure;
+
 public class DBInteract : DbContext
 {
     
@@ -12,10 +14,12 @@ public class DBInteract : DbContext
     public DbSet<User> UserTable { get; set; } = null!;
     
     public DbSet<ProgramDataHistorical> PDHTable { get; set; } = null!;
-    
+
+    public DbSet<CachedIcon> IconTable { get; set; } = null!;
+
     public static Action? OnProgramAdded;
     
-    private static readonly object _dbLock;
+    public static readonly Lock DBLock = new();
 
     public delegate void ProgramListAddedDelegate(List<ProgramData> programs, bool isDataLocal);
 
@@ -57,6 +61,9 @@ public class DBInteract : DbContext
         
         modelBuilder.Entity<ProgramDataHistorical>()
             .HasKey(u => new {u.SystemName, u.ProcessName});
+
+        modelBuilder.Entity<CachedIcon>()
+            .HasKey(u => new { u.ProcessName });
     }
 
     /// <summary>
@@ -94,19 +101,19 @@ public class DBInteract : DbContext
             if(!(db.ProgramDataTable.ToList().Count == 0))
             {
                 foreach(var entry in db.ProgramDataTable.ToList()){;
-                    Console.WriteLine("System Name: " + entry.SystemName);
-                    Console.WriteLine("Date: " + entry.Date);
-                    Console.WriteLine("Process Name: " + entry.ProcessName);
-                    Console.WriteLine("Cpu Usage: " + entry.CpuUsage);
-                    Console.WriteLine("Disk Usage: " + entry.DiskUsage);
-                    Console.WriteLine("Network Usage: " + entry.NetworkUsage);
-                    Console.WriteLine("Memory Usage: " + entry.MemoryUsage + "\n");
+                    Debug.Log("System Name: " + entry.SystemName);
+                    Debug.Log("Date: " + entry.Date);
+                    Debug.Log("Process Name: " + entry.ProcessName);
+                    Debug.Log("Cpu Usage: " + entry.CpuUsage);
+                    Debug.Log("Disk Usage: " + entry.DiskUsage);
+                    Debug.Log("Network Usage: " + entry.NetworkUsage);
+                    Debug.Log("Memory Usage: " + entry.MemoryUsage + "\n");
                     
                 }
             }
             else
             {
-                Console.WriteLine("DB is empty\n");
+                Debug.Log("DB is empty\n");
             }
         }
     }
@@ -136,7 +143,9 @@ public class DBInteract : DbContext
         return query.OrderBy(p => p.Date).ToList();
 
     }
-    
+
+
+
     /// <summary>
     /// Wipes ProgramDataTable data
     /// </summary>
@@ -190,7 +199,7 @@ public class DBInteract : DbContext
     {
         if(EntryExists(entry, db))
         {
-            //Console.WriteLine("Entry already exists!");
+            //Debug.Log("Entry already exists!");
             return;
         }
         db.Set<T>().Add(entry);
@@ -300,7 +309,7 @@ public class DBInteract : DbContext
         }
         else
         {
-            Console.WriteLine("DB must be empty to populate dummy data;");
+            Debug.Log("DB must be empty to populate dummy data;");
         }
     }
     /// <summary>
@@ -309,15 +318,20 @@ public class DBInteract : DbContext
     /// <param name="programs"></param>
     public static void Store(IEnumerable<ProgramData> programs, bool isLocal)
     {
-        using (var db = new DBInteract())
+        lock (DBLock)
         {
-            foreach (var data in programs)
+            var programsAsList = programs.ToList();
+
+            using (var db = new DBInteract())
             {
-                SubmitEntry(data, db);
-            }    
-            DBArithmetic.UpdatePDHTable(programs.ToList(), db);
+                foreach (var data in programs)
+                {
+                    SubmitEntry(data, db);
+                }
+                DBArithmetic.UpdatePDHTable(programsAsList, db);
+            }
+            OnProgramListAdded?.Invoke(programsAsList, isLocal);
         }
-        OnProgramListAdded?.Invoke(programs.ToList() ,isLocal);
     }
 
     /// <summary>
@@ -326,8 +340,11 @@ public class DBInteract : DbContext
     /// <remarks>This does not call save on the database, please use SaveChanges or SaveChangesAsync()</remarks>
     public void AddUser(User user)
     {
-        if (!EntryExists(user, this))
-            UserTable.Add(user);    
+        lock (DBLock)
+        {
+            if (!EntryExists(user, this))
+                UserTable.Add(user);
+        }
     }
 
     public static void Initialize()
@@ -362,6 +379,13 @@ public class DBInteract : DbContext
         return this.PDHTable.Find(data.SystemName, data.ProcessName) != null;
     }
     
+    public CachedIcon? GetIconData(string processName) => IconTable.Find(processName);
+
+    public bool HasIcon(string processName) => IconTable.Any(x => x.ProcessName == processName);
+
+    /// <returns>True if the element gets added.</returns>
+    public bool AddIcon(string processName, byte[] iconData, IconFileType fileType) => IconTable.Add(new CachedIcon(processName, iconData, fileType)) != null;
+
     /// <summary>
     /// Adds entry to Program Data Historical Table
     /// </summary>

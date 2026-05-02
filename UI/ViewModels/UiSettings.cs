@@ -15,7 +15,7 @@ public static class UiSettings
     public static List<SettingGroup> AllSettings => new()
     {
         new SettingGroup("Application", [
-            new SettingInputReporter($"Net-Vine version {Program.Version}",
+            new SettingInputReporter($"Net-Vine version {Netvine.Version}",
                 "This is your current netvine version.",
                 "version", "app", "application"),
 
@@ -56,10 +56,26 @@ public static class UiSettings
                 SettingFloat.NetworkReconnectInterval,
                 "network", "usage", "interval"),
 
+            new SettingInputCheckbox("Use network password",
+                "Should a password be used? Incase privacy is not your thing.",
+                SettingInt.UseNetworkPassword,
+                "network", "host"),
+
+            new SettingInputField<SettingString>("Host Password",
+                "The password used for hosting",
+                StringInputMethod.StringInput,
+                SettingString.HostPassword,
+                "network", "host"),
+
             new SettingInputCheckbox("Disable Network Operations",
                 "Disable all client connections and host connections. ",
                 SettingInt.NetworkDisabled,
                 "network", "usage"),
+
+            new SettingInputCheckbox("Allow host manipulation",
+                "Allows the host to kill processes on your machine.",
+                SettingInt.AllowHostManipulation,
+                "network", "usage", "host", "manipulation", "close"),
         ]),
         new SettingGroup ("Database Storage", [
 
