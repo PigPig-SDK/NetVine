@@ -62,7 +62,7 @@ public class ConfigManager
         {SettingInt.StartMinimized, 0 },
         {SettingInt.NetworkDisabled, 0 },
         {SettingInt.MaxHistory, 100 },
-        {SettingInt.TopCount, 10 }
+        {SettingInt.TopCount, 10 },
         {SettingInt.AllowHostManipulation, 0 },
         {SettingInt.UseNetworkPassword, 0 }
     };
