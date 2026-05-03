@@ -48,8 +48,8 @@ namespace UI.ViewModels
 
         private bool _updatePaused = false;
 
-        private DateTime? HistoricalStart = null;
-        private DateTime? HistoricalEnd = null;
+        private DateTime? HistoricalStartTable = null;
+        private DateTime? HistoricalEndTable = null;
 
         // Properties
         public TableDataManager TableData { get { return _tableData; } }
@@ -138,7 +138,7 @@ namespace UI.ViewModels
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
             ToggleMemoryCommand = new RelayCommand(ToggleMemory);
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
-            OpenTimeframeCommand = new RelayCommand(OpenTimeframe);
+            OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
             PopulateTableInit();
         }
 
@@ -147,8 +147,8 @@ namespace UI.ViewModels
             if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
 
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
-                DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd); 
+                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+                DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -251,9 +251,9 @@ namespace UI.ViewModels
         }
 
 
-        private async void OpenTimeframe()
+        private async void OpenTableTimeframe()
         {
-            Debug.Log("OpenTimeFrame called");
+            Debug.Log("OpenTableTimeFrame called");
             if (LiveViewModel.IsLive || !_tableViewActive) return;
             
             var timeFrameWindow = new TimeFrameSelectionWindow();
@@ -269,12 +269,18 @@ namespace UI.ViewModels
                 return;
             }
             
-            HistoricalStart = dateRange.Value.date1;
-            HistoricalEnd = dateRange.Value.date2;
+            HistoricalStartTable = dateRange.Value.date1;
+            HistoricalEndTable = dateRange.Value.date2;
             
             OnSwitchToHistorical();
             
-            mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStart, HistoricalEnd);
+            mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartTable, HistoricalEndTable);
+        }
+
+        private void UpdateTableTimeFrame(int x)
+        {
+            (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow
+                .FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartTable, HistoricalEndTable);
         }
 
         //initial population on startup
@@ -324,8 +330,8 @@ namespace UI.ViewModels
         private void OnSwitchToHistorical()
         {
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStart, HistoricalEnd) :    
-            DBArithmetic.HistoricalDataProducer(HistoricalStart, HistoricalEnd);   
+            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+            DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
             
             Dispatcher.UIThread.Post(() =>
             {
@@ -347,6 +353,7 @@ namespace UI.ViewModels
                 _tableViewActive = true;
                 //resubscribe to events
                 // should be able to delete the subscribing and unsubscribing
+                MainWindowViewModel.OnTabChanged += UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent += ViewChangedLive;
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
@@ -357,6 +364,7 @@ namespace UI.ViewModels
             {
                 _tableViewActive = false;
                 //unsubscribe from events
+                MainWindowViewModel.OnTabChanged -= UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
