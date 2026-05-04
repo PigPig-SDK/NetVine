@@ -1,11 +1,14 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="UI.Views.TimeFrameSelectionWindow"
-        Width="375"
-        Height="300"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="#662D2D30"
+        Width="368"
+        Height="277"
         CanResize="False"
-        Title="Select Timeframe">
-
+        Title="Select Timeframe"
+        ExtendClientAreaTitleBarHeightHint="{OnPlatform Default=-1, Windows=38}"
+        ExtendClientAreaToDecorationsHint="{OnPlatform Default=False, Windows=True}">
     <StackPanel>
         
         <Border BorderThickness="1"
@@ -14,14 +17,15 @@
                 BorderBrush="Gray">
             
             <StackPanel Spacing="8">
-                <TextBlock Text="Select Start Date:"/>
-                <DatePicker x:Name="Date1Selector"/>
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <TextBlock Text="Select Start Date:" FontWeight="Light"/>
+                <DatePicker x:Name="Date1Selector" FontWeight="Light" />
+                <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10" >
                     <TimePicker Grid.Column="0"
                                 x:Name="Time1Selector"
+                                FontWeight="Light"
                                 ClockIdentifier="24HourClock"
-                                MinuteIncrement="1"/>
-
+                                MinuteIncrement="1" BorderThickness="1"/>
+                                
                     <Button Grid.Column="1"
                             Content="Set Empty"
                             Click="EmptyDate1"/>
@@ -36,10 +40,11 @@
             
             <StackPanel Spacing="8">
                 <TextBlock Text="Select End Date:"/>
-                <DatePicker x:Name="Date2Selector"/>
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="13">
+                <DatePicker x:Name="Date2Selector" FontWeight="Light"/>
+                <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="13">
                     <TimePicker Grid.Column="0"
                                 x:Name="Time2Selector"
+                                FontWeight="Light"
                                 ClockIdentifier="24HourClock"
                                 MinuteIncrement="1"/>
 
@@ -49,16 +54,23 @@
                 </Grid>   
             </StackPanel>   
         </Border> 
-        
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,10,0">
-            <Button Content="Exit" Click="Exit"/>
-            <Button Content="Select" Click="Select"/>
-        </StackPanel>
-            
+                <Border BorderThickness="1"
+                CornerRadius="5"
+                VerticalAlignment="Top"
+                Padding="5"
+                BorderBrush="Gray">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Spacing="10" Margin="0,0,5,0">
         <TextBlock Text="Empty dates go to infinity."
                    Opacity="1"
                    FontSize="15"
-                   Margin="10,10,0,0"/>
+                   FontWeight="Light"
+                   VerticalAlignment="Center"
+                   Margin="5,5,5,5"/>
+            <Button Content="Exit" Click="Exit" VerticalAlignment="Center"/>
+                   
+            <Button Content="Select" Click="Select" VerticalAlignment="Center" />
+        </StackPanel>
+            </Border>
         
     </StackPanel>    
 </Window>
