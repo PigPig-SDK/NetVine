@@ -6,6 +6,7 @@
         Width="368"
         Height="277"
         CanResize="False"
+        WindowStartupLocation="CenterScreen"
         Title="Select Timeframe"
         ExtendClientAreaTitleBarHeightHint="{OnPlatform Default=-1, Windows=38}"
         ExtendClientAreaToDecorationsHint="{OnPlatform Default=False, Windows=True}">
