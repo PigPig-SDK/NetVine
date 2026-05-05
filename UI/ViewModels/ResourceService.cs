@@ -15,36 +15,21 @@ namespace UI.ViewModels
         public double RAMTotal { get; private set; }
 
         public double CpuUsage { get; private set; }
-        public double CpuUsageAvg { get; private set; }
-        public double CpuUsagePeak { get; private set; }
-        
         public double RamUsage { get; private set; }
-        public double RamUsageAvg { get; private set; }
-        public double RamUsagePeak { get; private set; }
-        
         public double DiskUsage { get; private set; }
-        public double DiskUsageAvg { get; private set; }
-        public double DiskUsagePeak { get; private set; }
-        
         public double NetworkUsage { get; private set; }
-        public double NetworkUsageAvg { get; private set; }
-        public double NetworkUsagePeak { get; private set; }
-
-        public List<double> CpuHistory { get; } = new();
-        public List<double> CpuAvgHistory { get; } = new();
-        public List<double> CpuPeakHistory { get; } = new();
         
-        public List<double> RamHistory { get; } = new();
-        public List<double> RamAvgHistory { get; } = new();
-        public List<double> RamPeakHistory { get; } = new();
+        public List<double> LiveCpuHistory { get; } = new();
+        public List<double> HistoricalCpuHistory { get; private set; }
         
-        public List<double> DiskHistory { get; } = new();
-        public List<double> DiskAvgHistory { get; } = new();
-        public List<double> DiskPeakHistory { get; } = new();
+        public List<double> LiveRamHistory { get; } = new();
+        public List<double> HistoricalRamHistory { get; private set; }
         
-        public List<double> NetworkHistory { get; } = new();
-        public List<double> NetworkAvgHistory { get; } = new();
-        public List<double> NetworkPeakHistory { get; } = new();
+        public List<double> LiveDiskHistory { get; } = new();
+        public List<double> HistoricalDiskHistory { get; private set; }
+        
+        public List<double> LiveNetworkHistory { get; } = new();
+        public List<double> HistoricalNetworkHistory { get; private set; }
 
         public List<List<IProgramData>> SnapshotHistory { get; } = new();
 
@@ -64,41 +49,31 @@ namespace UI.ViewModels
             LatestSnapshot = data;
             
             SnapshotHistory.Add(data.ToList());
+            
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
-            CpuUsageAvg = data.Average(p => p.CpuUsage);
-            CpuUsagePeak = Math.Max(CpuUsage, CpuUsagePeak);
-            
             RamUsage = data.Sum(p => p.MemoryUsage);
-            RamUsageAvg = data.Average(p => p.MemoryUsage);
-            RamUsagePeak = Math.Max(RamUsage, RamUsagePeak);
-            
             DiskUsage = data.Sum(p => p.DiskUsage);
-            DiskUsageAvg = data.Average(p => p.DiskUsage);
-            DiskUsagePeak = Math.Max(DiskUsage, DiskUsagePeak);
-            
             NetworkUsage = data.Sum(p => p.NetworkUsage);
-            NetworkUsageAvg = data.Average(p => p.NetworkUsage);
-            NetworkUsagePeak = Math.Max(NetworkUsage, NetworkUsagePeak);
             
-            CpuHistory.Add(CpuUsage);
-            CpuAvgHistory.Add(CpuUsageAvg);
-            CpuPeakHistory.Add(CpuUsagePeak);
-            
-            RamHistory.Add(RamUsage);
-            RamAvgHistory.Add(RamUsageAvg);
-            RamPeakHistory.Add(RamUsagePeak);
-            
-            DiskHistory.Add(DiskUsage);
-            DiskAvgHistory.Add(DiskUsageAvg);
-            DiskPeakHistory.Add(DiskUsagePeak);
-            
-            NetworkHistory.Add(NetworkUsage);
-            NetworkAvgHistory.Add(NetworkUsageAvg);
-            NetworkPeakHistory.Add(NetworkUsagePeak);
+            LiveCpuHistory.Add(CpuUsage);
+            LiveRamHistory.Add(RamUsage);
+            LiveDiskHistory.Add(DiskUsage);
+            LiveNetworkHistory.Add(NetworkUsage);
 
             DataUpdated?.Invoke();
         }
         
+        public void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
+        {
+         
+            var dataDict = DBArithmetic.LineGraphHistoricalProducer(startDate, endDate);
+            HistoricalCpuHistory = dataDict["CPU"];
+            HistoricalRamHistory = dataDict["RAM"];
+            HistoricalDiskHistory = dataDict["DISK"];
+            HistoricalNetworkHistory = dataDict["NET"];
+            
+            DataUpdated?.Invoke();
+        }
 
 
 

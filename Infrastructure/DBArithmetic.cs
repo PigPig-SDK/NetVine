@@ -164,4 +164,26 @@ public static class DBArithmetic
         existingEntry.NetworkUsageTotal +=  newEntry.NetworkUsage;
         
     }
+
+    public static Dictionary<string, List<double>> LineGraphHistoricalProducer(DateTime? date1, DateTime? date2)
+    {
+        using (var db = new DBInteract())
+        {
+            
+            var capturedData = db.ProgramDataTable.Where(x =>
+                    (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)).ToList();
+
+            var dict = new Dictionary<string, List<double>>
+            {
+                ["CPU"] = capturedData.Select(x => (double) x.CpuUsage).ToList(),
+                ["RAM"] = capturedData.Select(x => (double) x.MemoryUsage).ToList(),
+                ["DISK"] = capturedData.Select(x => (double) x.DiskUsage).ToList(),
+                ["NET"] = capturedData.Select(x => (double) x.NetworkUsage).ToList()
+            };
+            
+            return dict;
+        }
+    }
+    
+    
 }

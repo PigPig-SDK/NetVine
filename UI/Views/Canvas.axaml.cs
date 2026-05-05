@@ -97,20 +97,17 @@ public partial class Canvas : UserControl
         var history = _vm.SelectedResource switch
         {
             ChartService.CPU => (data: _vm.CpuHistory, title: "CPU (%)"),
-            ChartService.CPUAvg =>  (data: _vm.CpuAvgHistory, title: "CPU Avg (%)"),
-            ChartService.CPUPeak =>  (data: _vm.CpuPeakHistory, title: "CPU Peak (%)"),
+            ChartService.CPUHistory =>  (data: _vm.CpuAvgHistory, title: "CPU History (%)"),
             
             ChartService.RAM => (data: _vm.RamHistory, title: "RAM (MB)"),
-            ChartService.RAMAvg => (data: _vm.RamAvgHistory, title: "RAM Avg (MB)"),
-            ChartService.RAMPeak => (data: _vm.RamPeakHistory, title: "RAM Peak (MB)"),
+            ChartService.RAMHistory => (data: _vm.RamAvgHistory, title: "RAM History (MB)"),
             
             ChartService.DISK => (data: _vm.DiskHistory, title: "Disk (%)"),
-            ChartService.DISKAvg => (data: _vm.DiskAvgHistory, title: "Disk Avg (%)"),
-            ChartService.DISKPeak => (data: _vm.DiskPeakHistory, title: "Disk Peak(%)"),
+            ChartService.DISKHistory => (data: _vm.DiskAvgHistory, title: "Disk History (%)"),
             
             ChartService.NET => (data: _vm.NetworkHistory, title: "Network (MB/s)"),
-            ChartService.NETAvg => (data: _vm.NetworkAvgHistory, title: "Network Avg (MB/s)"),
-            ChartService.NETPeak => (data: _vm.NetworkPeakHistory, title: "Network Peak (MB/s)"),
+            ChartService.NETHistory => (data: _vm.NetworkAvgHistory, title: "Network History (MB/s)"),
+        
             _ => (data: _vm.CpuHistory, title: "CPU (%)")
         };
 
@@ -283,7 +280,7 @@ public partial class Canvas : UserControl
 
     private void SetLimits()
     {
-        if (_vm.SelectedResource == ChartService.RAM || _vm.SelectedResource == ChartService.RAMAvg || _vm.SelectedResource == ChartService.RAMPeak)
+        if (_vm.SelectedResource == ChartService.RAM || _vm.SelectedResource == ChartService.RAMHistory)
         {
             _canvasPlot.Plot.Axes.SetLimitsY(0, _vm.RAMTotal);
             _canvasPlot.Plot.Axes.AutoScaleX();
@@ -315,6 +312,8 @@ public partial class Canvas : UserControl
             
         HistoricalStartGraph = dateRange.Value.date1;
         HistoricalEndGraph = dateRange.Value.date2;
+        
+        ResourceService.Instance.TimeFrameUpdate(HistoricalStartGraph, HistoricalEndGraph);
             
         mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartGraph, HistoricalEndGraph);
     }

@@ -22,21 +22,16 @@ namespace UI.ViewModels
         public List<IProgramData> LatestSnapshot => _resourceService.LatestSnapshot;
 
         public List<List<IProgramData>> SnapshotHistory => _resourceService.SnapshotHistory;
-        public List<double> CpuHistory => _resourceService.CpuHistory;
-        public List<double> CpuAvgHistory => _resourceService.CpuAvgHistory;
-        public List<double> CpuPeakHistory => _resourceService.CpuPeakHistory;
+        public List<double> CpuHistory => _resourceService.LiveCpuHistory;
+        public List<double> CpuAvgHistory => _resourceService.HistoricalCpuHistory;
+        public List<double> RamHistory => _resourceService.LiveRamHistory;
+        public List<double> RamAvgHistory => _resourceService.HistoricalRamHistory;
         
-        public List<double> RamHistory => _resourceService.RamHistory;
-        public List<double> RamAvgHistory => _resourceService.RamAvgHistory;
-        public List<double> RamPeakHistory => _resourceService.RamPeakHistory;
+        public List<double> DiskHistory => _resourceService.LiveDiskHistory;
+        public List<double> DiskAvgHistory => _resourceService.HistoricalDiskHistory;
         
-        public List<double> DiskHistory => _resourceService.DiskHistory;
-        public List<double> DiskAvgHistory => _resourceService.DiskAvgHistory;
-        public List<double> DiskPeakHistory => _resourceService.DiskPeakHistory;
-        
-        public List<double> NetworkHistory => _resourceService.NetworkHistory;
-        public List<double> NetworkAvgHistory => _resourceService.NetworkAvgHistory;
-        public List<double> NetworkPeakHistory => _resourceService.NetworkPeakHistory;
+        public List<double> NetworkHistory => _resourceService.LiveNetworkHistory;
+        public List<double> NetworkAvgHistory => _resourceService.HistoricalNetworkHistory;
 
         public string SelectedResource => _chartService.SelectedResource;
 
