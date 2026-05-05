@@ -3,7 +3,8 @@ namespace Infrastructure;
 
 public static class DBArithmetic
 {
-    
+    private const string ComboString = "Combination";
+
     /// <summary>
     /// Takes in data, and calculates cumulative averages in Program Data Historical Table. If an entry doesnt exist,
     /// one is made with existing db data.
@@ -25,11 +26,11 @@ public static class DBArithmetic
                     }
                 }
 
-                if(!db.ValueInPDH(new ProgramData() { SystemName = "Combination", ProcessName = data.ProcessName }))
+                if(!db.ValueInPDH(new ProgramData() { SystemName = ComboString, ProcessName = data.ProcessName }))
                 {
                     var entryCombo =
                         TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable
-                                .Where(x => x.ProcessName == data.ProcessName), "Combination")
+                                .Where(x => x.ProcessName == data.ProcessName), ComboString)
                             .AsEnumerable()).FirstOrDefault();
                     
                     if (entryCombo != null)
@@ -44,7 +45,7 @@ public static class DBArithmetic
                     HistoricalCumulativeUpdater(existingNotComboEntry, data);
                 }
                 
-                var existingComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == "Combination" && x.ProcessName == data.ProcessName);
+                var existingComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == ComboString && x.ProcessName == data.ProcessName);
                 if (existingComboEntry != null)
                 {
                     HistoricalCumulativeUpdater(existingComboEntry, data);
@@ -63,7 +64,7 @@ public static class DBArithmetic
         {
             if (!date1.HasValue && !date2.HasValue)
             {
-                return db.PDHTable.Where(x => x.SystemName != "Combination").ToList();
+                return db.PDHTable.Where(x => x.SystemName != ComboString).ToList();
             }
             
             return TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
@@ -85,11 +86,11 @@ public static class DBArithmetic
             
             if (!date1.HasValue && !date2.HasValue)
             {
-                return db.PDHTable.Where(x => x.SystemName == "Combination").ToList();
+                return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
             }
             
             return TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
-                && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),"Combination")
+                && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
                 .AsEnumerable())
                 .ToList();
         }
