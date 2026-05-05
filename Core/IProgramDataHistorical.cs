@@ -17,7 +17,7 @@ public interface IProgramDataHistorical
     /// <summary>
     /// The name of the process
     /// </summary>
-    public string TimeFrame { get; set; }
+    public string TimeFrame { get; }
     /// <summary>
     /// Start date of TimeFrame, used in DBArithmetic
     /// </summary>

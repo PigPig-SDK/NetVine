@@ -13,12 +13,11 @@ public static class DBArithmetic
     {
             foreach(var data in currentData)
             {
-                if(!db.ValueInPDH(data))
+                if(!db.ValueInPDH(data.SystemName, data.ProcessName))
                 {
                     var entryNotCombo =
-                        TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable
-                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName))
-                            .AsEnumerable()).FirstOrDefault();
+                        HistoricalQueryBuilder(db.ProgramDataTable
+                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName)).FirstOrDefault();
                     
                     if (entryNotCombo != null)
                     {
@@ -26,12 +25,11 @@ public static class DBArithmetic
                     }
                 }
 
-                if(!db.ValueInPDH(new ProgramData() { SystemName = ComboString, ProcessName = data.ProcessName }))
+                if(!db.ValueInPDH(ComboString, data.ProcessName))
                 {
                     var entryCombo =
-                        TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable
-                                .Where(x => x.ProcessName == data.ProcessName), ComboString)
-                            .AsEnumerable()).FirstOrDefault();
+                        HistoricalQueryBuilder(db.ProgramDataTable
+                                .Where(x => x.ProcessName == data.ProcessName), ComboString).FirstOrDefault();
                     
                     if (entryCombo != null)
                     { 
@@ -67,10 +65,9 @@ public static class DBArithmetic
                 return db.PDHTable.Where(x => x.SystemName != ComboString).ToList();
             }
             
-            return TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
+            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
                     (!date1.HasValue || x.Date >= date1)
                     && (!date2.HasValue || x.Date <= date2)))
-                .AsEnumerable())
                 .ToList();
         }
     }
@@ -89,9 +86,8 @@ public static class DBArithmetic
                 return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
             }
             
-            return TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
+            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
                 && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
-                .AsEnumerable())
                 .ToList();
         }
     }
@@ -128,20 +124,6 @@ public static class DBArithmetic
 
                 NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
             });
-    }
-    
-    /// <summary>
-    /// Builder method for TimeFrame, ostraciszed from QueryBuilder because of query - string sql shenanigans.
-    /// </summary>
-    /// <returns>Historical Data</returns>
-    static IEnumerable<ProgramDataHistorical> TimeFrameBuilder(
-        IEnumerable<ProgramDataHistorical> inputData)
-    {
-        return inputData.Select(x =>
-        {
-            x.TimeFrame = x.StartDate.ToString("MMMM d, yyyy h:mm tt") + " - " + x.EndDate.ToString("MMMM d, yyyy h:mm tt");
-            return x;
-        });
     }
     
     /// <summary>
