@@ -75,4 +75,10 @@ public class NotificationManager
             return false;
         }
     }
+
+    public static void ClearMessages()
+    {
+        Instance._notifications.Clear();
+        TrySaveToFile();
+    }
 }
