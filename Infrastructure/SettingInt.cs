@@ -16,6 +16,8 @@ public enum SettingInt
     MinimizeOnClose,
     StartMinimized,
     NetworkDisabled,
+    MaxHistory,
+    TopCount,
     AllowHostManipulation,
     UseNetworkPassword,
 };
