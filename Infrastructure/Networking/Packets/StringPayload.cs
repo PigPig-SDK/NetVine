@@ -11,7 +11,7 @@ public class StringPayload : IPacketPayload
     [ProtoMember(1)]
     public string Value { get; set; }
     [ProtoMember(2)]
-    public NotificationPriority Notification;
+    public NotificationPriority Notification = NotificationPriority.Message;
 
     private StringPayload() 
     {
@@ -25,7 +25,12 @@ public class StringPayload : IPacketPayload
 
     public void Execute(bool isServer, Guid id)
     {
-        Core.Debug.Log($"{id} : {Value}");
-        NotificationManager.WriteNotification(new(Notification, Value));//Store outside messages for viewing later.
+        NotificationManager.WriteNotification(new(Notification, Value));
+        //Relay to other clients.
+        if(isServer)
+        {
+            var data = Packet.CreatePacket(this).ToBytes();
+            NetworkManager.Instance.Host?.Multicast(data);
+        }
     }
 }
