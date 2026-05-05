@@ -20,16 +20,16 @@ namespace UI.ViewModels
         public double NetworkUsage { get; private set; }
         
         public List<double> LiveCpuHistory { get; } = new();
-        public List<double> HistoricalCpuHistory { get; private set; }
+        public List<double> HistoricalCpuHistory { get; private set; } = new();
         
         public List<double> LiveRamHistory { get; } = new();
-        public List<double> HistoricalRamHistory { get; private set; }
+        public List<double> HistoricalRamHistory { get; private set; } = new();
         
         public List<double> LiveDiskHistory { get; } = new();
-        public List<double> HistoricalDiskHistory { get; private set; }
+        public List<double> HistoricalDiskHistory { get; private set; } = new();
         
         public List<double> LiveNetworkHistory { get; } = new();
-        public List<double> HistoricalNetworkHistory { get; private set; }
+        public List<double> HistoricalNetworkHistory { get; private set; } = new();
 
         public List<List<IProgramData>> SnapshotHistory { get; } = new();
 
