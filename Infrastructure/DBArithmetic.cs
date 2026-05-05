@@ -15,11 +15,9 @@ public static class DBArithmetic
                 if(!db.ValueInPDH(data))
                 {
                     var entryNotCombo =
-                        db.ProgramDataTable
-                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName)
-                        .AsEnumerable().GroupBy(x => new { x.SystemName, x.ProcessName })
-                        .Select(y => HistoricalBuilder(y))
-                        .FirstOrDefault();
+                        TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable
+                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName))
+                            .AsEnumerable()).FirstOrDefault();
                     
                     if (entryNotCombo != null)
                     {
@@ -30,11 +28,9 @@ public static class DBArithmetic
                 if(!db.ValueInPDH(new ProgramData() { SystemName = "Combination", ProcessName = data.ProcessName }))
                 {
                     var entryCombo =
-                        db.ProgramDataTable
-                            .Where(x => x.ProcessName == data.ProcessName)
-                            .AsEnumerable().GroupBy(x => new { x.SystemName, x.ProcessName })
-                            .Select(y => HistoricalBuilder(y, "Combination"))
-                            .FirstOrDefault();
+                        TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable
+                                .Where(x => x.ProcessName == data.ProcessName), "Combination")
+                            .AsEnumerable()).FirstOrDefault();
                     
                     if (entryCombo != null)
                     { 
@@ -70,10 +66,11 @@ public static class DBArithmetic
                 return db.PDHTable.Where(x => x.SystemName != "Combination").ToList();
             }
             
-            return db.ProgramDataTable.Where(x => (!date1.HasValue || x.Date >= date1.Value)
-                                                  && (!date2.HasValue || x.Date <= date2.Value))
-                .GroupBy(x => new { x.SystemName, x.ProcessName }).AsEnumerable()
-                .Select(y => HistoricalBuilder(y)).ToList();
+            return TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
+                    (!date1.HasValue || x.Date >= date1)
+                    && (!date2.HasValue || x.Date <= date2)))
+                .AsEnumerable())
+                .ToList();
         }
     }
 
@@ -91,41 +88,59 @@ public static class DBArithmetic
                 return db.PDHTable.Where(x => x.SystemName == "Combination").ToList();
             }
             
-            return db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) &&
-                                                  (!date1.HasValue || x.Date >= date1)
-                                                  && (!date2.HasValue || x.Date <= date2))
-                .GroupBy(x => new { x.ProcessName }).AsEnumerable()
-                .Select(y => HistoricalBuilder(y, "Combination")).ToList();
+            return TimeFrameBuilder(HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
+                && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),"Combination")
+                .AsEnumerable())
+                .ToList();
         }
     }
 
-
+    
+    
     /// <summary>
-    /// Builder Helper method for Historical Data so I didnt have to repeat this 10 unjillion times.
+    /// Builder Helper method for Historical Data Queries so I didnt have to repeat this 10 unjillion times.
     /// </summary>
     /// <returns>Historical Data</returns>
-    static ProgramDataHistorical HistoricalBuilder(IGrouping<object, ProgramData> y, String? combinationName = null)
+    static IQueryable<ProgramDataHistorical> HistoricalQueryBuilder(
+        IQueryable<ProgramData> inputQuery, String? combinationName = null)
     {
-        return new ProgramDataHistorical()
+        return inputQuery.GroupBy(x => new { x.SystemName, x.ProcessName })
+            .Select(y => new ProgramDataHistorical()
+            {
+                SystemName = combinationName ?? y.Key.SystemName,
+                ProcessName = y.Key.ProcessName,
+
+                StartDate = y.Min(z => z.Date).Date,
+                EndDate = y.Max(z => z.Date).Date,
+
+                ValueCount = y.Count(),
+
+                CpuUsageAvg = y.Average(z => z.CpuUsage),
+                DiskUsageAvg = y.Average(z => z.DiskUsage),
+                NetworkUsageAvg = y.Average(z => z.NetworkUsage),
+                MemoryUsageAvg = y.Average(z => z.MemoryUsage),
+
+                CpuUsagePeak = y.Max(z => z.CpuUsage),
+                DiskUsagePeak = y.Max(z => z.DiskUsage),
+                NetworkUsagePeak = y.Max(z => z.NetworkUsage),
+                MemoryUsagePeak = y.Max(z => z.MemoryUsage),
+
+                NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
+            });
+    }
+    
+    /// <summary>
+    /// Builder method for TimeFrame, ostraciszed from QueryBuilder because of query - string sql shenanigans.
+    /// </summary>
+    /// <returns>Historical Data</returns>
+    static IEnumerable<ProgramDataHistorical> TimeFrameBuilder(
+        IEnumerable<ProgramDataHistorical> inputData)
+    {
+        return inputData.Select(x =>
         {
-            SystemName = combinationName ?? y.First().SystemName,
-            ProcessName = y.First().ProcessName,
-            TimeFrame = y.Min(z => z.Date).ToString("MMMM d, yyyy h:mm tt")
-                        + " - " + y.Max(z => z.Date).ToString("MMMM d, yyyy h:mm tt"),
-            ValueCount =  y.Count(),
-            
-            CpuUsageAvg = y.Average(z => z.CpuUsage),
-            DiskUsageAvg = y.Average(z => z.DiskUsage),
-            NetworkUsageAvg = y.Average(z => z.NetworkUsage),
-            MemoryUsageAvg = y.Average(z => z.MemoryUsage),
-
-            CpuUsagePeak = y.Max(z => z.CpuUsage),
-            DiskUsagePeak = y.Max(z => z.DiskUsage),
-            NetworkUsagePeak = y.Max(z => z.NetworkUsage),
-            MemoryUsagePeak = y.Max(z => z.MemoryUsage),
-
-            NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
-        };
+            x.TimeFrame = x.StartDate.ToString("MMMM d, yyyy h:mm tt") + " - " + x.EndDate.ToString("MMMM d, yyyy h:mm tt");
+            return x;
+        });
     }
     
     /// <summary>

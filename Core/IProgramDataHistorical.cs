@@ -19,6 +19,14 @@ public interface IProgramDataHistorical
     /// </summary>
     public string TimeFrame { get; set; }
     /// <summary>
+    /// Start date of TimeFrame, used in DBArithmetic
+    /// </summary>
+    public DateTime StartDate { get; set; }
+    /// <summary>
+    /// End date of TimeFrame, used in DBArithmetic
+    /// </summary>
+    public DateTime EndDate { get; set; }
+    /// <summary>
     /// Cpu usage as a avg %
     /// </summary>
     public float CpuUsageAvg { get; set; }
