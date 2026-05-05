@@ -57,8 +57,6 @@ namespace UI.ViewModels
             AddCappedSnapshot(SnapshotHistory, data.ToList());
 
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
-            CpuUsageAvg = data.Average(p => p.CpuUsage);
-            CpuUsagePeak = Math.Max(CpuUsage, CpuUsagePeak);
             
             CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
             RamUsage = data.Sum(p => p.MemoryUsage);
@@ -70,10 +68,10 @@ namespace UI.ViewModels
             LiveDiskHistory.Add(DiskUsage);
             LiveNetworkHistory.Add(NetworkUsage);
 
-            AddCapped(CpuHistory, CpuUsage);
-            AddCapped(RamHistory, RamUsage);
-            AddCapped(DiskHistory, DiskUsage);
-            AddCapped(NetworkHistory, NetworkUsage);
+            AddCapped(LiveCpuHistory, CpuUsage);
+            AddCapped(LiveRamHistory, RamUsage);
+            AddCapped(LiveDiskHistory, DiskUsage);
+            AddCapped(LiveNetworkHistory, NetworkUsage);
 
             DataUpdated?.Invoke();
         }
