@@ -35,7 +35,7 @@ namespace UI.ViewModels
         /// Contains the update logic, getting the list of up-to-date data for the live view
         /// </summary>
         /// <param name="data"></param> new data to take in
-        public void UpdateLiveData(List<IProgramData> data)
+        public void UpdateLiveData(List<IProgramData> data, out bool needsRefresh)
         {
             //Debug.Log("Table Live updated");
             var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
@@ -53,7 +53,6 @@ namespace UI.ViewModels
 
             // Remove stale rows -- I guess that this is needed in order to keep things sorted. If not we can figure out a fix like dummy rows or something
             var toRemove = TableRows.Where(r => !incoming.ContainsKey((r.SystemName, r.AppName))).ToList();
-           
             if (toRemove.Count > 0)
             {
                 Dispatcher.UIThread.Post(() =>
@@ -69,6 +68,8 @@ namespace UI.ViewModels
 
                 }, DispatcherPriority.Background);
             }
+
+            needsRefresh = (existing.Count == incoming.Count);
         }
 
 
@@ -100,26 +101,6 @@ namespace UI.ViewModels
             Debug.Log($"Removing {toRemove.Count} stale rows");
             foreach (var row in toRemove)
                 TableRows.Remove(row);
-        }
-
-
-        /// <summary>
-        /// Kills an application by its primary key (system, app)
-        /// </summary>
-        /// <param name="systemName"></param>
-        /// <param name="appName"></param>
-        /// <returns></returns>
-        public async Task KillAndRemoveByKey(string systemName, string appName)
-        {
-            await AppQuitter.KillProcessByNameAsync(appName);
-
-            Dispatcher.UIThread.Post(() =>
-            {
-                ClearSelection();
-                var row = TableRows.FirstOrDefault(r => r.SystemName == systemName && r.AppName == appName);
-                if (row != null)
-                    TableRows.Remove(row);
-            }, DispatcherPriority.Background);
         }
 
 

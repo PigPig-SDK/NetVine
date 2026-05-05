@@ -154,7 +154,6 @@ namespace UI.ViewModels
             {
                 _tableData.UpdateHistoricalData(data);
                 TableRowsView.Refresh();
-                ReapplySort();
                 Debug.Log("OnSnapshot historical update completed");
             });
         }
@@ -184,9 +183,8 @@ namespace UI.ViewModels
             
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    _tableData.UpdateLiveData(data);
-                    TableRowsView.Refresh();
-                    ReapplySort();
+                    _tableData.UpdateLiveData(data, out var needsRefresh);
+                    if (needsRefresh) TableRowsView.Refresh();
                 });
             }
         }
@@ -314,7 +312,7 @@ namespace UI.ViewModels
             Dispatcher.UIThread.Post(() =>
             {
                 Debug.Log("Dispatcher post executing for live");
-                _tableData.UpdateLiveData(data!);
+                _tableData.UpdateLiveData(data!, out var b);
                 OnIsVisiblePropertiesChanged();
                 TableRowsView.Refresh();
                 Debug.Log($"live data update complete");
@@ -347,11 +345,21 @@ namespace UI.ViewModels
                 _tableViewActive = true;
                 //resubscribe to events
                 // should be able to delete the subscribing and unsubscribing
+                LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 LiveViewModel.ViewChangedEvent += ViewChangedLive;
+
+                CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
+
+                SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
+
+                DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
                 DBInteract.OnProgramListAdded += OnSnapshotHistorical;
+
+                MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
+
             }
             else
             {
@@ -363,15 +371,6 @@ namespace UI.ViewModels
                 DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
             }
-        }
-
-        private void ReapplySort()
-        {
-            if (TableRowsView.SortDescriptions.Count == 0) return;
-            var sorts = TableRowsView.SortDescriptions.ToList();
-            TableRowsView.SortDescriptions.Clear();
-            foreach (var sort in sorts)
-                TableRowsView.SortDescriptions.Add(sort);
         }
 
         private static bool TryParseSearchExpression(TableRow target)
