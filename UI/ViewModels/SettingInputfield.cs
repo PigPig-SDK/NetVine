@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Infrastructure;
 using System;
@@ -13,11 +14,11 @@ public class SettingInputField<T> : SettingInput where T : Enum
 
     public override Enum? GenericSetting => ConfigSetting;
 
-    public int MaxInputSize = int.MaxValue - 1;
-    public int MaxAcceptedNumericalSize = int.MaxValue;
-    public int MinAcceptedNumericalSize = 0;
 
-    public SettingInputField(string label, string discription, StringInputMethod inputType, T configSetting, params string[] keywords)
+    public SettingInputField(string label, string discription, StringInputMethod inputType, T configSetting, params string[] keywords) :
+        this(label, discription, inputType, configSetting, int.MaxValue, 0, keywords) { }
+
+    public SettingInputField(string label, string discription, StringInputMethod inputType, T configSetting, decimal maxAcceptedNumericalSize = decimal.MaxValue, decimal minAcceptedNumericalSize = 0, params string[] keywords)
     {
         Label = label;
         Keywords = keywords;
@@ -27,9 +28,26 @@ public class SettingInputField<T> : SettingInput where T : Enum
 
         string inputString = ComputeInitialInputString();
 
-        TextBox textbox = new TextBox { Text = inputString, Width = 120 };
+        TemplatedControl textbox;
+        if (inputType == StringInputMethod.StringInput)
+        {
+            textbox = new TextBox { Text = inputString, Width = 120 };
+        }
+        else
+        {
+            textbox = new NumericUpDown
+            {
+                Value = decimal.Parse(inputString),
+                Width = 120,
+                ShowButtonSpinner = false,
+                Minimum = minAcceptedNumericalSize,
+                Maximum = maxAcceptedNumericalSize,
+                FormatString = inputType == StringInputMethod.IntInput ? "0" : "0.0"
+            };
+        }
+
+
         textbox.DetachedFromLogicalTree += TextboxDetachedFromLogicalTree;
-        textbox.AddHandler(InputElement.TextInputEvent, InputCatcher, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         textbox.Margin = new Avalonia.Thickness(0, 0, InputDistanceFromRight, 0);
         Input = textbox;
     }
@@ -37,33 +55,6 @@ public class SettingInputField<T> : SettingInput where T : Enum
     private void TextboxDetachedFromLogicalTree(object? sender, Avalonia.LogicalTree.LogicalTreeAttachmentEventArgs e)
     {
         UnbindSettingChange();
-    }
-
-    private void InputCatcher(object? sender, Avalonia.Input.TextInputEventArgs e)
-    {
-        if (e.Text == null) return;
-
-        if (Input is not TextBox textbox) return;
-        if (textbox.Text == null) return;
-
-        string requestedNewInput = textbox.Text + e.Text;
-
-        if (e.Text.Length >= MaxInputSize + 1) e.Handled = true;
-
-        switch (InputType)
-        {
-            case StringInputMethod.StringInput:
-                return;
-            case StringInputMethod.FloatInput:
-                if (requestedNewInput.Count(c => c == '.') > 1) e.Handled = true;
-                break;
-            case StringInputMethod.IntInput:
-                if (e.Text.Any(char.IsDigit) == false) e.Handled = true;//Don't accept new input...
-                //Exceeds numeric size
-                if (int.TryParse(requestedNewInput, out int result)
-                    && ((result > MaxAcceptedNumericalSize) || (result < MinAcceptedNumericalSize))) e.Handled = true;
-                break;
-        }
     }
     private string ComputeInitialInputString()
     {
@@ -97,6 +88,27 @@ public class SettingInputField<T> : SettingInput where T : Enum
             ConfigManager.TrySaveToFile();
     }
 
+    private void NumericSubmission(NumericUpDown textBox)
+    {
+        if (textBox.Value == null) return;
+        decimal? textOut = textBox.Value;
+        if(textOut is null) return;
+
+        if (ConfigSetting is SettingInt settingInt)
+        {
+            ConfigManager.WriteSetting(settingInt, (int)textOut);
+        }
+        else if (ConfigSetting is SettingFloat settingFloat)
+        {
+            ConfigManager.WriteSetting(settingFloat, (int)textOut);
+        }
+        else if (ConfigSetting is SettingString settingString)
+            ConfigManager.WriteSetting(settingString, textOut.ToString()!);
+
+        if (IsWritingActive)
+            ConfigManager.TrySaveToFile();
+    }
+
     private void OnSettingChanged(Enum setting)
     {
         if(setting is T settingOfType)
@@ -105,6 +117,8 @@ public class SettingInputField<T> : SettingInput where T : Enum
             {
                 if(Input is TextBox textbox)
                     textbox.Text = ComputeInitialInputString();
+                else if(Input is NumericUpDown numericUpDown)
+                    numericUpDown.Value = decimal.Parse(ComputeInitialInputString());
             }
         }
     }
@@ -116,6 +130,10 @@ public class SettingInputField<T> : SettingInput where T : Enum
         if (Input is TextBox textbox)
         {
             TextboxSubmission(textbox);
+        }
+        else if(Input is NumericUpDown updown)
+        {
+            NumericSubmission(updown);
         }
     }
 
