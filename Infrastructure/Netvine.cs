@@ -32,4 +32,12 @@ public static class Netvine
         //OS startup binding configuration
         SystemStartupBinder.Setup();
     }
+    public static void Shutdown()
+    {
+        ConfigManager.TrySaveToFile();
+
+        NotificationManager.TrySaveToFile();
+
+        NetworkManager.Instance.Disconnect();
+    }
 }

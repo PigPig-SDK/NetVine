@@ -35,7 +35,6 @@ public class NotificationManager
     public static void WriteNotification(Notification notification)
     {
         Instance._notifications.Add(notification);
-        TrySaveToFile();
     }
 
     public static void Initilaize()
@@ -62,7 +61,7 @@ public class NotificationManager
         var json = JsonSerializer.Serialize(notificationManager, options);
         File.WriteAllText(path, json);
     }
-    private static bool TrySaveToFile()
+    public static bool TrySaveToFile()
     {
         try
         {
