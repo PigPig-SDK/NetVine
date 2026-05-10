@@ -80,4 +80,14 @@ public class NotificationManager
         Instance._notifications.Clear();
         TrySaveToFile();
     }
+
+    public static void ProgramResourceNotification(ResourceTypes resource, ProgramData data)
+    {
+        WriteNotification(new Notification(NotificationPriority.Alert, $"{data.ProcessName} has been exceded in {resource} for this system!"));
+    }
+
+    public static void SystemResourceNotification(ResourceTypes resource)
+    {
+        WriteNotification(new Notification(NotificationPriority.Alert, $"{resource} total has been exceded for this sytem!"));
+    }
 }

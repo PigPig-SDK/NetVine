@@ -31,6 +31,9 @@ public static class Netvine
 
         //OS startup binding configuration
         SystemStartupBinder.Setup();
+
+        //Notification Tracker setup last. Timings are not important
+        NotificationTracker.Setup();
     }
     public static void Shutdown()
     {
