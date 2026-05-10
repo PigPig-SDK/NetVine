@@ -349,7 +349,7 @@ public class ConfigManager
             if (parser.Current is null) return connectionInfo;
             string value = ((Scalar)parser.Current).Value;
             parser.MoveNext();
-            var split = value.Split(':');
+            var split = value.Split(',');
 
             if (split.Length != 3)
                 return connectionInfo;
@@ -366,7 +366,7 @@ public class ConfigManager
         {
             var myType = (ConnectionInfo)value!;
 
-            emitter.Emit(new Scalar($"{myType.Ip}:{myType.Port}:{myType.Password}"));
+            emitter.Emit(new Scalar($"{myType.Ip},{myType.Port},{myType.Password}"));
         }
     }
 }

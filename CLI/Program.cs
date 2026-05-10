@@ -19,6 +19,8 @@ var app = new App()
     .AddCommand<QuitCommand>()
     .AddCommand<ConfigCommand>()
     .AddCommand<ViewCommand>()
+    .AddCommand<NotificationsCommand>()
+    .AddCommand<MessageCommand>()
     .AddCommand<HelpCommand>();
 
 

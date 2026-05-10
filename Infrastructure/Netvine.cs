@@ -1,5 +1,6 @@
 ﻿using Core;
 using Infrastructure.Networking;
+using Infrastructure.Notifications;
 
 namespace Infrastructure;
 
@@ -12,6 +13,9 @@ public static class Netvine
     {
         // Load configuration
         ConfigManager.Initialize();
+
+        // Setup notification
+        NotificationManager.Initilaize();
 
         // Setup history tracker.
         SystemHistory.SetupInstance();
@@ -27,5 +31,13 @@ public static class Netvine
 
         //OS startup binding configuration
         SystemStartupBinder.Setup();
+    }
+    public static void Shutdown()
+    {
+        ConfigManager.TrySaveToFile();
+
+        NotificationManager.TrySaveToFile();
+
+        NetworkManager.Instance.Disconnect();
     }
 }

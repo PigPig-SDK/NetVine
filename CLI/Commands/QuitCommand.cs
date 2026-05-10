@@ -1,4 +1,6 @@
-﻿namespace CLI.Commands;
+﻿using Infrastructure;
+
+namespace CLI.Commands;
 
 public class QuitCommand : Command
 {
@@ -12,6 +14,7 @@ public class QuitCommand : Command
 
     public override void Execute(string[] args)
     {
+        Netvine.Shutdown();
         App.IsRunning = false;
     }
 }
