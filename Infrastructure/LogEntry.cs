@@ -9,7 +9,7 @@ namespace Infrastructure
     public class LogEntry
     {
         public string Timestamp { get; set; }
-        public string Level { get; set; }      // e.g. "INFO", "WARN", "ERROR"
+        public string Level { get; set; }
         public string Message { get; set; }
         public string LevelColor => Level switch
         {
