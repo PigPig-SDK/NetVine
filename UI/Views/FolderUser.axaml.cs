@@ -23,6 +23,8 @@ public partial class FolderUser : UserControl
 
     private readonly User _user;
 
+    public String Username => _user.Username;
+
     public FolderUser(User user)
     {
         InitializeComponent();
