@@ -6,7 +6,9 @@ using Core;
 using Infrastructure;
 using Infrastructure.Networking;
 using System;
+using System.Threading.Tasks;
 using UI.ViewModels;
+using UI.Views;
 
 namespace UI;
 
@@ -45,11 +47,13 @@ public partial class FolderUser : UserControl
         }
     }
 
-    private void OnClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void OnClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         IsSelected = !IsSelected;
         FolderViewData.OnSelectionUpdated?.Invoke();
         UpdateVisual();
+        ToastWindow toast = new ToastWindow("Fuck");
+        await toast.ShowToast();
     }
 
     private void UpdateVisual()
