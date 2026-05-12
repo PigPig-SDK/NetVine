@@ -10,6 +10,8 @@ public class Host : SslServer
 
     protected override SslSession CreateSession() => new HostSession(this);
 
+    public ICollection<SslSession> OurSessions => Sessions.Values;
+
     /// <summary>
     /// Override used to prevent sending unauthenticated users packets
     /// </summary>

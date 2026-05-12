@@ -207,6 +207,19 @@ public class NetworkManager
                 connectionContext.Send(bytes);
         }
     }
+    public void SendToUser(string username, byte[] bytes)
+    {
+        if (Host is null) return;
+
+        foreach (var session in Host.OurSessions.ToArray())
+        {
+            if(session is HostSession hostSess)
+            {
+                if (hostSess.Username == username)
+                    hostSess.Send(bytes);
+            }
+        }
+    }
     public void DisconnectHost()
     {
         Host?.DisconnectAll();
