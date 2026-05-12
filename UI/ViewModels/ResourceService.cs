@@ -73,9 +73,14 @@ namespace UI.ViewModels
         private void OnRemoteSnapshot(ProgramData[] data)
         {
             if (data.Length == 0) return;
+
             var byDevice = data.GroupBy(p => p.SystemName);
             foreach (var group in byDevice)
+            {
+                // skip local machine — already handled by OnLocalSnapshot
+                if (group.Key == Environment.MachineName) continue;
                 OnSnapshot(group.Key, group.Cast<IProgramData>().ToList());
+            }
         }
 
         private void OnUserConnectionModified(string username, bool isAdded)
@@ -107,10 +112,10 @@ namespace UI.ViewModels
             var disk = data.Sum(p => p.DiskUsage);
             var network = data.Sum(p => p.NetworkUsage);
 
-            //LiveCpuHistory.Add(cpu);
-            //LiveRamHistory.Add(ram);
-            //LiveDiskHistory.Add(disk);
-            //LiveNetworkHistory.Add(network);
+            LiveCpuHistory.Add(cpu);
+            LiveRamHistory.Add(ram);
+            LiveDiskHistory.Add(disk);
+            LiveNetworkHistory.Add(network);
 
             AddCapped(_cpuHistories[device], cpu);
             AddCapped(_ramHistories[device], ram);
