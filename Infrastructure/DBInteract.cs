@@ -374,9 +374,9 @@ public class DBInteract : DbContext
     /// Cecks if a specific value is contained within the Program Data Historical Table
     /// </summary>
     /// 
-    public bool ValueInPDH(ProgramData data)
+    public bool ValueInPDH(string systenName, string processName)
     {
-        return this.PDHTable.Find(data.SystemName, data.ProcessName) != null;
+        return this.PDHTable.Find(systenName, processName) != null;
     }
     
     public CachedIcon? GetIconData(string processName) => IconTable.Find(processName);

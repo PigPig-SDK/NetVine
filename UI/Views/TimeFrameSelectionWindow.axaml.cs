@@ -6,9 +6,9 @@ namespace UI.Views
 {
     public partial class TimeFrameSelectionWindow : Window
     {
-        private static  DateTime? HistoricalStartInternal { get; set; }
+        public static  DateTime? HistoricalStartInternal { get; set; }
         
-        private static DateTime? HistoricalEndInternal { get; set; }
+        public static DateTime? HistoricalEndInternal { get; set; }
         public TimeFrameSelectionWindow()
         {
             InitializeComponent();

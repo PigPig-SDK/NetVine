@@ -6,7 +6,11 @@ public class ProgramDataHistorical : IProgramDataHistorical
 {
     public string SystemName { get; set; }
     public string ProcessName { get; set; }
-    public string TimeFrame { get; set; }
+    public string TimeFrame => StartDate.ToString("MMMM d, yyyy h:mm tt") + " - " + EndDate.ToString("MMMM d, yyyy h:mm tt");
+
+    public DateTime StartDate { get; set; }
+
+    public DateTime EndDate { get; set; }
     public int ValueCount { get; set; } = 0;
     public float CpuUsageAvg { get; set; }
     public float DiskUsageAvg { get; set; }
@@ -22,6 +26,5 @@ public class ProgramDataHistorical : IProgramDataHistorical
     {
         SystemName = string.Empty;
         ProcessName = string.Empty;
-        TimeFrame = string.Empty;
     }
 }
