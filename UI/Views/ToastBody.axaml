@@ -5,29 +5,44 @@
              mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="60"
              xmlns:local="using:UI"
              x:Class="UI.ToastBody">
-    <Button 
-    HorizontalAlignment="Stretch"
-    CornerRadius="0 16 0 16"
-    Click="PullOpenWindow"
-    Background="#80000000">
-      <Grid
-      HorizontalAlignment="Stretch" 
-      VerticalAlignment="Stretch">
-        <Image 
-        Source="/Assets/netvine_tiny_toast.png" 
-        ClipToBounds="True"
-        Width="100"
-        Height="100"
-        Margin="10"
-        HorizontalAlignment="Left"/>
-        <Ellipse Width="15" StrokeThickness="2" 
-        HorizontalAlignment="Left"
-        StrokeDashArray="5,2" Stroke="Black" 
-        Height="15" Margin="5,0,5,0" 
-        Fill="LightGreen" x:Name="ActivityCircle"/>
-        <TextBlock x:Name="NotificationBody"
-        Text="{Binding Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ToastBody}}"
-        VerticalAlignment="Center" HorizontalAlignment="Right"/>
-      </Grid>
-  </Button>
+    <Panel>
+        <Button
+        HorizontalAlignment="Stretch"
+        CornerRadius="0 16 0 16"
+        Click="PullOpenWindow"
+        BorderThickness="0"
+        Background="#90000000">
+            <Grid HorizontalAlignment="Stretch" 
+            VerticalAlignment="Stretch">
+                <Image
+                Source="/Assets/netvine_tiny_toast.png"
+                ClipToBounds="True"
+                Width="100"
+                Height="100"
+                Margin="10"
+                HorizontalAlignment="Left"/>
+                <Image
+                Source="/Assets/toast_ditherpng.png"
+                ClipToBounds="True"
+                Width="300"
+                Height="60"
+                Margin="-10"
+                HorizontalAlignment="Left"/>
+                <Ellipse Width="15" StrokeThickness="2"
+                         HorizontalAlignment="Left"
+                         StrokeDashArray="5,2" Stroke="Black"
+                         Height="15" Margin="5,0,5,0"
+                         Fill="LightGreen" x:Name="ActivityCircle"/>
+                <TextBlock x:Name="NotificationBody"
+                           Text="{Binding Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ToastBody}}"
+                           VerticalAlignment="Center" HorizontalAlignment="Right"/>
+            </Grid>
+        </Button>
+        <Border
+        CornerRadius="0 16 0 16"
+        BorderBrush="White"
+        BorderThickness="1"
+        IsHitTestVisible="False"
+        Background="Transparent"/>
+</Panel>
 </UserControl>
