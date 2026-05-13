@@ -2,11 +2,10 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Core;
 using Infrastructure;
-using ScottPlot.Colormaps;
-using SkiaSharp;
+using Infrastructure.Notifications;
 using System;
 using System.Threading.Tasks;
 using UI.ViewModels;
@@ -17,11 +16,15 @@ public class ToastWindow : Window
 {
     private const double _toastWidth = 300;
     private const double _toastHeight = 60;
-    private double? _animStartTime = null;
     private double _durationMs = 0;
 
+    private DispatcherTimer? _animationTimer;
+
     private ToastBody? locationControl;
-    public ToastWindow(string message)
+    private int animationRefire = 16;
+    DateTime startTime = DateTime.Now;
+
+    public ToastWindow(Notification notification)
     {
         var screen = Screens.Primary;
         if (screen is null)
@@ -46,7 +49,11 @@ public class ToastWindow : Window
         );
         Background = new SolidColorBrush(Color.Parse("#00000000"));//Transparent.
 
-        MainWindowViewModel.OnAnimateFrame += Animate;
+        _animationTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(animationRefire)//60fps
+        };
+        _animationTimer.Tick += Animate;
 
         ToastBody tb = new ToastBody
         {
@@ -56,47 +63,54 @@ public class ToastWindow : Window
             Margin = new Thickness(16, 0),
             Width = _toastWidth-20,
             Height = _toastHeight,
-            Title = message,
+            Title = notification.Title,
         };
-        tb.SetPinColor(ComputeColor());
+        tb.SetPinColor(ComputeColor(notification));
         locationControl = tb;
         Avalonia.Controls.Canvas.SetBottom(locationControl, -1000);//Start underground.
         Avalonia.Controls.Canvas.SetLeft(locationControl, 0);
 
         Avalonia.Controls.Canvas? canvas = new() { Children = { tb } };
-
         Content = canvas;
     }
 
-    private Color ComputeColor()
+    private void Animate(object? sender, EventArgs e)
     {
+        var delta = DateTime.Now - startTime;
+
+        AnimateLocal(delta.TotalSeconds);
+    }
+
+    private Color ComputeColor(Notification notification)
+    {
+        switch(notification.Priority)
+        {
+            case NotificationPriority.Alert:
+                return new Color(255, 255, 238, 140);
+            case NotificationPriority.Critical:
+                return new Color(255, 255, 116, 108);
+            case NotificationPriority.Message:
+                return new Color(255, 255, 255, 255);
+        }
+
         return new Color(255, 255, 255, 255);
     }
 
-    private void Animate(double time)
+    private void AnimateLocal(double time)
     {
-        if(_animStartTime is null)
-        {
-            _animStartTime = time;
-            return;
-        }
-
         if (locationControl is null) return;
-
-        double localTime = time - _animStartTime.Value;
 
         double startY = -100;
         double endY = 0;
         //Retreat message...
-        if (localTime >= (_durationMs/1000.0f) - 1)
+        if (time >= (_durationMs/1000.0f) - 1)
         {
             startY = 0;
             endY = -100;
-            localTime -= 2;
+            time -= (_durationMs / 1000.0f) - 1;
         }
-
         
-        double t = Math.Clamp(localTime, 0, 1);
+        double t = Math.Clamp(time, 0, 1);
         double eased = t == 1 ? 1 : 1 - Math.Pow(2, -10 * t);
 
         double current = startY + (endY - startY) * eased;
@@ -107,11 +121,18 @@ public class ToastWindow : Window
     public async Task ShowToast(int durationMs = 3000)
     {
         _durationMs = durationMs;
+        startTime = DateTime.Now;
         if (ConfigManager.ReadSettingBool(SettingInt.DisableToastPopups)) return;
-
+        if(_animationTimer is not null)
+            _animationTimer.Start();
         Show();
         await Task.Delay(durationMs);
-        MainWindowViewModel.OnAnimateFrame -= Animate;
+
+        if (_animationTimer is not null)
+        {
+            _animationTimer.Stop();
+            _animationTimer.Tick -= Animate;
+        }
         Close();
     }
 }
