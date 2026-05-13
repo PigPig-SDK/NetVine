@@ -2,8 +2,8 @@
 
 public enum ResourceTypes
 {
-    Cpu,
-    Ram,
+    CPU,
+    RAM,
     Disk,
     Network
 }

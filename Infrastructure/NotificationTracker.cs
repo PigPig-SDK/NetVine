@@ -48,9 +48,10 @@ public static class NotificationTracker
 
     private static void MonitorProcess(ProgramData data,
         SettingFloat cpuUsage,
+        SettingFloat memoryUsage,
         SettingFloat diskUsage,
         SettingFloat networkUsage,
-        SettingFloat memoryUsage, Action<ResourceTypes> OnExceeding)
+        Action<ResourceTypes> OnExceeding)
     {
         float cpuCheck = ConfigManager.ReadSetting(cpuUsage);
         float diskCheck = ConfigManager.ReadSetting(diskUsage);
@@ -58,12 +59,12 @@ public static class NotificationTracker
         float memoryCheck = ConfigManager.ReadSetting(memoryUsage);
 
         if (data.CpuUsage > cpuCheck && cpuCheck != 0)
-            OnExceeding.Invoke(ResourceTypes.Cpu);
+            OnExceeding.Invoke(ResourceTypes.CPU);
         else if (data.DiskUsage > diskCheck && diskCheck != 0)
             OnExceeding.Invoke(ResourceTypes.Disk);
         else if (data.NetworkUsage > networkCheck && networkCheck != 0)
             OnExceeding.Invoke(ResourceTypes.Network);
         else if (data.MemoryUsage > memoryCheck && memoryCheck != 0)
-            OnExceeding.Invoke(ResourceTypes.Ram);
+            OnExceeding.Invoke(ResourceTypes.RAM);
     }
 }

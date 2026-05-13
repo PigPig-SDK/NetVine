@@ -94,13 +94,13 @@ public class NotificationManager
         string key = $"{resource} + {data}";
         if (!KeyCooldownMet(key)) return;
 
-        WriteNotification(new Notification(NotificationPriority.Alert, $"{data.ProcessName} has been exceded in {resource} for this system!"));
+        WriteNotification(new Notification(NotificationPriority.Alert, $"{data.ProcessName} : Exceeded {resource}", $"{data.ProcessName} has been exceded in {resource} for this system!"));
     }
     public static void SystemResourceNotification(ResourceTypes resource)
     {
         string key = $"{resource}";
         if (!KeyCooldownMet(key)) return;
-        WriteNotification(new Notification(NotificationPriority.Alert, $"{resource} total has been exceded for this sytem!"));
+        WriteNotification(new Notification(NotificationPriority.Alert, $"System : Exceeded {resource}", $"{resource} total has been exceded for this sytem!"));
     }
     private static bool KeyCooldownMet(string key)
     {
