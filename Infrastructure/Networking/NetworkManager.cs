@@ -175,6 +175,10 @@ public class NetworkManager
             }
         }
     }
+    /// <summary>
+    /// Sends a message to all clients directly connected to this machine
+    /// </summary>
+    /// <param name="bytes"></param>
     public void SendToAllHosts(byte[] bytes)
     {
         foreach (Client connectionContext in EstablishedClientConnections.Values)
@@ -182,6 +186,17 @@ public class NetworkManager
             connectionContext.Send(bytes);
         }
     } 
+    /// <summary>
+    /// Sends a message to all hosts and clients directly connected to this machine
+    /// </summary>
+    public void SendToAll(byte[] bytes)
+    {
+        Host?.Multicast(bytes);
+        SendToAllHosts(bytes);
+    }
+    /// <summary>
+    /// Sends to a given ID, Host or Client
+    /// </summary>
     public void SendToId(Guid id, byte[] bytes)
     {
         var session = Host?.FindSession(id)?.Send(bytes);

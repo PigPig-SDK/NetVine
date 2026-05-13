@@ -56,7 +56,7 @@ public partial class App : Application
 
     private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
     {
-        ConfigManager.TrySaveToFile();
+        Netvine.Shutdown();
     }
     private void DisableAvaloniaDataAnnotationValidation()
     {

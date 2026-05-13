@@ -21,4 +21,5 @@ public enum SettingInt
     AllowHostManipulation,
     UseNetworkPassword,
     DisableToastPopups,
+    UseNotifications,
 };

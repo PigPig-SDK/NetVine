@@ -42,7 +42,9 @@ public static class UiSettings
                 "The port used for hosting a server",
                 StringInputMethod.IntInput,
                 SettingInt.HostPort,
-                "network", "host") { MaxAcceptedNumericalSize = 65535},
+                65535,
+                0,
+                "network", "host"),
 
             new SettingInputField<SettingString>("Ip for host",
                 "The ip used for hosting a server",
@@ -103,12 +105,16 @@ public static class UiSettings
                 "[In Seconds] How often the application will write to your database.",
                 StringInputMethod.FloatInput,
                 SettingFloat.DatabaseSaveInterval,
+                int.MaxValue,
+                1,
                 "database", "usage", "interval", "db", "database"),
 
             new SettingInputField<SettingFloat>("Probe rate",
                 "[In Seconds] How often this application will probe all programs on your system. If you are experiencing overhead, try lowering this setting.",
                 StringInputMethod.FloatInput,
                 SettingFloat.TickRate,
+                int.MaxValue,
+                0.1m,
                 "memory", "usage", "interval", "db", "database"),
         ]),
         new SettingGroup("Graph", [
@@ -116,13 +122,17 @@ public static class UiSettings
                 "How many data points to keep in the graph history. At 1 poll/second, 60 = 60 seconds of history.",
                 StringInputMethod.IntInput,
                 SettingInt.MaxHistory,
-                "graph", "history", "chart") { MaxAcceptedNumericalSize = 300 },
+                300,
+                0,
+                "graph", "history", "chart"),
 
             new SettingInputField<SettingInt>("Max chart listings",
                 "How many processes to display on pie and bar charts.",
                 StringInputMethod.IntInput,
                 SettingInt.TopCount,
-                "graph", "chart", "process", "pie", "bar") { MaxAcceptedNumericalSize = 20 },
+                20,
+                0,
+                "graph", "chart", "process", "pie", "bar"),
         ]),
     };
 
