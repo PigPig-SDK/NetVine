@@ -48,9 +48,6 @@ public class ToastWindow : Window
 
         MainWindowViewModel.OnAnimateFrame += Animate;
 
-
-
-
         ToastBody tb = new ToastBody
         {
             Foreground = Brushes.White,

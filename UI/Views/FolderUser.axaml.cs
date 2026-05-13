@@ -47,13 +47,11 @@ public partial class FolderUser : UserControl
         }
     }
 
-    private async void OnClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void OnClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         IsSelected = !IsSelected;
         FolderViewData.OnSelectionUpdated?.Invoke();
         UpdateVisual();
-        ToastWindow toast = new ToastWindow("Fuck");
-        await toast.ShowToast();
     }
 
     private void UpdateVisual()
