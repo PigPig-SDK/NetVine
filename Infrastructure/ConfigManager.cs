@@ -64,7 +64,8 @@ public class ConfigManager
         {SettingInt.MaxHistory, 100 },
         {SettingInt.TopCount, 10 },
         {SettingInt.AllowHostManipulation, 0 },
-        {SettingInt.UseNetworkPassword, 0 }
+        {SettingInt.UseNetworkPassword, 0 },
+        {SettingInt.DisableToastPopups, 0 },
     };
 
 

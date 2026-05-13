@@ -2,8 +2,11 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Core;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Infrastructure;
+using ScottPlot.Colormaps;
+using SkiaSharp;
 using System;
 using System.Threading.Tasks;
 using UI.ViewModels;
@@ -12,11 +15,12 @@ namespace UI.Views;
 
 public class ToastWindow : Window
 {
-    private const double _margin = 30;
     private const double _toastWidth = 300;
     private const double _toastHeight = 60;
+    private double? _animStartTime = null;
+    private double _durationMs = 0;
 
-    private Control locationControl;
+    private Control? locationControl;
     public ToastWindow(string message)
     {
         var screen = Screens.Primary;
@@ -37,35 +41,71 @@ public class ToastWindow : Window
         WindowStartupLocation = WindowStartupLocation.Manual;
         Topmost = true;
         Position = new PixelPoint(
-            (int)(workingArea.X + workingArea.Width - _toastWidth - _margin),
-            (int)(workingArea.Y + workingArea.Height - _toastHeight - _margin)
+            (int)(workingArea.X + workingArea.Width - _toastWidth),
+            (int)(workingArea.Y + workingArea.Height - _toastHeight)
         );
         Background = new SolidColorBrush(Color.Parse("#00000000"));//Transparent.
 
         MainWindowViewModel.OnAnimateFrame += Animate;
 
-        
-        TextBlock tb = new TextBlock
+
+
+
+        ToastBody tb = new ToastBody
         {
-            Text = message,
             Foreground = Brushes.White,
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Left,
             Margin = new Thickness(16, 0),
-            TextWrapping = TextWrapping.Wrap
+            Width = _toastWidth-20,
+            Height = _toastHeight,
+            Title = message,
         };
-        locationControl = tb;
 
-        Content = locationControl;
+        locationControl = tb;
+        Avalonia.Controls.Canvas.SetBottom(locationControl, -1000);//Start underground.
+        Avalonia.Controls.Canvas.SetLeft(locationControl, 0);
+
+        Avalonia.Controls.Canvas? canvas = new() { Children = { tb } };
+
+        Content = canvas;
     }
 
     private void Animate(double time)
     {
-        locationControl.Margin = new Thickness(MathF.Sin((float)time * 10) * 10);
+        if(_animStartTime is null)
+        {
+            _animStartTime = time;
+            return;
+        }
+
+        if (locationControl is null) return;
+
+        double localTime = time - _animStartTime.Value;
+
+        double startY = -100;
+        double endY = 0;
+        //Retreat message...
+        if (localTime >= (_durationMs/1000.0f) - 1)
+        {
+            startY = 0;
+            endY = -100;
+            localTime -= 2;
+        }
+
+        
+        double t = Math.Clamp(localTime, 0, 1);
+        double eased = t == 1 ? 1 : 1 - Math.Pow(2, -10 * t);
+
+        double current = startY + (endY - startY) * eased;
+        Avalonia.Controls.Canvas.SetBottom(locationControl, current);
     }
 
     public async Task ShowToast(int durationMs = 3000)
     {
+        _durationMs = durationMs;
+        if (ConfigManager.ReadSettingBool(SettingInt.DisableToastPopups)) return;
+
         Show();
         await Task.Delay(durationMs);
         MainWindowViewModel.OnAnimateFrame -= Animate;

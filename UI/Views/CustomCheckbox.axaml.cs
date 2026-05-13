@@ -97,7 +97,7 @@ public partial class CustomCheckbox : UserControl
     public CustomCheckbox()
     {
         InitializeComponent();
-        DataContext = this;        
+        DataContext = this;
         UpdateChecked();
     }
 
