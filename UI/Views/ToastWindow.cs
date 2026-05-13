@@ -20,7 +20,7 @@ public class ToastWindow : Window
     private double? _animStartTime = null;
     private double _durationMs = 0;
 
-    private Control? locationControl;
+    private ToastBody? locationControl;
     public ToastWindow(string message)
     {
         var screen = Screens.Primary;
@@ -61,7 +61,7 @@ public class ToastWindow : Window
             Height = _toastHeight,
             Title = message,
         };
-
+        tb.SetPinColor(ComputeColor());
         locationControl = tb;
         Avalonia.Controls.Canvas.SetBottom(locationControl, -1000);//Start underground.
         Avalonia.Controls.Canvas.SetLeft(locationControl, 0);
@@ -69,6 +69,11 @@ public class ToastWindow : Window
         Avalonia.Controls.Canvas? canvas = new() { Children = { tb } };
 
         Content = canvas;
+    }
+
+    private Color ComputeColor()
+    {
+        return new Color(255, 255, 255, 255);
     }
 
     private void Animate(double time)
@@ -99,6 +104,7 @@ public class ToastWindow : Window
 
         double current = startY + (endY - startY) * eased;
         Avalonia.Controls.Canvas.SetBottom(locationControl, current);
+        locationControl.Animate(time);
     }
 
     public async Task ShowToast(int durationMs = 3000)

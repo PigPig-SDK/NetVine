@@ -18,7 +18,13 @@
         ClipToBounds="True"
         Width="100"
         Height="100"
+        Margin="10"
         HorizontalAlignment="Left"/>
+        <Ellipse Width="15" StrokeThickness="2" 
+        HorizontalAlignment="Left"
+        StrokeDashArray="5,2" Stroke="Black" 
+        Height="15" Margin="5,0,5,0" 
+        Fill="LightGreen" x:Name="ActivityCircle"/>
         <TextBlock x:Name="NotificationBody"
         Text="{Binding Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ToastBody}}"
         VerticalAlignment="Center" HorizontalAlignment="Right"/>

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 
 namespace UI;
 
@@ -23,5 +24,14 @@ public partial class ToastBody : UserControl
     {
         if(App.Current is App app)
             app.ShowWindow(null, e);
+    }
+    public void Animate(double time)
+    {
+        if (ActivityCircle is null) return;
+        ActivityCircle.StrokeDashOffset = (time * 4);
+    }
+    public void SetPinColor(Color color)
+    {
+        ActivityCircle.Fill = new SolidColorBrush(color);
     }
 }
