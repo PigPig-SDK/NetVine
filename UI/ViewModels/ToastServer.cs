@@ -1,4 +1,6 @@
-﻿using Core;
+﻿using Avalonia.Threading;
+using Core;
+using Infrastructure;
 using Infrastructure.Notifications;
 using System;
 using System.Collections.Generic;
@@ -21,10 +23,12 @@ public static class ToastServer
     }
     private static void OnNotified(Notification notification)
     {
-        ToastWindow toast = new(notification.Message);
-        Task.Run(async () =>
+        if (ConfigManager.ReadSettingBool(SettingInt.DisableToastPopups)) return;
+        Dispatcher.UIThread.Post(async () =>
         {
-            await toast.ShowToast();
+            ToastWindow toast = new(notification);
+            await toast.ShowToast(ConfigManager.ReadSetting(SettingInt.NotificationTimeMS));
         });
+
     }
 }

@@ -22,4 +22,5 @@ public enum SettingInt
     UseNetworkPassword,
     DisableToastPopups,
     UseNotifications,
+    NotificationTimeMS,
 };
