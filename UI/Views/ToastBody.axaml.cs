@@ -19,4 +19,9 @@ public partial class ToastBody : UserControl
         InitializeComponent();
         DataContext = this;
     }
+    private void PullOpenWindow(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if(App.Current is App app)
+            app.ShowWindow(null, e);
+    }
 }

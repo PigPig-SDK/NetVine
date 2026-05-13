@@ -71,7 +71,7 @@ public partial class App : Application
         }
     }
 
-    private void ShowWindow(object? sender, System.EventArgs e)
+    public void ShowWindow(object? sender, System.EventArgs e)
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

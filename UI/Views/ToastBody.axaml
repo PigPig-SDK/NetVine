@@ -8,6 +8,7 @@
     <Button 
     HorizontalAlignment="Stretch"
     CornerRadius="0 16 0 16"
+    Click="PullOpenWindow"
     Background="#80000000">
       <Grid
       HorizontalAlignment="Stretch" 
