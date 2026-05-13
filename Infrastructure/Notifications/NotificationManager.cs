@@ -20,6 +20,8 @@ public class NotificationManager
 
     private static readonly Dictionary<string, DateTime> _notificationCooldownTimer = [];
 
+    public static event Action<Notification>? OnNotified;
+
     public static string DefaultFilePath
     {
         get
@@ -40,6 +42,7 @@ public class NotificationManager
     public static void WriteNotification(Notification notification)
     {
         Instance._notifications.Add(notification);
+        OnNotified?.Invoke(notification);
     }
 
     public static void Initilaize()

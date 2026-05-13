@@ -17,6 +17,7 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        ToastServer.Initialize();
     }
 
     public override void OnFrameworkInitializationCompleted()
