@@ -43,9 +43,12 @@ public class ToastWindow : Window
         SystemDecorations = SystemDecorations.None;
         WindowStartupLocation = WindowStartupLocation.Manual;
         Topmost = true;
+
+        var scaling = screen.Scaling;
+
         Position = new PixelPoint(
-            (int)(workingArea.X + workingArea.Width - _toastWidth),
-            (int)(workingArea.Y + workingArea.Height - _toastHeight)
+            (int)(workingArea.X + workingArea.Width - _toastWidth * scaling),
+            (int)(workingArea.Y + workingArea.Height - _toastHeight * scaling)
         );
         Background = new SolidColorBrush(Color.Parse("#00000000"));//Transparent.
 
