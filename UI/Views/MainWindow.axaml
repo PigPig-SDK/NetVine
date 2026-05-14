@@ -25,7 +25,7 @@
     <!--The titlebar starts here.-->
     <Grid RowDefinitions="Auto,*">
 
-      <Border Padding="0,10" IsHitTestVisible="False" Background="#99222228"/>
+      <Border Padding="0,10" IsHitTestVisible="False" Background="#CC222228"/>
 
       <Grid x:Name="titleBar"
           Grid.Row="0"

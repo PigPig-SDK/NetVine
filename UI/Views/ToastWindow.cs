@@ -68,7 +68,7 @@ public class ToastWindow : Window
             Height = _toastHeight,
             Title = notification.Title,
         };
-        tb.SetPinColor(ComputeColor(notification));
+        tb.SetPinColor(Color.Parse(notification.LevelColor));
         locationControl = tb;
         Avalonia.Controls.Canvas.SetBottom(locationControl, -1000);//Start underground.
         Avalonia.Controls.Canvas.SetLeft(locationControl, 0);
@@ -82,21 +82,6 @@ public class ToastWindow : Window
         var delta = DateTime.Now - startTime;
 
         AnimateLocal(delta.TotalSeconds);
-    }
-
-    private Color ComputeColor(Notification notification)
-    {
-        switch(notification.Priority)
-        {
-            case NotificationPriority.Alert:
-                return new Color(255, 255, 238, 140);
-            case NotificationPriority.Critical:
-                return new Color(255, 255, 116, 108);
-            case NotificationPriority.Message:
-                return new Color(255, 255, 255, 255);
-        }
-
-        return new Color(255, 255, 255, 255);
     }
 
     private void AnimateLocal(double time)

@@ -25,7 +25,7 @@ public class Notification
     public string LevelColor => Priority switch
     {
         NotificationPriority.Critical => "#C88282",
-        NotificationPriority.Alert => "#FFFFFF",
+        NotificationPriority.Alert => "#FFEE8C",
         NotificationPriority.Message => "#A5c882",
         _ => "#FFFFFF"
     };
