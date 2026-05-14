@@ -141,8 +141,8 @@
             <Grid Grid.Column="2">
                 <Grid.Background>
                     <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                        <GradientStop Color="#4D0A0A0F" Offset="0"/>
-                        <GradientStop Color="#4D0D1B2E" Offset="1"/>
+                        <GradientStop Color="#800A0A0F" Offset="0"/>
+                        <GradientStop Color="#80151515" Offset="1"/>
                     </LinearGradientBrush>
                 </Grid.Background>
             </Grid>
