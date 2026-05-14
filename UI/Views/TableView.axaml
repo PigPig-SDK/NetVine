@@ -18,7 +18,6 @@
             <DataGrid.Styles>
                 <!-- 1. Context Menu for the BODY (Rows) -->
                 <Style Selector="DataGridRow">
-                    
                     <Setter Property="ContextMenu">
                         <ContextMenu Opened="ContextMenuOpened" 
                                      Closed="ContextMenuClosed">

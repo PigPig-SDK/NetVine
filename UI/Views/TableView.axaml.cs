@@ -1,10 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UI.ViewModels;
 
 namespace UI;
@@ -25,6 +28,28 @@ public partial class TableView : UserControl
         }
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
+
+        MyDataGrid.LoadingRow += RecolorRows;
+    }
+
+    private void RecolorRows(object? sender, DataGridRowEventArgs e)
+    {
+        e.Row.PropertyChanged += (s, args) =>
+        {
+            if (args.Property == DataGridRow.IsSelectedProperty)
+            {
+                e.Row.Background = e.Row.IsSelected
+                    ? new SolidColorBrush(Color.Parse("#8FB56A"))
+                    : Brushes.Transparent;
+
+                foreach (var cell in e.Row.GetVisualDescendants().OfType<DataGridCell>())
+                {
+                    cell.Background = e.Row.IsSelected
+                        ? new SolidColorBrush(Color.Parse("#8FB56A"))
+                        : Brushes.Transparent;
+                }
+            }
+        };
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
