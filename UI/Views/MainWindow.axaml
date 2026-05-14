@@ -141,6 +141,7 @@
                         ERROR, don't be here!
                     </TabItem>
                 </TabControl>
+                </Grid>
             </Border>
             <!--Grid splitter for resizable side pannel-->
             <GridSplitter Grid.Column="1" Background="Transparent" Width="6"/>
