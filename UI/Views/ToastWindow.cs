@@ -43,6 +43,7 @@ public class ToastWindow : Window
         SystemDecorations = SystemDecorations.None;
         WindowStartupLocation = WindowStartupLocation.Manual;
         Topmost = true;
+        ShowActivated = false;
 
         var scaling = screen.Scaling;
 
