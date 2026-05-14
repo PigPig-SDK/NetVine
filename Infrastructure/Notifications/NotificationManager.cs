@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure.Notifications;
 
@@ -16,6 +17,10 @@ public class NotificationManager
     }
 
     private static NotificationManager Default { get => new NotificationManager(); }
+
+    private static readonly Dictionary<string, DateTime> _notificationCooldownTimer = [];
+
+    public static event Action<Notification>? OnNotified;
 
     public static string DefaultFilePath
     {
@@ -32,9 +37,12 @@ public class NotificationManager
     private List<Notification> _notifications { get; set; } = [];
     public static IReadOnlyList<Notification> Notifications => Instance._notifications;
 
+    public static int SpamCooldown { get; private set; } = 15;
+
     public static void WriteNotification(Notification notification)
     {
         Instance._notifications.Add(notification);
+        OnNotified?.Invoke(notification);
     }
 
     public static void Initilaize()
@@ -79,5 +87,34 @@ public class NotificationManager
     {
         Instance._notifications.Clear();
         TrySaveToFile();
+    }
+
+    public static void ProgramResourceNotification(ResourceTypes resource, ProgramData data)
+    {
+        string key = $"{resource} + {data}";
+        if (!KeyCooldownMet(key)) return;
+
+        WriteNotification(new Notification(NotificationPriority.Alert, $"{data.ProcessName} : Exceeded {resource}", $"{data.ProcessName} has been exceded in {resource} for this system!"));
+    }
+    public static void SystemResourceNotification(ResourceTypes resource)
+    {
+        string key = $"{resource}";
+        if (!KeyCooldownMet(key)) return;
+        WriteNotification(new Notification(NotificationPriority.Alert, $"System : Exceeded {resource}", $"{resource} total has been exceded for this sytem!"));
+    }
+    private static bool KeyCooldownMet(string key)
+    {
+        var now = DateTime.Now;
+
+        if (_notificationCooldownTimer.TryGetValue(key, out var last))
+        {
+            if ((now - last).TotalSeconds <= SpamCooldown)
+                return false;
+            _notificationCooldownTimer[key] = now;
+        }
+        else
+            _notificationCooldownTimer[key] = now;
+
+        return true;
     }
 }

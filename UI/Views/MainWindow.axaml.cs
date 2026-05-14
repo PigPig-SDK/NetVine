@@ -222,6 +222,10 @@ public partial class MainWindow : Window
             
         }
     }
+    public void SetSearchTooltip(string tooltip)
+    {
+        ToolTip.SetTip(SearchTooltip, tooltip);
+    }
     private void AnimateSidebar(double from, double to, int totalTicks)
     {
         if(isAnimatingSidebar) return;

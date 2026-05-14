@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Infrastructure;
@@ -18,7 +19,21 @@ public partial class SettingsView : UserControl
         MainWindowViewModel.OnSearchKeyStroke += SearchBarUpdated;
         SetupTree();
     }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        SetupSearchTooltip();
+    }
+    private void SetupSearchTooltip()
+    {
+        var mainWindowBase = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow
+            : null;
 
+        if (mainWindowBase is MainWindow mainWindow)
+        {
+            mainWindow.SetSearchTooltip("Search for settings");
+        }
+    }
 
     private void SearchBarUpdated(string? input)
     {

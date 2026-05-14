@@ -6,7 +6,7 @@
              xmlns:local="using:UI"
              x:Class="UI.CustomCheckbox">
 
-    <ToggleButton HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="SelectorButton"
+    <ToggleButton HorizontalAlignment="Stretch" VerticalAlignment="Stretch" x:Name="SelectorButton" ClipToBounds="True"
                 Click="Button_Click"
                 Background="Transparent"
                 BorderBrush="#888888"
@@ -23,25 +23,45 @@
                     <Setter Property="Background" Value="Transparent"/>
                 </Style>
             </ToggleButton.Styles>
+            <Grid>
+                <Border CornerRadius="0,0,8,8" ClipToBounds="True" IsHitTestVisible="False"
+                Margin="-6"
+                HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="25">
+                    <Rectangle HorizontalAlignment="Stretch" 
+                               VerticalAlignment="Bottom"
+                               IsHitTestVisible="False"
+                               Height="25">
+                        <Rectangle.Fill>
+                            <VisualBrush TileMode="Tile"
+                                         SourceRect="0,0,48,25"
+                                         DestinationRect="0,0,48,25">
+                                <VisualBrush.Visual>
+                                    <Image Source="/Assets/gradient.png" Width="48" Height="25" IsHitTestVisible="False"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Border>
+                <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                    <!-- Custom sprite checkbox box -->
+                    <Panel Grid.Column="0" Width="24" Height="24">
+                        <!-- Unchecked -->
+                        <Image x:Name="UncheckedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                        <!-- Checked -->
+                        <Image x:Name="CheckedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                        <!-- Checked -->
+                        <Image x:Name="LockedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                    </Panel>
 
-            <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-                <!-- Custom sprite checkbox box -->
-                <Panel Grid.Column="0" Width="24" Height="24">
-                    <!-- Unchecked -->
-                    <Image x:Name="UncheckedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                    <!-- Checked -->
-                    <Image x:Name="CheckedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                    <!-- Checked -->
-                    <Image x:Name="LockedIcon" RenderOptions.BitmapInterpolationMode="HighQuality"/>
-                </Panel>
-                <!-- Label -->
-                <TextBlock Grid.Column="1"
-                            FontSize="{Binding FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CustomCheckbox}}"
-                            VerticalAlignment="Center" HorizontalAlignment="Center"
-                        FontFamily="avares://NetVine/Assets#Bebas Neue"
-                        Foreground="White"
-                        Text="{Binding Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CustomCheckbox}}"
-                        Margin="4,4,0,0"/>
+                    <!-- Label -->
+                    <TextBlock Grid.Column="1"
+                                FontSize="{Binding FontSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CustomCheckbox}}"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                            FontFamily="avares://NetVine/Assets#Bebas Neue"
+                            Foreground="White"
+                            Text="{Binding Title, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:CustomCheckbox}}"
+                            Margin="4,4,0,0"/>
+                </Grid>
             </Grid>
     </ToggleButton>
 </UserControl>
