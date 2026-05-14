@@ -113,12 +113,6 @@
                         </TabItem.Header>
                         <views:NetworkView/>
                     </TabItem>
-                    <TabItem Classes="sideTab" ToolTip.Tip="Log">
-                        <TabItem.Header>
-                            <Image  Classes="logTab"/>
-                        </TabItem.Header>
-                        <views:LogView/>
-                    </TabItem>
                     <TabItem x:Name="QuickResize" Classes="sideTab" ToolTip.Tip="Hide/Show" >
                         <TabItem.Header>
                             <Grid>
