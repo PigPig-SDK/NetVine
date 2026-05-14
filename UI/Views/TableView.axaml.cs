@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UI.ViewModels;
+using UI.Views;
 
 namespace UI;
 
@@ -30,6 +32,23 @@ public partial class TableView : UserControl
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
 
         MyDataGrid.LoadingRow += RecolorRows;
+    }
+
+    private void SetupSearchTooltip()
+    {
+        var mainWindowBase = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow
+            : null;
+
+        if(mainWindowBase is MainWindow mainWindow)
+        {
+            mainWindow.SetSearchTooltip("Boolean Operators:" +
+                "\nAnd : &\nOr : +" +
+                "\nEquality : <,>,<=,>=,=" +
+                "\nParentheses, '()' are respected." +
+                "\nQuery Properties:" +
+                "\nprocess, system, cpu, disk, memory, network, cpuavg, diskavg, memoryavg, networkavg, cpupeak, diskpeak, memorypeak, networkpeak");
+        }
     }
 
     private void RecolorRows(object? sender, DataGridRowEventArgs e)
@@ -59,6 +78,7 @@ public partial class TableView : UserControl
             vm.ToggleEvents(true);
         }
         base.OnAttachedToVisualTree(e);
+        SetupSearchTooltip();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
