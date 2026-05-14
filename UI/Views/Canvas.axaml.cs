@@ -8,7 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using UI.ViewModels;
+using UI.Views;
 
 namespace UI;
 
@@ -19,6 +22,12 @@ public partial class Canvas : UserControl
     private List<string> _barProcessNames = new();
     private ScottPlot.Plottables.Annotation? _tooltip;
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
+    
+    private DateTime? HistoricalStartGraph = null;
+    private DateTime? HistoricalEndGraph = null;
+    
+    //add to settings
+    int _topCount = 10;
     private readonly Dictionary<string, ScottPlot.Color> _processColors = new();
     private readonly ScottPlot.Palettes.Category10 _palette = new();
     private int _colorIndex = 0;
@@ -29,14 +38,24 @@ public partial class Canvas : UserControl
         InitializeComponent();
         _vm = new CanvasViewModel(ChartService.Instance, ResourceService.Instance);
         DataContext = _vm;
+        
+        _vm.ChartUpdateRequested -= DrawChart;
         _vm.ChartUpdateRequested += DrawChart;
+        
+        MainWindowViewModel.OnTabChanged -= UpdateGraphTimeFrame;
+        MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
+        
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
         _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
         _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
+        _canvasPlot.Menu.Add("Select Timeframe", _ => OpenGraphTimeFrame());
+        
+        Loaded -= OnLoaded;
         Loaded += OnLoaded;
+        
     }
-
+    
     private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
@@ -80,20 +99,17 @@ public partial class Canvas : UserControl
         var history = _vm.SelectedResource switch
         {
             ChartService.CPU => (data: _vm.CpuHistory, title: "CPU (%)"),
-            ChartService.CPUAvg =>  (data: _vm.CpuAvgHistory, title: "CPU Avg (%)"),
-            ChartService.CPUPeak =>  (data: _vm.CpuPeakHistory, title: "CPU Peak (%)"),
+            ChartService.CPUHistory =>  (data: _vm.CpuAvgHistory, title: "CPU History (%)"),
             
             ChartService.RAM => (data: _vm.RamHistory, title: "RAM (MB)"),
-            ChartService.RAMAvg => (data: _vm.RamAvgHistory, title: "RAM Avg (MB)"),
-            ChartService.RAMPeak => (data: _vm.RamPeakHistory, title: "RAM Peak (MB)"),
+            ChartService.RAMHistory => (data: _vm.RamAvgHistory, title: "RAM History (MB)"),
             
             ChartService.DISK => (data: _vm.DiskHistory, title: "Disk (%)"),
-            ChartService.DISKAvg => (data: _vm.DiskAvgHistory, title: "Disk Avg (%)"),
-            ChartService.DISKPeak => (data: _vm.DiskPeakHistory, title: "Disk Peak(%)"),
+            ChartService.DISKHistory => (data: _vm.DiskAvgHistory, title: "Disk History (%)"),
             
             ChartService.NET => (data: _vm.NetworkHistory, title: "Network (MB/s)"),
-            ChartService.NETAvg => (data: _vm.NetworkAvgHistory, title: "Network Avg (MB/s)"),
-            ChartService.NETPeak => (data: _vm.NetworkPeakHistory, title: "Network Peak (MB/s)"),
+            ChartService.NETHistory => (data: _vm.NetworkAvgHistory, title: "Network History (MB/s)"),
+        
             _ => (data: _vm.CpuHistory, title: "CPU (%)")
         };
 
@@ -273,7 +289,7 @@ public partial class Canvas : UserControl
 
     private void SetLimits()
     {
-        if (_vm.SelectedResource == ChartService.RAM || _vm.SelectedResource == ChartService.RAMAvg || _vm.SelectedResource == ChartService.RAMPeak)
+        if (_vm.SelectedResource == ChartService.RAM || _vm.SelectedResource == ChartService.RAMHistory)
         {
             _canvasPlot.Plot.Axes.SetLimitsY(0, _vm.RAMTotal);
         }
@@ -281,6 +297,38 @@ public partial class Canvas : UserControl
         {
             _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
         }
+    }
+    
+    private async void OpenGraphTimeFrame()
+    {
+        Debug.Log("OpenGraphTimeFrame called");
+        if (LiveViewModel.IsLive || MainWindowViewModel.ActiveTab != MainWindowViewModel.GraphView) return;
+            
+        var timeFrameWindow = new TimeFrameSelectionWindow();
+
+        if (Application.Current is null) return;
+        var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
+            
+        (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
+            (mainWindow);
+            
+        if (!dateRange.HasValue)
+        {
+            return;
+        }
+            
+        HistoricalStartGraph = dateRange.Value.date1;
+        HistoricalEndGraph = dateRange.Value.date2;
+        
+        ResourceService.Instance.TimeFrameUpdate(HistoricalStartGraph, HistoricalEndGraph);
+            
+        mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartGraph, HistoricalEndGraph);
+    }
+
+    private void UpdateGraphTimeFrame(int x)
+    {
+        (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow
+            .FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartGraph, HistoricalEndGraph);
     }
 
     private void SetGrid()

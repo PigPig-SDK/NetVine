@@ -3,7 +3,8 @@ namespace Infrastructure;
 
 public static class DBArithmetic
 {
-    
+    private const string ComboString = "Combination";
+
     /// <summary>
     /// Takes in data, and calculates cumulative averages in Program Data Historical Table. If an entry doesnt exist,
     /// one is made with existing db data.
@@ -12,14 +13,11 @@ public static class DBArithmetic
     {
             foreach(var data in currentData)
             {
-                if(!db.ValueInPDH(data))
+                if(!db.ValueInPDH(data.SystemName, data.ProcessName))
                 {
                     var entryNotCombo =
-                        db.ProgramDataTable
-                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName)
-                        .AsEnumerable().GroupBy(x => new { x.SystemName, x.ProcessName })
-                        .Select(y => HistoricalBuilder(y))
-                        .FirstOrDefault();
+                        HistoricalQueryBuilder(db.ProgramDataTable
+                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName)).FirstOrDefault();
                     
                     if (entryNotCombo != null)
                     {
@@ -27,14 +25,11 @@ public static class DBArithmetic
                     }
                 }
 
-                if(!db.ValueInPDH(new ProgramData() { SystemName = "Combination", ProcessName = data.ProcessName }))
+                if(!db.ValueInPDH(ComboString, data.ProcessName))
                 {
                     var entryCombo =
-                        db.ProgramDataTable
-                            .Where(x => x.ProcessName == data.ProcessName)
-                            .AsEnumerable().GroupBy(x => new { x.SystemName, x.ProcessName })
-                            .Select(y => HistoricalBuilder(y, "Combination"))
-                            .FirstOrDefault();
+                        HistoricalQueryBuilder(db.ProgramDataTable
+                                .Where(x => x.ProcessName == data.ProcessName), ComboString).FirstOrDefault();
                     
                     if (entryCombo != null)
                     { 
@@ -48,7 +43,7 @@ public static class DBArithmetic
                     HistoricalCumulativeUpdater(existingNotComboEntry, data);
                 }
                 
-                var existingComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == "Combination" && x.ProcessName == data.ProcessName);
+                var existingComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == ComboString && x.ProcessName == data.ProcessName);
                 if (existingComboEntry != null)
                 {
                     HistoricalCumulativeUpdater(existingComboEntry, data);
@@ -67,13 +62,13 @@ public static class DBArithmetic
         {
             if (!date1.HasValue && !date2.HasValue)
             {
-                return db.PDHTable.Where(x => x.SystemName != "Combination").ToList();
+                return db.PDHTable.Where(x => x.SystemName != ComboString).ToList();
             }
             
-            return db.ProgramDataTable.Where(x => (!date1.HasValue || x.Date >= date1.Value)
-                                                  && (!date2.HasValue || x.Date <= date2.Value))
-                .GroupBy(x => new { x.SystemName, x.ProcessName }).AsEnumerable()
-                .Select(y => HistoricalBuilder(y)).ToList();
+            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
+                    (!date1.HasValue || x.Date >= date1)
+                    && (!date2.HasValue || x.Date <= date2)))
+                .ToList();
         }
     }
 
@@ -88,44 +83,47 @@ public static class DBArithmetic
             
             if (!date1.HasValue && !date2.HasValue)
             {
-                return db.PDHTable.Where(x => x.SystemName == "Combination").ToList();
+                return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
             }
             
-            return db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) &&
-                                                  (!date1.HasValue || x.Date >= date1)
-                                                  && (!date2.HasValue || x.Date <= date2))
-                .GroupBy(x => new { x.ProcessName }).AsEnumerable()
-                .Select(y => HistoricalBuilder(y, "Combination")).ToList();
+            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
+                && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
+                .ToList();
         }
     }
 
-
+    
+    
     /// <summary>
-    /// Builder Helper method for Historical Data so I didnt have to repeat this 10 unjillion times.
+    /// Builder Helper method for Historical Data Queries so I didnt have to repeat this 10 unjillion times.
     /// </summary>
     /// <returns>Historical Data</returns>
-    static ProgramDataHistorical HistoricalBuilder(IGrouping<object, ProgramData> y, String? combinationName = null)
+    static IQueryable<ProgramDataHistorical> HistoricalQueryBuilder(
+        IQueryable<ProgramData> inputQuery, String? combinationName = null)
     {
-        return new ProgramDataHistorical()
-        {
-            SystemName = combinationName ?? y.First().SystemName,
-            ProcessName = y.First().ProcessName,
-            TimeFrame = y.Min(z => z.Date).ToString("MMMM d, yyyy h:mm tt")
-                        + " - " + y.Max(z => z.Date).ToString("MMMM d, yyyy h:mm tt"),
-            ValueCount =  y.Count(),
-            
-            CpuUsageAvg = y.Average(z => z.CpuUsage),
-            DiskUsageAvg = y.Average(z => z.DiskUsage),
-            NetworkUsageAvg = y.Average(z => z.NetworkUsage),
-            MemoryUsageAvg = y.Average(z => z.MemoryUsage),
+        return inputQuery.GroupBy(x => new { x.SystemName, x.ProcessName })
+            .Select(y => new ProgramDataHistorical()
+            {
+                SystemName = combinationName ?? y.Key.SystemName,
+                ProcessName = y.Key.ProcessName,
 
-            CpuUsagePeak = y.Max(z => z.CpuUsage),
-            DiskUsagePeak = y.Max(z => z.DiskUsage),
-            NetworkUsagePeak = y.Max(z => z.NetworkUsage),
-            MemoryUsagePeak = y.Max(z => z.MemoryUsage),
+                StartDate = y.Min(z => z.Date).Date,
+                EndDate = y.Max(z => z.Date).Date,
 
-            NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
-        };
+                ValueCount = y.Count(),
+
+                CpuUsageAvg = y.Average(z => z.CpuUsage),
+                DiskUsageAvg = y.Average(z => z.DiskUsage),
+                NetworkUsageAvg = y.Average(z => z.NetworkUsage),
+                MemoryUsageAvg = y.Average(z => z.MemoryUsage),
+
+                CpuUsagePeak = y.Max(z => z.CpuUsage),
+                DiskUsagePeak = y.Max(z => z.DiskUsage),
+                NetworkUsagePeak = y.Max(z => z.NetworkUsage),
+                MemoryUsagePeak = y.Max(z => z.MemoryUsage),
+
+                NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
+            });
     }
     
     /// <summary>
@@ -149,4 +147,26 @@ public static class DBArithmetic
         existingEntry.NetworkUsageTotal +=  newEntry.NetworkUsage;
         
     }
+
+    public static Dictionary<string, List<double>> LineGraphHistoricalProducer(DateTime? date1, DateTime? date2)
+    {
+        using (var db = new DBInteract())
+        {
+            
+            var capturedData = db.ProgramDataTable.Where(x =>
+                    (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)).ToList();
+
+            var dict = new Dictionary<string, List<double>>
+            {
+                ["CPU"] = capturedData.Select(x => (double) x.CpuUsage).ToList(),
+                ["RAM"] = capturedData.Select(x => (double) x.MemoryUsage).ToList(),
+                ["DISK"] = capturedData.Select(x => (double) x.DiskUsage).ToList(),
+                ["NET"] = capturedData.Select(x => (double) x.NetworkUsage).ToList()
+            };
+            
+            return dict;
+        }
+    }
+    
+    
 }

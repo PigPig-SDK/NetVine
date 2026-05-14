@@ -111,31 +111,36 @@
                             </VisualBrush>
                         </Rectangle.Fill>
                     </Rectangle>
-                    <!-- Side view-->
-                    <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
-                        <TabItem Classes="sideTab" ToolTip.Tip="Data">
-                            <TabItem.Header>
-                                <Image Classes="folderTab"/>
-                            </TabItem.Header>
-                            <views:FolderView x:Name="FolderView"/>
-                        </TabItem>
-                        <TabItem Classes="sideTab" ToolTip.Tip="Networking">
-                            <TabItem.Header>
-                                <Image  Classes="networkTab"/>
-                            </TabItem.Header>
-                            <views:NetworkView/>
-                        </TabItem>
-                        <TabItem x:Name="QuickResize" Classes="sideTab" ToolTip.Tip="Hide/Show" >
-                            <TabItem.Header>
-                                <Grid>
-                                    <Image Classes="left" IsVisible="False" x:Name="ExpanderLeft"/>
-                                    <Image Classes="right" x:Name="ExpanderRight"/>
-                                </Grid>
-                            </TabItem.Header>
-                            ERROR, don't be here!
-                        </TabItem>
-                    </TabControl>
-                </Grid>
+                <!-- Side view-->
+                <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
+                    <TabItem Classes="sideTab" ToolTip.Tip="Data">
+                        <TabItem.Header>
+                            <Image Classes="folderTab"/>
+                        </TabItem.Header>
+                        <views:FolderView x:Name="FolderView"/>
+                    </TabItem>
+                    <TabItem Classes="sideTab" ToolTip.Tip="Networking">
+                        <TabItem.Header>
+                            <Image  Classes="networkTab"/>
+                        </TabItem.Header>
+                        <views:NetworkView/>
+                    </TabItem>
+                    <TabItem Classes="sideTab" ToolTip.Tip="Log">
+                        <TabItem.Header>
+                            <Image  Classes="logTab"/>
+                        </TabItem.Header>
+                        <views:LogView/>
+                    </TabItem>
+                    <TabItem x:Name="QuickResize" Classes="sideTab" ToolTip.Tip="Hide/Show" >
+                        <TabItem.Header>
+                            <Grid>
+                                <Image Classes="left" IsVisible="False" x:Name="ExpanderLeft"/>
+                                <Image Classes="right" x:Name="ExpanderRight"/>
+                            </Grid>
+                        </TabItem.Header>
+                        ERROR, don't be here!
+                    </TabItem>
+                </TabControl>
             </Border>
             <!--Grid splitter for resizable side pannel-->
             <GridSplitter Grid.Column="1" Background="Transparent" Width="6"/>
