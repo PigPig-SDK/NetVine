@@ -9,14 +9,8 @@ public partial class LogView : UserControl
 {
     public LogView()
     {
-
-
         InitializeComponent();
         var vm = new LogViewModel();
         DataContext = vm;
-
-
     }
-
-
 }

@@ -219,6 +219,10 @@ public partial class MainWindow : Window
                 else
                     AnimateSidebar(MainGrid.ColumnDefinitions[0].Width.Value, SidebarMinSize, 10);
             }
+            else if(clickedTab == LogPage)
+            {
+                AnimateSidebar(MainGrid.ColumnDefinitions[0].Width.Value, 500, 10);
+            }
             
         }
     }

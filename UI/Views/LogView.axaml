@@ -44,11 +44,11 @@
                     <DataTemplate>
                         <Grid ColumnDefinitions="Auto,Auto,*">
                             <TextBlock Grid.Column="0"
-                                       Text="{Binding Timestamp}"
+                                       Text="{Binding TimeDelta}"
                                        Foreground="#888"
                                        Margin="0,0,10,0"/>
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding Level}"
+                                       Text="{Binding Priority}"
                                        Foreground="{Binding LevelColor}"
                                        Margin="0,0,10,0"/>
                             <TextBlock Grid.Column="2"
