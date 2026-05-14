@@ -25,24 +25,5 @@ public class ProgramData : IProgramData
     /// An applications ProcessID changes every time it is loaded.
     /// </summary>
     public int ProcessId { get; set; }
-    /// <summary>
-    /// A+B operator for simplicity
-    /// NOTE: Program A is used for Date,Timespan, Systemname, so on...
-    /// Everything else is a sum!
-    /// </summary>
-    public static ProgramData operator +(ProgramData a, ProgramData b)
-    {
-        return new ProgramData
-        {
-            SystemName = a.SystemName,
-            ProcessName = a.ProcessName,
-            CpuUsage = a.CpuUsage + b.CpuUsage,
-            DiskUsage = a.DiskUsage + b.DiskUsage,
-            NetworkUsage = a.NetworkUsage + b.NetworkUsage,
-            MemoryUsage = a.MemoryUsage + b.MemoryUsage,
-            Timespan = a.Timespan,
-            Date = a.Date,
-            ProcessId = a.ProcessId
-        };
-    }
+
 }

@@ -20,5 +20,4 @@ public enum SettingInt
     TopCount,
     AllowHostManipulation,
     UseNetworkPassword,
-    UseNotifications,
 };

@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infrastructure.Notifications;
 
@@ -18,8 +17,6 @@ public class NotificationManager
 
     private static NotificationManager Default { get => new NotificationManager(); }
 
-    private static readonly Dictionary<string, DateTime> _notificationCooldownTimer = [];
-
     public static string DefaultFilePath
     {
         get
@@ -34,8 +31,6 @@ public class NotificationManager
     [JsonInclude]
     private List<Notification> _notifications { get; set; } = [];
     public static IReadOnlyList<Notification> Notifications => Instance._notifications;
-
-    public static int SpamCooldown { get; private set; } = 15;
 
     public static void WriteNotification(Notification notification)
     {
@@ -84,34 +79,5 @@ public class NotificationManager
     {
         Instance._notifications.Clear();
         TrySaveToFile();
-    }
-
-    public static void ProgramResourceNotification(ResourceTypes resource, ProgramData data)
-    {
-        string key = $"{resource} + {data}";
-        if (!KeyCooldownMet(key)) return;
-
-        WriteNotification(new Notification(NotificationPriority.Alert, $"{data.ProcessName} has been exceded in {resource} for this system!"));
-    }
-    public static void SystemResourceNotification(ResourceTypes resource)
-    {
-        string key = $"{resource}";
-        if (!KeyCooldownMet(key)) return;
-        WriteNotification(new Notification(NotificationPriority.Alert, $"{resource} total has been exceded for this sytem!"));
-    }
-    private static bool KeyCooldownMet(string key)
-    {
-        var now = DateTime.Now;
-
-        if (_notificationCooldownTimer.TryGetValue(key, out var last))
-        {
-            if ((now - last).TotalSeconds <= SpamCooldown)
-                return false;
-            _notificationCooldownTimer[key] = now;
-        }
-        else
-            _notificationCooldownTimer[key] = now;
-
-        return true;
     }
 }
