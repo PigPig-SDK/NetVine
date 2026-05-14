@@ -100,7 +100,8 @@
             <!-- Side pannel background gradiant-->
             <Border Classes="sideBarGradient">
                 <Grid>
-                    <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Border HorizontalAlignment="Left" Margin="0,-10" VerticalAlignment="Stretch" IsHitTestVisible="False" Width="40" Background="#CC222228"/>
+                    <Rectangle Margin="40,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <Rectangle.Fill>
                             <VisualBrush TileMode="Tile"
                                             SourceRect="0,0,128,128"
@@ -111,6 +112,7 @@
                             </VisualBrush>
                         </Rectangle.Fill>
                     </Rectangle>
+
                 <!-- Side view-->
                 <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
                     <TabItem Classes="sideTab" ToolTip.Tip="Data">

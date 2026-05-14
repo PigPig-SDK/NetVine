@@ -12,6 +12,7 @@
                 BorderBrush="#888888"
                 BorderThickness="2"
                 CornerRadius="8"
+                Margin="10"
                 Padding="8,8">
 
             <ToggleButton.Styles>
