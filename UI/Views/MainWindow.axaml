@@ -96,33 +96,45 @@
                 <ColumnDefinition Width="1"/> <!-- Expanding slider -->
                 <ColumnDefinition Width="*" MinWidth="150"/> <!-- Canvas -->
             </Grid.ColumnDefinitions>
-
             <!-- Side pannel background gradiant-->
             <Border Classes="sideBarGradient">
-                <!-- Side view-->
-                <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
-                    <TabItem Classes="sideTab" ToolTip.Tip="Data">
-                        <TabItem.Header>
-                            <Image Classes="folderTab"/>
-                        </TabItem.Header>
-                        <views:FolderView x:Name="FolderView"/>
-                    </TabItem>
-                    <TabItem Classes="sideTab" ToolTip.Tip="Networking">
-                        <TabItem.Header>
-                            <Image  Classes="networkTab"/>
-                        </TabItem.Header>
-                        <views:NetworkView/>
-                    </TabItem>
-                    <TabItem x:Name="QuickResize" Classes="sideTab" ToolTip.Tip="Hide/Show" >
-                        <TabItem.Header>
-                            <Grid>
-                                <Image Classes="left" IsVisible="False" x:Name="ExpanderLeft"/>
-                                <Image Classes="right" x:Name="ExpanderRight"/>
-                            </Grid>
-                        </TabItem.Header>
-                        ERROR, don't be here!
-                    </TabItem>
-                </TabControl>
+                <Grid>
+                    <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Rectangle.Fill>
+                            <VisualBrush TileMode="Tile"
+                                            SourceRect="0,0,128,128"
+                                            DestinationRect="0,0,128,128">
+                                <VisualBrush.Visual>
+                                    <Image Source="/Assets/dotBG.png" Width="128" Height="128" ClipToBounds="True"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <!-- Side view-->
+                    <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
+                        <TabItem Classes="sideTab" ToolTip.Tip="Data">
+                            <TabItem.Header>
+                                <Image Classes="folderTab"/>
+                            </TabItem.Header>
+                            <views:FolderView x:Name="FolderView"/>
+                        </TabItem>
+                        <TabItem Classes="sideTab" ToolTip.Tip="Networking">
+                            <TabItem.Header>
+                                <Image  Classes="networkTab"/>
+                            </TabItem.Header>
+                            <views:NetworkView/>
+                        </TabItem>
+                        <TabItem x:Name="QuickResize" Classes="sideTab" ToolTip.Tip="Hide/Show" >
+                            <TabItem.Header>
+                                <Grid>
+                                    <Image Classes="left" IsVisible="False" x:Name="ExpanderLeft"/>
+                                    <Image Classes="right" x:Name="ExpanderRight"/>
+                                </Grid>
+                            </TabItem.Header>
+                            ERROR, don't be here!
+                        </TabItem>
+                    </TabControl>
+                </Grid>
             </Border>
             <!--Grid splitter for resizable side pannel-->
             <GridSplitter Grid.Column="1" Background="Transparent" Width="6"/>
