@@ -80,6 +80,7 @@
                      TextInput="SearchSubmission"
                      x:Name="SearchBoxInput"/>
             <PathIcon Classes="searchIcon"
+                      x:Name="SearchTooltip"
                       IsVisible="{Binding #SearchBoxInput.Bounds.Width, Converter={x:Static vm:Converters.WiderThan60}, ConverterParameter=60}"
                       Foreground="{DynamicResource TextControlPlaceholderForeground}"/>
         </Panel>
