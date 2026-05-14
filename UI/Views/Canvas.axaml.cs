@@ -39,10 +39,8 @@ public partial class Canvas : UserControl
         _vm = new CanvasViewModel(ChartService.Instance, ResourceService.Instance);
         DataContext = _vm;
         
-        _vm.ChartUpdateRequested -= DrawChart;
         _vm.ChartUpdateRequested += DrawChart;
         
-        MainWindowViewModel.OnTabChanged -= UpdateGraphTimeFrame;
         MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
         
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
@@ -51,7 +49,6 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         _canvasPlot.Menu.Add("Select Timeframe", _ => OpenGraphTimeFrame());
         
-        Loaded -= OnLoaded;
         Loaded += OnLoaded;
         
     }
