@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Infrastructure;
 using Infrastructure.Networking;
+using Infrastructure.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -74,7 +75,23 @@ public partial class MainWindow : Window
                 ExpanderRight.IsVisible = SideBar.Bounds.Width == SidebarMinSize;
             }
         };
-        
+        //Notifications
+        MessageCount.Content = NotificationManager.Notifications.Count;
+        NotificationManager.OnNotified += OnNotified;
+        NotificationManager.OnCleared += OnNotesCleared;
+    }
+
+    private void OnNotesCleared()
+    {
+        OnNotified(null!);//Maintain thhat OnNotified dosn't use this!
+    }
+
+    private void OnNotified(Notification obj)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            MessageCount.Content = NotificationManager.Notifications.Count;
+        });
     }
 
     private void OnOpenedEvent(object? sender, EventArgs e)
@@ -218,6 +235,10 @@ public partial class MainWindow : Window
                     AnimateSidebar(SidebarMinSize, 250, 10);
                 else
                     AnimateSidebar(MainGrid.ColumnDefinitions[0].Width.Value, SidebarMinSize, 10);
+            }
+            else if(clickedTab == LogPage)
+            {
+                AnimateSidebar(MainGrid.ColumnDefinitions[0].Width.Value, 500, 10);
             }
             
         }
