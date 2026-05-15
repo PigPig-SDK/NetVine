@@ -39,6 +39,7 @@ namespace UI.ViewModels
         private TableDataManager _tableData;
         private bool _tableViewActive = false;
         private string _searchText = "";
+        private HashSet<string> _selectedUsersCache = new();
 
 
         private bool _showCpu = true;
@@ -74,9 +75,9 @@ namespace UI.ViewModels
                 TableFilter.Instance.UpdateSearchExpression(_searchText);
 
                 OnPropertyChanged();
-                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
-                    ? null
-                    : FilterRow;
+                TableRowsView.Filter =  (string.IsNullOrWhiteSpace(value)
+                    ? FilterSelectedUsers
+                    : FilterRow);
 
 
                 TableRowsView.Refresh();
@@ -132,7 +133,7 @@ namespace UI.ViewModels
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
             _tableViewActive = lastActiveTab == MainWindowViewModel.TableView;
-
+            CacheSelectedUserFolders();
             //Commands
             ToggleCpuCommand = new RelayCommand(ToggleCpu);
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
@@ -140,7 +141,22 @@ namespace UI.ViewModels
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
             OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
             PopulateTableInit();
+            FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
+            RefreshFilter();
         }
+
+        private void CacheSelectedUserFolders()
+        {
+            _selectedUsersCache.Clear();
+            _selectedUsersCache = [.. FolderViewData.SelectedUsers()];
+            TableRowsView.Refresh();
+        }
+
+        public void RefreshFilter()
+        {
+            TableRowsView.Refresh();
+        }
+
 
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
@@ -286,6 +302,7 @@ namespace UI.ViewModels
         //initial population on startup
         private void PopulateTableInit()
         {
+
             //replace this with code that works. Right now, does nothing
             OnSwitchToLive(); // just attempts to populate both with initial data
             OnSwitchToHistorical();
@@ -387,13 +404,19 @@ namespace UI.ViewModels
             return TableFilter.Instance.Evaluate(target);
         }
 
+        private bool FilterSelectedUsers(object obj)
+        {
+            if (obj is not TableRow row) return false;
+            return _selectedUsersCache.Contains(row.SystemName);
+        }
 
         private bool FilterRow(object obj)
         {
             if (obj is not TableRow row) return false;
-            return TryParseSearchExpression(row) ||
-                row.AppName.Contains(SearchText);
+            return FilterSelectedUsers(row) && (TryParseSearchExpression(row) ||
+                row.AppName.Contains(SearchText));
         }
+
 
     }
 }
