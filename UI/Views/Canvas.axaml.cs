@@ -22,6 +22,8 @@ public partial class Canvas : UserControl
     private List<string> _barProcessNames = new();
     private ScottPlot.Plottables.Annotation? _tooltip;
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
+    private bool _followFlag = true;
+    private bool _dragFlag = false;
     
     private DateTime? HistoricalStartGraph = null;
     private DateTime? HistoricalEndGraph = null;
@@ -50,11 +52,17 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         _canvasPlot.Menu.Add("Select Timeframe", _ => OpenGraphTimeFrame());
+        _canvasPlot.Menu.Add("Follow Graph", _ => {_followFlag = true;});
+        _canvasPlot.PointerWheelChanged += (_, e) => { _followFlag = false; };
+        _canvasPlot.PointerPressed += (_, e) => {_dragFlag = true;};
+        _canvasPlot.PointerReleased += (_, e) => {_dragFlag = false;};
+        _canvasPlot.PointerMoved += (_, e) => { if (_dragFlag) { _followFlag = false; }};
         
         Loaded -= OnLoaded;
         Loaded += OnLoaded;
         
     }
+    
     
     private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -77,6 +85,7 @@ public partial class Canvas : UserControl
         Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
             RemoveTooltip();
+            var boundsSaved = _canvasPlot.Plot.Axes.GetLimits();
             _canvasPlot.Plot.Clear();
             _canvasPlot.Plot.Axes.SquareUnits(false);
             _canvasPlot.Plot.YLabel("");
@@ -88,6 +97,11 @@ public partial class Canvas : UserControl
                 case "Pie": DrawPieChart(); break;
             }
 
+            if (!_followFlag)
+            {
+                _canvasPlot.Plot.Axes.SetLimits(boundsSaved);
+            }
+            
             _canvasPlot.Refresh();
         });
     }
