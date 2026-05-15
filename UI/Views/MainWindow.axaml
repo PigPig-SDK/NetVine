@@ -129,7 +129,10 @@
                     </TabItem>
                     <TabItem Classes="sideTab" x:Name="LogPage" ToolTip.Tip="Log">
                         <TabItem.Header>
-                            <Image  Classes="logTab"/>
+                            <Grid>
+                                <Image  Classes="logTab"/>
+                                <Label x:Name="MessageCount" HorizontalContentAlignment="Center" FontSize="10" Width="25" FontWeight="Bold" Foreground="#CC222228">9999</Label>
+                            </Grid>
                         </TabItem.Header>
                         <views:LogView/>
                     </TabItem>

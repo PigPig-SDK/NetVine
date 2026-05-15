@@ -21,7 +21,7 @@ public class NotificationManager
     private static readonly Dictionary<string, DateTime> _notificationCooldownTimer = [];
 
     public static event Action<Notification>? OnNotified;
-
+    public static event Action? OnCleared;
     public static string DefaultFilePath
     {
         get
@@ -85,6 +85,7 @@ public class NotificationManager
 
     public static void ClearMessages()
     {
+        OnCleared?.Invoke();
         Instance._notifications.Clear();
         TrySaveToFile();
     }

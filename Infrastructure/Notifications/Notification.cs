@@ -13,6 +13,9 @@ public class Notification
         get
         {
             var delta = DateTime.Now - Time;
+
+            if ((int)delta.TotalSeconds == 0) return "now";
+
             if (delta.TotalDays >= 1) return $"{(int)delta.TotalDays}d ago";
             if (delta.TotalHours >= 1) return $"{(int)delta.TotalHours}h ago";
             if (delta.TotalMinutes >= 1) return $"{(int)delta.TotalMinutes}m ago";
