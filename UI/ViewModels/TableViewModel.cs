@@ -407,7 +407,7 @@ namespace UI.ViewModels
         private bool FilterSelectedUsers(object obj)
         {
             if (obj is not TableRow row) return false;
-            return _selectedUsersCache.Contains(row.SystemName);
+            return _selectedUsersCache.Contains(row.SystemName) || row.SystemName == "Combination";
         }
 
         private bool FilterRow(object obj)
