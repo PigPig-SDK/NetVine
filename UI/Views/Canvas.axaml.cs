@@ -69,8 +69,6 @@ public partial class Canvas : UserControl
         _canvasPlot.PointerPressed += (_, e) => {_dragFlag = true;};
         _canvasPlot.PointerReleased += (_, e) => {_dragFlag = false;};
         _canvasPlot.PointerMoved += (_, e) => { if (_dragFlag) { _followFlag = false; }};
-        //_canvasPlot.Plot.Axes.Top.IsVisible = false;
-        //_canvasPlot.Plot.Axes.Right.IsVisible = false;
         _canvasPlot.Plot.Benchmark.IsVisible = false;
 
         Loaded += OnLoaded;
@@ -125,8 +123,6 @@ public partial class Canvas : UserControl
     {
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
         SetColors();
-        _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
-        _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
         _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
         _canvasPlot.PointerMoved += OnPointerMoved;
@@ -144,9 +140,10 @@ public partial class Canvas : UserControl
             _canvasPlot.Plot.Axes.SquareUnits(false);
             _canvasPlot.Plot.YLabel("");
 
-
-            _canvasPlot.Plot.Axes.Bottom.IsVisible = true;
-            _canvasPlot.Plot.Axes.Left.IsVisible = true;
+            _canvasPlot.Plot.Axes.Top.IsVisible =       true;
+            _canvasPlot.Plot.Axes.Right.IsVisible =     true;
+            _canvasPlot.Plot.Axes.Bottom.IsVisible =    true;
+            _canvasPlot.Plot.Axes.Left.IsVisible =      true;
 
             switch (_vm.CurrentChartType)
             {
@@ -264,11 +261,13 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
 
+        _canvasPlot.Plot.Axes.Top.IsVisible =   false;
+        _canvasPlot.Plot.Axes.Right.IsVisible = false;
+        _canvasPlot.Plot.Axes.Bottom.IsVisible =false;
+        _canvasPlot.Plot.Axes.Left.IsVisible =  false;
+
         _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
         _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
-
-        _canvasPlot.Plot.Axes.Bottom.IsVisible = false;
-        _canvasPlot.Plot.Axes.Left.IsVisible = false;
 
         _canvasPlot.Plot.Axes.AutoScale();
 
