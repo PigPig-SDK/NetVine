@@ -31,7 +31,7 @@ public partial class Canvas : UserControl
     //add to settings
     int _topCount = 10;
     private readonly Dictionary<string, ScottPlot.Color> _processColors = new();
-    private readonly ScottPlot.Palettes.Category10 _palette = new();
+    private readonly ScottPlot.Palettes.DarkPastel _palette = new();
     private int _colorIndex = 0;
     private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
 
@@ -277,18 +277,21 @@ public partial class Canvas : UserControl
         var pietop = GetTopProcesses();
         if (pietop.Count == 0) return;
 
-
-        if (pietop.Count == 0) return;
-
         double[] values = pietop.Select(p => (double)GetValue(p)).ToArray();
 
         var pie = _canvasPlot!.Plot.Add.Pie(values);
 
         for (int i = 0; i < pietop.Count; i++)
         {
+            pie.Slices[i].FillColor = _palette.GetColor(i);
             pie.Slices[i].Label = "";
             pie.Slices[i].LegendText = $"{pietop[i].ProcessName} ({GetValue(pietop[i]):0.0})";
         }
+
+        pie.LineColor = ScottPlot.Colors.White;
+        pie.LineWidth = 2;
+        pie.DonutFraction = 0.25;
+
 
         _canvasPlot.Plot.ShowLegend();
         _canvasPlot.Plot.Axes.AutoScale();
