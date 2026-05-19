@@ -25,7 +25,7 @@
     <!--The titlebar starts here.-->
     <Grid RowDefinitions="Auto,*">
 
-      <Border Padding="0,10" IsHitTestVisible="False" Background="#99222228"/>
+      <Border Padding="0,10" IsHitTestVisible="False" Background="#CC222228"/>
 
       <Grid x:Name="titleBar"
           Grid.Row="0"
@@ -80,6 +80,7 @@
                      TextInput="SearchSubmission"
                      x:Name="SearchBoxInput"/>
             <PathIcon Classes="searchIcon"
+                      x:Name="SearchTooltip"
                       IsVisible="{Binding #SearchBoxInput.Bounds.Width, Converter={x:Static vm:Converters.WiderThan60}, ConverterParameter=60}"
                       Foreground="{DynamicResource TextControlPlaceholderForeground}"/>
         </Panel>
@@ -96,9 +97,22 @@
                 <ColumnDefinition Width="1"/> <!-- Expanding slider -->
                 <ColumnDefinition Width="*" MinWidth="150"/> <!-- Canvas -->
             </Grid.ColumnDefinitions>
-
             <!-- Side pannel background gradiant-->
             <Border Classes="sideBarGradient">
+                <Grid>
+                    <Border HorizontalAlignment="Left" Margin="0,-10" VerticalAlignment="Stretch" IsHitTestVisible="False" Width="40" Background="#CC222228"/>
+                    <Rectangle Margin="40,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Rectangle.Fill>
+                            <VisualBrush TileMode="Tile"
+                                            SourceRect="0,0,128,128"
+                                            DestinationRect="0,0,128,128">
+                                <VisualBrush.Visual>
+                                    <Image Source="/Assets/dotBG.png" Width="128" Height="128" ClipToBounds="True"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
                 <!-- Side view-->
                 <TabControl x:Name="SideBar" Classes="sidebar" SelectionChanged="TabControl_SelectionChanged" TabStripPlacement="Left" Padding="0">
                     <TabItem Classes="sideTab" ToolTip.Tip="Data">
@@ -113,9 +127,12 @@
                         </TabItem.Header>
                         <views:NetworkView/>
                     </TabItem>
-                    <TabItem Classes="sideTab" ToolTip.Tip="Log">
+                    <TabItem Classes="sideTab" x:Name="LogPage" ToolTip.Tip="Log">
                         <TabItem.Header>
-                            <Image  Classes="logTab"/>
+                            <Grid>
+                                <Image  Classes="logTab"/>
+                                <Label x:Name="MessageCount" HorizontalContentAlignment="Center" FontSize="10" Width="25" FontWeight="Bold" Foreground="#CC222228">9999</Label>
+                            </Grid>
                         </TabItem.Header>
                         <views:LogView/>
                     </TabItem>
@@ -129,14 +146,15 @@
                         ERROR, don't be here!
                     </TabItem>
                 </TabControl>
+                </Grid>
             </Border>
             <!--Grid splitter for resizable side pannel-->
             <GridSplitter Grid.Column="1" Background="Transparent" Width="6"/>
             <Grid Grid.Column="2">
                 <Grid.Background>
                     <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                        <GradientStop Color="#4D0A0A0F" Offset="0"/>
-                        <GradientStop Color="#4D0D1B2E" Offset="1"/>
+                        <GradientStop Color="#800A0A0F" Offset="0"/>
+                        <GradientStop Color="#80151515" Offset="1"/>
                     </LinearGradientBrush>
                 </Grid.Background>
             </Grid>

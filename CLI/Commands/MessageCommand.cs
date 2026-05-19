@@ -24,7 +24,7 @@ public class MessageCommand : Command
         }
         string message = string.Join(" ", args);
         NotificationManager.WriteNotification(
-            new Notification(NotificationPriority.Message, message));
+            new Notification(NotificationPriority.Message, message, message));
         var data = Packet.CreatePacket(new StringPayload(message)).ToBytes();
         NetworkManager.Instance.SendToAll(data);
         AnsiConsole.MarkupLineInterpolated($"Sent message.");

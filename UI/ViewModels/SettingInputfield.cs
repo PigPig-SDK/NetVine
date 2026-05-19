@@ -31,12 +31,13 @@ public class SettingInputField<T> : SettingInput where T : Enum
         TemplatedControl textbox;
         if (inputType == StringInputMethod.StringInput)
         {
-            textbox = new TextBox { Text = inputString, Width = 120 };
+            textbox = new TextBox { Text = inputString, Width = 120, HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center, };
         }
         else
         {
             textbox = new NumericUpDown
             {
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Value = decimal.Parse(inputString),
                 Width = 120,
                 ShowButtonSpinner = false,

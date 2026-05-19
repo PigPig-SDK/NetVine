@@ -1,31 +1,36 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using Avalonia.Threading;
+using Infrastructure.Notifications;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Infrastructure;
 
 namespace UI.ViewModels
 {
     public class LogViewModel
     {
-        public ObservableCollection<LogEntry> LogEntries { get; } = new();
+        public ObservableCollection<Notification> LogEntries { get; } = new();
 
+        private Predicate<Notification> _filterPredicate;
 
-        public LogViewModel() {
-            AddEntry("INFO", "hey dude whats up");
-            AddEntry("WARN", "ram is 1 million dollars now");
-            AddEntry("ERROR", "hey man... ram is 2 million dollars now");
+        public LogViewModel(Predicate<Notification> filter) {
+            _filterPredicate = filter;
         }
-        public void AddEntry(string level, string message)
+        public void Refilter()
         {
-            LogEntries.Add(new LogEntry
+            LogEntries.Clear();
+            foreach (Notification notification in NotificationManager.Notifications.Reverse())
             {
-                Timestamp = DateTime.Now.ToString("HH:mm:ss"),
-                Level = level,
-                Message = message
+                if (_filterPredicate(notification))
+                    LogEntries.Add(notification);
+            }
+        }
+        public void OnNotificationArrive(Notification notification)
+        {
+            //Filter uses UI, which must be done on main thread. Gag...
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (_filterPredicate(notification))
+                    LogEntries.Add(notification);
             });
         }
     }

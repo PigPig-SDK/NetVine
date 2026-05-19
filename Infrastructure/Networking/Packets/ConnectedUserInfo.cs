@@ -42,4 +42,9 @@ public static class ConnectedUserInfo
         if (username != null)
             OnUserConnectionModified?.Invoke(username, true);
     }
+    public static string? ResolveUser(Guid userId)
+    {
+        if(_usernames.ContainsKey(userId)) return _usernames[userId];
+        return null;
+    }
 }
