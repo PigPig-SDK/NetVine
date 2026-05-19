@@ -5,12 +5,31 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.Canvas">
-
-	       
-
-
-           <ScottPlot:AvaPlot Name="CanvasPlot">
-	           
-           </ScottPlot:AvaPlot>
-
+            <Grid>
+                <ScottPlot:AvaPlot Name="CanvasPlot"/>
+                <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                       IsHitTestVisible="False"
+                       IsVisible="False"
+                       x:Name="SelectDataTag">
+    
+                    <Border Background="#AA000000"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"/>
+    
+                    <Label
+                        FontSize="40"
+                        HorizontalAlignment="Stretch" 
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        IsHitTestVisible="False"
+                        Margin="60,0,0,0"
+                        VerticalAlignment="Stretch">
+                        <TextBlock 
+                            FontFamily="avares://NetVine/Assets#Bebas Neue"
+                            Text="Select a timeframe for data, use rightclick."
+                            TextWrapping="Wrap"
+                            TextAlignment="Center"/>
+                    </Label>
+                </Panel>
+            </Grid>
 </UserControl>

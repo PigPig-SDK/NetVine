@@ -6,38 +6,65 @@
              xmlns:vm="using:UI.ViewModels"
              x:Class="UI.ComponentView"
              x:DataType="vm:ComponentViewModel">
-
-    <Border Background="#808080"
-            BorderBrush="Black"
-            BorderThickness="1"
+    <Border Background="#99222228"
+            BorderThickness="0"
+            CornerRadius="16"
             Padding="10">
         <StackPanel Spacing="8">
             <ComboBox ItemsSource="{Binding ChartTypes}"
                       SelectedItem="{Binding SelectedChartType}"
                       HorizontalAlignment="Stretch" />
-            <Button HorizontalAlignment="Stretch" Command="{Binding SelectCpuCommand}">
-                <StackPanel>
-                    <TextBlock Text="CPU" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ButtonCPUText}" FontSize="11" Opacity="0.8" />
-                </StackPanel>
+            <Button HorizontalAlignment="Stretch" Command="{Binding SelectCpuCommand}"
+                    BorderBrush="#888888" Background="#1E1E1E">
+                <Grid ColumnDefinitions="*,auto">
+                    <StackPanel HorizontalAlignment="Stretch">
+                        <TextBlock Text="CPU" FontWeight="Bold" />
+                        <TextBlock Text="{Binding ButtonCPUText}" FontSize="11" Opacity="0.8" />
+                    </StackPanel>
+                    <Image Grid.Column="1" Source="/Assets/cpu.png"
+                           VerticalAlignment="Center"
+                           Height="24"
+                           HorizontalAlignment="Right"/>
+                </Grid>
             </Button>
-            <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}">
-                <StackPanel>
-                    <TextBlock Text="RAM" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
-                </StackPanel>
+            <Button HorizontalAlignment="Stretch" Command="{Binding SelectRamCommand}"
+                    BorderBrush="#888888" Background="#1E1E1E">
+                <Grid ColumnDefinitions="*,auto">
+                    <StackPanel HorizontalAlignment="Stretch">
+                        <TextBlock Text="RAM" FontWeight="Bold" />
+                        <TextBlock Text="{Binding ButtonRAMText}" FontSize="11" Opacity="0.8" />
+                    </StackPanel>
+                    <Image Grid.Column="1" Source="/Assets/ram.png"
+                           VerticalAlignment="Center"
+                           Height="24"
+                           HorizontalAlignment="Right"/>
+                </Grid>
             </Button>
-            <Button HorizontalAlignment="Stretch" Command="{Binding SelectDiskCommand}">
-                <StackPanel>
-                    <TextBlock Text="DISK" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ButtonDISKText}" FontSize="11" Opacity="0.8" />
-                </StackPanel>
+            <Button HorizontalAlignment="Stretch" Command="{Binding SelectDiskCommand}"
+                    BorderBrush="#888888" Background="#1E1E1E">
+                <Grid ColumnDefinitions="*,auto">
+                    <StackPanel HorizontalAlignment="Stretch">
+                        <TextBlock Text="DISK" FontWeight="Bold" />
+                        <TextBlock Text="{Binding ButtonDISKText}" FontSize="11" Opacity="0.8" />
+                    </StackPanel>
+                    <Image Grid.Column="1" Source="/Assets/disk.png"
+                           VerticalAlignment="Center"
+                           Height="24"
+                           HorizontalAlignment="Right"/>
+                </Grid>
             </Button>
-            <Button HorizontalAlignment="Stretch" Command="{Binding SelectNetworkCommand}">
-                <StackPanel>
-                    <TextBlock Text="NET" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ButtonNetworkText}" FontSize="11" Opacity="0.8" />
-                </StackPanel>
+            <Button HorizontalAlignment="Stretch" Command="{Binding SelectNetworkCommand}"
+                    BorderBrush="#888888" Background="#1E1E1E">
+                <Grid ColumnDefinitions="*,auto">
+                    <StackPanel HorizontalAlignment="Stretch">
+                        <TextBlock Text="NET" FontWeight="Bold" />
+                        <TextBlock Text="{Binding ButtonNetworkText}" FontSize="11" Opacity="0.8" />
+                    </StackPanel>
+                    <Image Grid.Column="1" Source="/Assets/plug.png"
+                           VerticalAlignment="Center"
+                           Height="24"
+                           HorizontalAlignment="Right"/>
+                </Grid>
             </Button>
         </StackPanel>
     </Border>
