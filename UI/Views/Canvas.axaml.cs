@@ -172,8 +172,8 @@ public partial class Canvas : UserControl
             ChartService.RAM => (data: _vm.RamHistory, title: "RAM (MB)"),
             ChartService.RAMHistory => (data: _vm.RamAvgHistory, title: "RAM History (MB)"),
             
-            ChartService.DISK => (data: _vm.DiskHistory, title: "Disk (%)"),
-            ChartService.DISKHistory => (data: _vm.DiskAvgHistory, title: "Disk History (%)"),
+            ChartService.DISK => (data: _vm.DiskHistory, title: "Disk (MB/s)"),
+            ChartService.DISKHistory => (data: _vm.DiskAvgHistory, title: "Disk History (MB/s)"),
             
             ChartService.NET => (data: _vm.NetworkHistory, title: "Network (MB/s)"),
             ChartService.NETHistory => (data: _vm.NetworkAvgHistory, title: "Network History (MB/s)"),
@@ -370,9 +370,13 @@ public partial class Canvas : UserControl
         {
             _canvasPlot.Plot.Axes.SetLimitsY(0, _vm.RAMTotal);
         }
-        else
+        else if (_vm.SelectedResource == ChartService.CPU || _vm.SelectedResource == ChartService.CPUHistory)
         {
             _canvasPlot.Plot.Axes.SetLimitsY(0, 100);
+        }
+        else
+        {
+            _canvasPlot.Plot.Axes.AutoScaleY();
         }
     }
     
