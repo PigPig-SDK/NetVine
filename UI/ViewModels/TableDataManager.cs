@@ -101,27 +101,5 @@ namespace UI.ViewModels
             foreach (var row in toRemove)
                 TableRows.Remove(row);
         }
-
-
-        /// <summary>
-        /// Kills an application by its primary key (system, app)
-        /// </summary>
-        /// <param name="systemName"></param>
-        /// <param name="appName"></param>
-        /// <returns></returns>
-        public async Task KillAndRemoveByKey(string systemName, string appName)
-        {
-            await AppQuitter.KillProcessByNameAsync(appName);
-
-            Dispatcher.UIThread.Post(() =>
-            {
-                ClearSelection();
-                var row = TableRows.FirstOrDefault(r => r.SystemName == systemName && r.AppName == appName);
-                if (row != null)
-                    TableRows.Remove(row);
-            }, DispatcherPriority.Background);
-        }
-
-
     }
 }
