@@ -22,6 +22,7 @@
             <Button Grid.Column="2" Click="DisconnectClick"
                     ToolTip.Tip="Disconnect"
                     CornerRadius="8" 
+                    BorderBrush="#888888" Background="#1E1E1E"
                     HorizontalAlignment="Right">
 			    <Image Source="/Assets/unplug.png" Height="16"/>
             </Button>

@@ -64,7 +64,10 @@ public class ConfigManager
         {SettingInt.MaxHistory, 100 },
         {SettingInt.TopCount, 10 },
         {SettingInt.AllowHostManipulation, 0 },
-        {SettingInt.UseNetworkPassword, 0 }
+        {SettingInt.UseNetworkPassword, 0 },
+        {SettingInt.DisableToastPopups, 0 },
+        {SettingInt.UseNotifications, 0 },
+        {SettingInt.NotificationTimeMS, 10000}
     };
 
 
@@ -73,7 +76,16 @@ public class ConfigManager
     {
         {SettingFloat.TickRate, 1.0f },//1 second
         {SettingFloat.DatabaseSaveInterval, 60.0f },//60 seconds
-        {SettingFloat.NetworkReconnectInterval, 15.0f }//15 seconds!
+        {SettingFloat.NetworkReconnectInterval, 15.0f },//15 seconds!
+        {SettingFloat.NoteIndividualCpuUsage, 0},
+        {SettingFloat.NoteIndividualRamUsage, 0},
+        {SettingFloat.NoteIndividualDiskUsage, 0},
+        {SettingFloat.NoteIndividualNetworkUsage, 0},
+        {SettingFloat.NoteCpuUsage, 0},
+        {SettingFloat.NoteRamUsage, 0},
+        {SettingFloat.NoteDiskUsage, 0},
+        {SettingFloat.NoteNetworkUsage, 0},
+        {SettingFloat.NoteDBCapacity,0 }
     };
 
 

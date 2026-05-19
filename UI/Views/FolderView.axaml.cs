@@ -23,6 +23,7 @@ public partial class FolderView : UserControl
         SetDateRange(null, null);
         CombinationBox.IsChecked = false;
         CombinationBox.IsLocked = true;
+        UpdateUsers();
     }
 
     private void OnDetach(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)

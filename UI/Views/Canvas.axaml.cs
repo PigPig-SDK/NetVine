@@ -58,6 +58,7 @@ public partial class Canvas : UserControl
         _vm.ChartUpdateRequested += DrawChart;
         _vm.ChartUpdateRequested += UpdateMenu;
 
+        
         MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
         LiveViewModel.ViewChangedEvent += LiveViewChanged;
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
@@ -113,6 +114,10 @@ public partial class Canvas : UserControl
         _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(153);
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+        _canvasPlot.Menu.Add("Select Timeframe", _ => OpenGraphTimeFrame());
+        
+        Loaded += OnLoaded;
+        
     }
     
     

@@ -39,6 +39,7 @@ namespace UI.ViewModels
         private TableDataManager _tableData;
         private bool _tableViewActive = false;
         private string _searchText = "";
+        private HashSet<string> _selectedUsersCache = new();
 
 
         private bool _showCpu = true;
@@ -53,7 +54,7 @@ namespace UI.ViewModels
 
         // Properties
         public TableDataManager TableData { get { return _tableData; } }
-        public string AllMenuText => (_showCpu && _showMemory && _showDisk && _showNetwork) ? "Hide All" : "Show All";
+        public string AllMenuText => (_showCpu || _showMemory || _showDisk || _showNetwork) ? "Hide All" : "Show All";
         public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
         public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
         public string DiskMenuText => _showDisk ? "Hide Disk usage" : "Show Disk usage";
@@ -74,9 +75,9 @@ namespace UI.ViewModels
                 TableFilter.Instance.UpdateSearchExpression(_searchText);
 
                 OnPropertyChanged();
-                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
-                    ? null
-                    : FilterRow;
+                TableRowsView.Filter =  (string.IsNullOrWhiteSpace(value)
+                    ? FilterSelectedUsers
+                    : FilterRow);
 
 
                 TableRowsView.Refresh();
@@ -97,7 +98,7 @@ namespace UI.ViewModels
         
         public IRelayCommand ToggleAllCommand => new RelayCommand(() =>
         {
-            var newValue = !(_showCpu && _showMemory && _showDisk && _showNetwork);
+            var newValue = !(_showCpu || _showMemory || _showDisk || _showNetwork);
             _showCpu = newValue;
             _showMemory = newValue;
             _showDisk = newValue;
@@ -132,7 +133,7 @@ namespace UI.ViewModels
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
             _tableViewActive = lastActiveTab == MainWindowViewModel.TableView;
-
+            CacheSelectedUserFolders();
             //Commands
             ToggleCpuCommand = new RelayCommand(ToggleCpu);
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
@@ -140,7 +141,22 @@ namespace UI.ViewModels
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
             OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
             PopulateTableInit();
+            FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
+            RefreshFilter();
         }
+
+        private void CacheSelectedUserFolders()
+        {
+            _selectedUsersCache.Clear();
+            _selectedUsersCache = [.. FolderViewData.SelectedUsers()];
+            TableRowsView.Refresh();
+        }
+
+        public void RefreshFilter()
+        {
+            TableRowsView.Refresh();
+        }
+
 
         private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
@@ -286,6 +302,7 @@ namespace UI.ViewModels
         //initial population on startup
         private void PopulateTableInit()
         {
+
             //replace this with code that works. Right now, does nothing
             OnSwitchToLive(); // just attempts to populate both with initial data
             OnSwitchToHistorical();
@@ -387,13 +404,19 @@ namespace UI.ViewModels
             return TableFilter.Instance.Evaluate(target);
         }
 
+        private bool FilterSelectedUsers(object obj)
+        {
+            if (obj is not TableRow row) return false;
+            return _selectedUsersCache.Contains(row.SystemName) || row.SystemName == "Combination";
+        }
 
         private bool FilterRow(object obj)
         {
             if (obj is not TableRow row) return false;
-            return TryParseSearchExpression(row) ||
-                row.AppName.Contains(SearchText);
+            return FilterSelectedUsers(row) && (TryParseSearchExpression(row) ||
+                row.AppName.Contains(SearchText));
         }
+
 
     }
 }

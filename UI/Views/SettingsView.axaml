@@ -5,7 +5,19 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.SettingsView">
     <Grid RowDefinitions="*,Auto">
-        <TreeView x:Name="SettingsTreeView" Grid.Row="0"/>
+        <TreeView x:Name="SettingsTreeView" Grid.Row="0">
+            <TreeView.Styles>
+                <Style Selector="TreeViewItem:selected /template/ Border#PART_SelectionIndicator">
+                    <Setter Property="Background" Value="#A5C882"/>
+                </Style>
+                <Style Selector="TreeViewItem:selected /template/ ContentPresenter">
+                    <Setter Property="TextElement.Foreground" Value="White"/>
+                </Style>
+                <Style Selector="TreeViewItem:selected /template/ Border">
+                    <Setter Property="Background" Value="#8FB56A"/>
+                </Style>
+            </TreeView.Styles>
+        </TreeView>
         
         <Button Content="Reset Database" Grid.Row="1"
                 HorizontalAlignment="Right"

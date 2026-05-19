@@ -1,11 +1,16 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UI.ViewModels;
+using UI.Views;
 
 namespace UI;
 
@@ -25,6 +30,45 @@ public partial class TableView : UserControl
         }
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
+
+        MyDataGrid.LoadingRow += RecolorRows;
+    }
+
+    private void SetupSearchTooltip()
+    {
+        var mainWindowBase = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            ? desktop.MainWindow
+            : null;
+
+        if(mainWindowBase is MainWindow mainWindow)
+        {
+            mainWindow.SetSearchTooltip("Boolean Operators:" +
+                "\nAnd : &\nOr : +" +
+                "\nEquality : <,>,<=,>=,=" +
+                "\nParentheses, '()' are respected." +
+                "\nQuery Properties:" +
+                "\nprocess, system, cpu, disk, memory, network, cpuavg, diskavg, memoryavg, networkavg, cpupeak, diskpeak, memorypeak, networkpeak");
+        }
+    }
+
+    private void RecolorRows(object? sender, DataGridRowEventArgs e)
+    {
+        e.Row.PropertyChanged += (s, args) =>
+        {
+            if (args.Property == DataGridRow.IsSelectedProperty)
+            {
+                e.Row.Background = e.Row.IsSelected
+                    ? new SolidColorBrush(Color.Parse("#8FB56A"))
+                    : Brushes.Transparent;
+
+                foreach (var cell in e.Row.GetVisualDescendants().OfType<DataGridCell>())
+                {
+                    cell.Background = e.Row.IsSelected
+                        ? new SolidColorBrush(Color.Parse("#8FB56A"))
+                        : Brushes.Transparent;
+                }
+            }
+        };
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -34,6 +78,7 @@ public partial class TableView : UserControl
             vm.ToggleEvents(true);
         }
         base.OnAttachedToVisualTree(e);
+        SetupSearchTooltip();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
