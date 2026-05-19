@@ -108,8 +108,8 @@ public partial class Canvas : UserControl
 
     void SetColors()
     {
-        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
-        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(153);
+        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(0);
+        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(0);
         _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
         _canvasPlot.Menu.Add("Select Timeframe", _ => OpenGraphTimeFrame());
@@ -350,7 +350,6 @@ public partial class Canvas : UserControl
 
         RemoveTooltip();
         _tooltip = _canvasPlot.Plot.Add.Annotation(text, Alignment.UpperLeft);
-        _tooltip.LabelBackgroundColor = ScottPlot.Color.FromHex("#2D2D38");
         _tooltip.LabelFontColor = ScottPlot.Colors.White;
         _tooltip.LabelBorderColor = ScottPlot.Colors.White;
         _tooltip.LabelBorderWidth = 1;
