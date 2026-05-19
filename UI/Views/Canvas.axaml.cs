@@ -24,7 +24,7 @@ public partial class Canvas : UserControl
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
     private bool _followFlag = true;
     private bool _dragFlag = false;
-    
+
     private DateTime? HistoricalStartGraph = null;
     private DateTime? HistoricalEndGraph = null;
     
@@ -35,42 +35,91 @@ public partial class Canvas : UserControl
     private int _colorIndex = 0;
     private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
 
+    private bool IsLive => LiveViewModel.IsLive;
+    private bool _timeSelected = false;
+    private bool _showPlaceholder;
+    public bool ShowPlaceholder
+    {
+        get => _showPlaceholder;
+        set
+        {
+            if (_showPlaceholder == value) return;
+            _showPlaceholder = value;
+            SelectDataTag.IsVisible = _showPlaceholder;
+        }
+    }
+
     public Canvas()
     {
         InitializeComponent();
         _vm = new CanvasViewModel(ChartService.Instance, ResourceService.Instance);
         DataContext = _vm;
         
-        _vm.ChartUpdateRequested -= DrawChart;
         _vm.ChartUpdateRequested += DrawChart;
-        
-        MainWindowViewModel.OnTabChanged -= UpdateGraphTimeFrame;
+        _vm.ChartUpdateRequested += UpdateMenu;
+
         MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
-        
+        LiveViewModel.ViewChangedEvent += LiveViewChanged;
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
-        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
-        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
-        _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
-        _canvasPlot.Menu.Add("Select Timeframe", _ => OpenGraphTimeFrame());
-        _canvasPlot.Menu.Add("Follow Graph", _ => {_followFlag = true;});
+        LiveViewChanged(LiveViewModel.IsLive);
+        SetColors();
+        SetMenuForGraphs();
         _canvasPlot.PointerWheelChanged += (_, e) => { _followFlag = false; };
         _canvasPlot.PointerPressed += (_, e) => {_dragFlag = true;};
         _canvasPlot.PointerReleased += (_, e) => {_dragFlag = false;};
         _canvasPlot.PointerMoved += (_, e) => { if (_dragFlag) { _followFlag = false; }};
-        
-        Loaded -= OnLoaded;
+        //_canvasPlot.Plot.Axes.Top.IsVisible = false;
+        //_canvasPlot.Plot.Axes.Right.IsVisible = false;
+        _canvasPlot.Plot.Benchmark.IsVisible = false;
+
         Loaded += OnLoaded;
-        
+    }
+
+
+    /// <summary>
+    /// Called when "LIVE BUTTON" is flipped
+    /// </summary>
+    private void LiveViewChanged(bool islive)
+    {
+        ShowPlaceholder = !islive && !_timeSelected;
+        UpdateMenu();
+    }
+
+    private void UpdateMenu()
+    {
+        if(_vm.CurrentChartType == "Pie")
+        {
+            SetMenuForPieChart();
+            return;
+        }
+        SetMenuForGraphs();
+    }
+
+    void SetMenuForGraphs()
+    {
+        _canvasPlot.Menu?.Clear();
+        if (!IsLive) _canvasPlot.Menu?.Add("Select Timeframe", _ => OpenGraphTimeFrame());
+        _canvasPlot.Menu?.Add("Follow Graph", _ => { _followFlag = true; DrawChart(); });
+    }
+    void SetMenuForPieChart()
+    {
+        _canvasPlot.Menu?.Clear();
+        if(!IsLive) _canvasPlot.Menu?.Add("Select Timeframe", _ => OpenGraphTimeFrame());
+    }
+
+    void SetColors()
+    {
+        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
+        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(153);
+        _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
+        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
     }
     
     
     private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         _canvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
-        _canvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#222228");
-        _canvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38");
-        _canvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
-        _canvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+        SetColors();
         _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
@@ -90,6 +139,10 @@ public partial class Canvas : UserControl
             _canvasPlot.Plot.Axes.SquareUnits(false);
             _canvasPlot.Plot.YLabel("");
 
+
+            _canvasPlot.Plot.Axes.Bottom.IsVisible = true;
+            _canvasPlot.Plot.Axes.Left.IsVisible = true;
+
             switch (_vm.CurrentChartType)
             {
                 case "Line": DrawLineChart(); break;
@@ -108,7 +161,8 @@ public partial class Canvas : UserControl
 
     private void DrawLineChart()
     {
-    SetGrid();
+        _canvasPlot.UserInputProcessor.IsEnabled = true;
+        SetGrid();
 
         var history = _vm.SelectedResource switch
         {
@@ -188,7 +242,7 @@ public partial class Canvas : UserControl
         {
             ChartService.CPU => "CPU (%)",
             ChartService.RAM => "RAM (MB)",
-            ChartService.DISK => "Disk (%)",
+            ChartService.DISK => "Disk (MB/S)",
             ChartService.NET => "Network (MB/s)",
             _ => ""
         };
@@ -199,13 +253,20 @@ public partial class Canvas : UserControl
         SetLimits();
     }
     private void DrawPieChart() {
+        _followFlag = true;
         _canvasPlot.Plot.Axes.SquareUnits(true);
         _canvasPlot.Plot.Grid.IsVisible = false;
         _canvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
         _canvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
+
         _canvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
         _canvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
-        
+
+        _canvasPlot.Plot.Axes.Bottom.IsVisible = false;
+        _canvasPlot.Plot.Axes.Left.IsVisible = false;
+
+        _canvasPlot.Plot.Axes.AutoScale();
+
         if (_vm.LatestSnapshot.Count == 0) return;
 
         var pietop = GetTopProcesses();
@@ -226,6 +287,8 @@ public partial class Canvas : UserControl
 
         _canvasPlot.Plot.ShowLegend();
         _canvasPlot.Plot.Axes.AutoScale();
+        _canvasPlot.Plot.Axes.SetLimits(-1.5, 1.5, -1.5, 1.5);
+        _canvasPlot.Refresh();
     }
     private float GetValue(IProgramData p) => _vm.SelectedResource switch
     {
@@ -333,7 +396,10 @@ public partial class Canvas : UserControl
             
         HistoricalStartGraph = dateRange.Value.date1;
         HistoricalEndGraph = dateRange.Value.date2;
-        
+
+        ShowPlaceholder = false;
+        _timeSelected = true;
+
         ResourceService.Instance.TimeFrameUpdate(HistoricalStartGraph, HistoricalEndGraph);
             
         mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartGraph, HistoricalEndGraph);
