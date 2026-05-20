@@ -9,11 +9,13 @@ using CommunityToolkit.Mvvm.Input;
 using Core;
 using Infrastructure;
 using Infrastructure.Networking;
+using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UI.ViewModels.SearchFilter;
 using UI.Views;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UI.ViewModels
 {
@@ -233,7 +235,6 @@ namespace UI.ViewModels
         {
             OnPropertyChanged(nameof(ShowLive));
             OnPropertyChanged(nameof(ShowHistorical));
-
             OnPropertyChanged(nameof(ShowCpuLive));
             OnPropertyChanged(nameof(ShowCpuHistorical));
             OnPropertyChanged(nameof(ShowMemoryLive));
@@ -314,10 +315,10 @@ namespace UI.ViewModels
         //initial population on startup
         private void PopulateTableInit()
         {
-
-            //replace this with code that works. Right now, does nothing
-            OnSwitchToLive(); // just attempts to populate both with initial data
-            OnSwitchToHistorical();
+            if(LiveViewModel.IsLive)
+                OnSwitchToLive();
+            else
+                OnSwitchToHistorical();
         }
 
         private void ViewChangedLive(bool isLive)
@@ -349,6 +350,7 @@ namespace UI.ViewModels
             Dispatcher.UIThread.Post(() =>
             {
                 Debug.Log("Dispatcher post executing for live");
+                _tableData.ClearTable();
                 _tableData.UpdateLiveData(data!);
                 OnIsVisiblePropertiesChanged();
                 TableRowsView.Refresh();
@@ -364,6 +366,7 @@ namespace UI.ViewModels
             
             Dispatcher.UIThread.Post(() =>
             {
+                _tableData.ClearTable();
                 _tableData.UpdateHistoricalData(data!);
                 OnIsVisiblePropertiesChanged();
 
@@ -387,6 +390,7 @@ namespace UI.ViewModels
                 DBInteract.OnProgramListAdded += OnSnapshotHistorical;
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
+                ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
             }
             else
             {
@@ -398,6 +402,20 @@ namespace UI.ViewModels
                 DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved -= NetworkSnapshot;
+                ConnectedUserInfo.OnUserConnectionModified -= OnConnectedUserModified;
+            }
+        }
+
+        private void OnConnectedUserModified(string username, bool isAdded)
+        {
+            if (!isAdded)//Removal / disconnected user
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _tableData.ClearUserFromTable(username);
+                    OnIsVisiblePropertiesChanged();
+                    TableRowsView.Refresh();
+                });
             }
         }
 

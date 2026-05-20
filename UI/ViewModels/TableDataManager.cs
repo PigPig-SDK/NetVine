@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 
 namespace UI.ViewModels
 {
@@ -106,6 +104,18 @@ namespace UI.ViewModels
             Debug.Log($"Removing {toRemove.Count} stale rows");
             foreach (var row in toRemove)
                 TableRows.Remove(row);
+        }
+
+        public void ClearTable()
+        {
+            TableRows.Clear();
+        }
+        public void ClearUserFromTable(string username)
+        {
+            foreach (var row in TableRows.Where(r => r.SystemName == username).ToList())
+            {
+                TableRows.Remove(row);
+            }
         }
     }
 }
