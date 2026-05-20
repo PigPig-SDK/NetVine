@@ -29,7 +29,7 @@ public class NetworkManager
     public Action<Guid, ConnectionInfo>? OnDisconnectFromHost;
     public Action<Guid, ConnectionInfo, SocketError>? OnSocketError;
     public Action<Guid, ConnectionInfo>? OnConnectToHost;
-    public Action<Guid, NetworkErrorType>? OnNetworkError; 
+    public Action<Guid, NetworkErrorType>? OnNetworkError;
 
     public static void SetupInstance()
     {
@@ -229,7 +229,7 @@ public class NetworkManager
     public void Disconnect()
     {
         //Disconnect from others...
-        foreach (var client in EstablishedClientConnections.Values)
+        foreach (var client in EstablishedClientConnections.Values.ToArray())
         {
             client.DisconnectShutdown();
         }
