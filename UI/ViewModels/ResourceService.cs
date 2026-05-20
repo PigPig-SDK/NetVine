@@ -78,7 +78,7 @@ namespace UI.ViewModels
             foreach (var group in byDevice)
             {
                 // skip local machine — already handled by OnLocalSnapshot
-                if (group.Key == Environment.MachineName) continue;
+                if (group.Key.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase)) continue;
                 OnSnapshot(group.Key, group.Cast<IProgramData>().ToList());
             }
         }
@@ -93,6 +93,8 @@ namespace UI.ViewModels
         }
         private void OnSnapshot(string device, List<IProgramData> data)
         {
+                
+
             if (!_cpuHistories.ContainsKey(device))
             {
                 _cpuHistories[device] = new();
@@ -112,24 +114,20 @@ namespace UI.ViewModels
             var disk = data.Sum(p => p.DiskUsage);
             var network = data.Sum(p => p.NetworkUsage);
 
-            LiveCpuHistory.Add(cpu);
-            LiveRamHistory.Add(ram);
-            LiveDiskHistory.Add(disk);
-            LiveNetworkHistory.Add(network);
-
-            AddCapped(_cpuHistories[device], cpu);
-            AddCapped(_ramHistories[device], ram);
-            AddCapped(_diskHistories[device], disk);
-            AddCapped(_networkHistories[device], network);
-
             if (device == SelectedDevice)
             {
+                LatestSnapshot = data;
                 CpuUsage = cpu;
                 RamUsage = ram;
                 DiskUsage = disk;
                 NetworkUsage = network;
                 DataUpdated?.Invoke();
             }
+            
+            AddCapped(_cpuHistories[device], cpu);
+            AddCapped(_ramHistories[device], ram);
+            AddCapped(_diskHistories[device], disk);
+            AddCapped(_networkHistories[device], network);
         }
         
         public void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
