@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace UI.ViewModels
@@ -37,8 +38,11 @@ namespace UI.ViewModels
         /// <param name="data"></param> new data to take in
         public void UpdateLiveData(List<IProgramData> data)
         {
-            //Debug.Log("Table Live updated");
-            var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
+            if(data.Count == 0) return;// No data.
+
+            string username = data.First().SystemName;
+
+            var existing = TableRows.Where(x=>x.SystemName == username).ToDictionary(r => (r.SystemName, r.AppName));
             var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
 
             // Update or add
@@ -52,8 +56,10 @@ namespace UI.ViewModels
             }
 
             // Remove stale rows -- I guess that this is needed in order to keep things sorted. If not we can figure out a fix like dummy rows or something
-            var toRemove = TableRows.Where(r => !incoming.ContainsKey((r.SystemName, r.AppName))).ToList();
-           
+            var toRemove = TableRows
+                            .Where(r => r.SystemName == username && !incoming.ContainsKey((r.SystemName, r.AppName)))
+                            .ToList();
+
             if (toRemove.Count > 0)
             {
                 Dispatcher.UIThread.Post(() =>

@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Core;
 using Infrastructure;
+using Infrastructure.Networking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -193,6 +194,17 @@ namespace UI.ViewModels
             if (search == null) return;
             SearchText = search;
         }
+        private void NetworkSnapshot(ProgramData[] data)
+        {
+            if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateLiveData(new(data));
+                TableRowsView.Refresh();
+                ReapplySort();
+            });
+        }
         public void OnSnapshotLive(List<IProgramData> data)
         {
             {
@@ -368,25 +380,24 @@ namespace UI.ViewModels
             if (isActive)
             {
                 _tableViewActive = true;
-                //resubscribe to events
-                // should be able to delete the subscribing and unsubscribing
                 MainWindowViewModel.OnTabChanged += UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent += ViewChangedLive;
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnProgramListAdded += OnSnapshotHistorical;
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
+                NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
             }
             else
             {
                 _tableViewActive = false;
-                //unsubscribe from events
                 MainWindowViewModel.OnTabChanged -= UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
+                NetworkDataManager.Instance.OnLiveDataRecieved -= NetworkSnapshot;
             }
         }
 
