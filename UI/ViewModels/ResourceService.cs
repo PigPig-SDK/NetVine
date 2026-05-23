@@ -77,7 +77,7 @@ namespace UI.ViewModels
             var byDevice = data.GroupBy(p => p.SystemName);
             foreach (var group in byDevice)
             {
-                // skip local machine — already handled by OnLocalSnapshot
+                //skip owner device, handled by localsnapshot
                 if (group.Key.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase)) continue;
                 OnSnapshot(group.Key, group.Cast<IProgramData>().ToList());
             }
