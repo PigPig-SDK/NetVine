@@ -11,45 +11,30 @@ public static class DBArithmetic
     /// </summary>
     public static void UpdatePDHTable(List<ProgramData> currentData, DBInteract db)
     {
-            foreach(var data in currentData)
-            {
-                if(!db.ValueInPDH(data.SystemName, data.ProcessName))
-                {
-                    var entryNotCombo =
-                        HistoricalQueryBuilder(db.ProgramDataTable
-                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName)).FirstOrDefault();
-                    
-                    if (entryNotCombo != null)
-                    {
-                        db.AddPDHEntry(entryNotCombo);
-                    }
-                }
+        var existingEntries = db.PDHTable.ToDictionary(x => (x.SystemName, x.ProcessName));
 
-                if(!db.ValueInPDH(ComboString, data.ProcessName))
+        foreach (var data in currentData)
+        {
+            var uniqueDBKey = (data.SystemName, data.ProcessName);
+
+            if (!existingEntries.TryGetValue(uniqueDBKey, out var entry))
+            {
+                entry = HistoricalQueryBuilder(
+                        db.ProgramDataTable.Where(x => x.SystemName == uniqueDBKey.Item1 && x.ProcessName == uniqueDBKey.Item2))
+                    .FirstOrDefault();
+
+                if (entry != null)
                 {
-                    var entryCombo =
-                        HistoricalQueryBuilder(db.ProgramDataTable
-                                .Where(x => x.ProcessName == data.ProcessName), ComboString).FirstOrDefault();
-                    
-                    if (entryCombo != null)
-                    { 
-                        db.AddPDHEntry(entryCombo);
-                    }
-                }
-               
-                var existingNotComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName);
-                if (existingNotComboEntry != null)
-                {
-                    HistoricalCumulativeUpdater(existingNotComboEntry, data);
-                }
-                
-                var existingComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == ComboString && x.ProcessName == data.ProcessName);
-                if (existingComboEntry != null)
-                {
-                    HistoricalCumulativeUpdater(existingComboEntry, data);
+                    db.PDHTable.Add(entry);
+                    existingEntries[uniqueDBKey] = entry;
                 }
             }
-            db.SaveChanges();
+
+            if (entry != null)
+                HistoricalCumulativeUpdater(entry, data);
+        }
+
+        db.SaveChanges();
     }
     
     /// <summary>
@@ -62,7 +47,7 @@ public static class DBArithmetic
         {
             if (!date1.HasValue && !date2.HasValue)
             {
-                return db.PDHTable.Where(x => x.SystemName != ComboString).ToList();
+                return db.PDHTable.ToList();
             }
             
             return HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
@@ -83,7 +68,27 @@ public static class DBArithmetic
             
             if (!date1.HasValue && !date2.HasValue)
             {
-                return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
+                return db.PDHTable.Where(x => systemList.Contains(x.SystemName)).ToList()
+                    .GroupBy(x => x.ProcessName)
+                    .Select(y => new ProgramDataHistorical
+                    {
+                        SystemName = ComboString,
+                        ProcessName = y.Key,
+
+                        ValueCount = y.Sum(x => x.ValueCount),
+                        CpuUsageAvg = y.Sum(x => x.CpuUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
+                        DiskUsageAvg = y.Sum(x => x.DiskUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
+                        NetworkUsageAvg = y.Sum(x => x.NetworkUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
+                        MemoryUsageAvg = y.Sum(x => x.MemoryUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
+
+                        CpuUsagePeak = y.Max(x => x.CpuUsagePeak),
+                        DiskUsagePeak = y.Max(x => x.DiskUsagePeak),
+                        NetworkUsagePeak = y.Max(x => x.NetworkUsagePeak),
+                        MemoryUsagePeak = y.Max(x => x.MemoryUsagePeak),
+
+                        NetworkUsageTotal = y.Sum(x => x.NetworkUsageTotal)
+                    })
+                    .ToList();;
             }
             
             return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
@@ -91,8 +96,6 @@ public static class DBArithmetic
                 .ToList();
         }
     }
-
-    
     
     /// <summary>
     /// Builder Helper method for Historical Data Queries so I didnt have to repeat this 10 unjillion times.
