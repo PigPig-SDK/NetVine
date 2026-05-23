@@ -6,9 +6,8 @@ namespace Infrastructure.Networking.Packets;
 [ProtoContract]
 public class CloseProcessPayload : IPacketPayload
 {
-    [ProtoMember(1)]
     public PacketType PacketType => PacketType.CloseProcessPacket;
-    [ProtoMember(2)]
+    [ProtoMember(1)]
     public string ProcessName { get; set; } = string.Empty;
 
     public CloseProcessPayload() { }

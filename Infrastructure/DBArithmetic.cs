@@ -3,7 +3,7 @@ namespace Infrastructure;
 
 public static class DBArithmetic
 {
-    private const string ComboString = "Combination";
+    public const string ComboString = "Combination";
 
     /// <summary>
     /// Takes in data, and calculates cumulative averages in Program Data Historical Table. If an entry doesnt exist,

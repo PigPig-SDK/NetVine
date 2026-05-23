@@ -25,7 +25,7 @@ public class NetworkDataManager
     {
         Host? host = NetworkManager.Instance.Host;
         if (host is null) return;
-
+        IsHostExpectingLiveData = isLive;//Yes we expect it.
         SetLiveViewPayload setLiveViewPayload = new(isLive);
         Packet packet = Packet.CreatePacket(setLiveViewPayload);
         host?.Multicast(packet.ToBytes());
@@ -76,7 +76,6 @@ public class NetworkDataManager
             HostUpdatePushStatus(false);
             return;
         }
-
         OnLiveDataRecieved?.Invoke(data);
     }
     public void HostUpdatePushStatus(bool shouldPush)
