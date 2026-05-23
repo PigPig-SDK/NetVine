@@ -22,6 +22,8 @@ namespace UI.ViewModels
         public List<IProgramData> LatestSnapshot => _resourceService.LatestSnapshot;
 
         public List<List<IProgramData>> SnapshotHistory => _resourceService.SnapshotHistory;
+        
+        public List<List<IProgramData>> AllHistorical => _resourceService.AllHistorical;
         public List<double> CpuHistory => _resourceService.LiveCpuHistory;
         public List<double> CpuAvgHistory => _resourceService.HistoricalCpuHistory;
         public List<double> RamHistory => _resourceService.LiveRamHistory;

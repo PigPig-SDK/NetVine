@@ -198,15 +198,21 @@ public partial class Canvas : UserControl
 
     private void DrawBarChart()
     {
+        _processColors.Clear();
+        _colorIndex = 0;
+        
         SetGrid();
-        if (_vm.SnapshotHistory.Count == 0) return;
+        var data = IsLive ? _vm.SnapshotHistory : _vm.AllHistorical;
+        
+        if (data.Count == 0) return;
 
         _barTooltipData.Clear();
 
-        for (int i = 0; i < _vm.SnapshotHistory.Count; i++)
+        for (int i = 0; i < data.Count; i++)
         {
-            var snapshot = _vm.SnapshotHistory[i];
-
+            
+            var snapshot = data[i];
+            
             var bartop = snapshot
                 .OrderByDescending(p => GetValue(p))
                 .Where(p => GetValue(p) > 0)
@@ -218,6 +224,7 @@ public partial class Canvas : UserControl
 
             foreach (var process in bartop)
             {
+                
                 double value = GetValue(process);
 
                 if (!_processColors.ContainsKey(process.ProcessName))
@@ -243,15 +250,22 @@ public partial class Canvas : UserControl
         var label = _vm.SelectedResource switch
         {
             ChartService.CPU => "CPU (%)",
+            ChartService.CPUHistory => "CPU History (%)",
+            
             ChartService.RAM => "RAM (MB)",
+            ChartService.RAMHistory => "RAM History (MB)",
+            
             ChartService.DISK => "Disk (MB/S)",
+            ChartService.DISKHistory => "Disk History (MB/S)",
+            
             ChartService.NET => "Network (MB/s)",
+            ChartService.NETHistory => "Network History (MB/s)",
             _ => ""
         };
 
         _canvasPlot.Plot.YLabel(label);
 
-        _canvasPlot.Plot.Axes.SetLimitsX(-0.5, _vm.SnapshotHistory.Count + 0.5);
+        _canvasPlot.Plot.Axes.SetLimitsX(-0.5, data.Count + 0.5);
         SetLimits();
     }
     private void DrawPieChart() {
@@ -300,9 +314,16 @@ public partial class Canvas : UserControl
     private float GetValue(IProgramData p) => _vm.SelectedResource switch
     {
         ChartService.CPU => p.CpuUsage,
+        ChartService.CPUHistory => p.CpuUsage,
+        
         ChartService.RAM => p.MemoryUsage,
+        ChartService.RAMHistory => p.MemoryUsage,
+        
         ChartService.DISK => p.DiskUsage,
+        ChartService.DISKHistory => p.DiskUsage,
+        
         ChartService.NET => p.NetworkUsage,
+        ChartService.NETHistory => p.NetworkUsage,
         _ => p.CpuUsage
     };
 
