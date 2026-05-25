@@ -5,7 +5,7 @@ namespace Infrastructure;
 
 public static class DBArithmetic
 {
-    private const string ComboString = "Combination";
+    public const string ComboString = "Combination";
 
     /// <summary>
     /// Takes in data, and calculates cumulative averages in Program Data Historical Table. If an entry doesnt exist,
@@ -13,45 +13,30 @@ public static class DBArithmetic
     /// </summary>
     public static void UpdatePDHTable(List<ProgramData> currentData, DBInteract db)
     {
-            foreach(var data in currentData)
-            {
-                if(!db.ValueInPDH(data.SystemName, data.ProcessName))
-                {
-                    var entryNotCombo =
-                        HistoricalQueryBuilder(db.ProgramDataTable
-                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName)).FirstOrDefault();
-                    
-                    if (entryNotCombo != null)
-                    {
-                        db.AddPDHEntry(entryNotCombo);
-                    }
-                }
+        var existingEntries = db.PDHTable.ToDictionary(x => (x.SystemName, x.ProcessName));
 
-                if(!db.ValueInPDH(ComboString, data.ProcessName))
+        foreach (var data in currentData)
+        {
+            var uniqueDBKey = (data.SystemName, data.ProcessName);
+
+            if (!existingEntries.TryGetValue(uniqueDBKey, out var entry))
+            {
+                entry = HistoricalQueryBuilder(
+                        db.ProgramDataTable.Where(x => x.SystemName == uniqueDBKey.Item1 && x.ProcessName == uniqueDBKey.Item2))
+                    .FirstOrDefault();
+
+                if (entry != null)
                 {
-                    var entryCombo =
-                        HistoricalQueryBuilder(db.ProgramDataTable
-                                .Where(x => x.ProcessName == data.ProcessName), ComboString).FirstOrDefault();
-                    
-                    if (entryCombo != null)
-                    { 
-                        db.AddPDHEntry(entryCombo);
-                    }
-                }
-               
-                var existingNotComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName);
-                if (existingNotComboEntry != null)
-                {
-                    HistoricalCumulativeUpdater(existingNotComboEntry, data);
-                }
-                
-                var existingComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == ComboString && x.ProcessName == data.ProcessName);
-                if (existingComboEntry != null)
-                {
-                    HistoricalCumulativeUpdater(existingComboEntry, data);
+                    db.PDHTable.Add(entry);
+                    existingEntries[uniqueDBKey] = entry;
                 }
             }
-            db.SaveChanges();
+
+            if (entry != null)
+                HistoricalCumulativeUpdater(entry, data);
+        }
+
+        db.SaveChanges();
     }
     
     /// <summary>
@@ -99,8 +84,6 @@ public static class DBArithmetic
             }
         });
     }
-
-    
     
     /// <summary>
     /// Builder Helper method for Historical Data Queries so I didnt have to repeat this 10 unjillion times.

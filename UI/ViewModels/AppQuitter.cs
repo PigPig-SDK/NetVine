@@ -1,23 +1,20 @@
-﻿using Core;
+﻿using Infrastructure;
 using Infrastructure.Networking;
 using Infrastructure.Networking.Packets;
-using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace UI.ViewModels
 {
-
-
     public static class AppQuitter
     {
-
-        // on the current PC:
-        public static void KillProcessByName(string name)
+        private static void KillProcessByName(string processName)
         {
-            if (string.IsNullOrEmpty(name)) return;
+            if (string.IsNullOrEmpty(processName)) return;
 
-            Process[] processes = Process.GetProcessesByName(name);
+            Process[] processes = Process.GetProcessesByName(processName);
 
             foreach (Process p in processes)
             {
@@ -28,50 +25,43 @@ namespace UI.ViewModels
             }
         }
 
-        public static async Task KillProcessByNameAsync(string name)
+        public static void KillProcessByNameAsync(string processName)
         {
-            Core.Debug.Log($"Ending processes: {name}");
-            await Task.Run(() => KillProcessByName(name));
-            Core.Debug.Log($"{name} Ended");
+            Task.Run(() => KillProcessByName(processName));
         }
 
-        public static async Task KillProcessesByRowAsync(TableRow row)
+        public static void KillProcessesByRowAsync(TableRow row)
         {
-            Core.Debug.Log($"Ending processes: {row.AppName}");
-
             Host? host = NetworkManager.Instance.Host;
             if(host is not null)
             {
+                var clients = host.OurSessions.ToList();
                 var packet = Packet.CreatePacket(new CloseProcessPayload(row.AppName));
-                host.Multicast(packet.ToBytes());
+
+                HashSet<string> comboUsers = [.. FolderViewData.SelectedUsers()];
+
+                foreach (var client in clients)
+                {
+                    if (client is HostSession hostSession)
+                    {
+                        if (!hostSession.IsPasswordAccepted) continue;//Skip user.
+
+                        //Check for combo mode. bleh.
+                        if (CombinationModel.IsCombination)
+                        {
+                            if (comboUsers.Contains(hostSession.Username))
+                                client.SendAsync(packet.ToBytes());
+                        }
+                        else
+                        {
+                            if(row.SystemName.Equals(hostSession.Username))
+                                client.SendAsync(packet.ToBytes());
+                        }
+                    }
+                }
             }
 
-            await Task.Run(() => KillProcessByName(row.AppName));
-
+            KillProcessByNameAsync(row.AppName);
         }
-
-        public static async Task KillProcessByKeyAsync(Tuple<string, string>? key)
-        {
-            if (key == null)
-            {
-                Core.Debug.Log("null key");
-                return;
-            }
-
-
-            string sysName = SystemHistory.Instance.SystemName;
-
-            if (key.Item1 != sysName)
-            {
-                //some networking logic can be put here for other systems.
-                Core.Debug.Log($"Permission to kill process denied -- must be on your own machine {key.Item1} != {sysName} ");
-            }
-            else
-            {
-                await Task.Run(() => KillProcessByName(key.Item2));
-            }
-
-        }
-
     }
 }

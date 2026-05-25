@@ -149,7 +149,7 @@ public partial class TableView : UserControl
         if (DataContext is TableViewModel vm)
             vm.ResumeUpdate();
         if (_selectedRow == null) return;//Don't do anything.
-        _ = AppQuitter.KillProcessesByRowAsync(_selectedRow);
+        AppQuitter.KillProcessesByRowAsync(_selectedRow);
 
     }
 
