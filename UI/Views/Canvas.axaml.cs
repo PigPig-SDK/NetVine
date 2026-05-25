@@ -24,6 +24,7 @@ public partial class Canvas : UserControl
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
     private bool _followFlag = true;
     private bool _dragFlag = false;
+    private AxisLimits? _boundsSaved;
 
     private DateTime? HistoricalStartGraph = null;
     private DateTime? HistoricalEndGraph = null;
@@ -56,6 +57,7 @@ public partial class Canvas : UserControl
         DataContext = _vm;
         
         _vm.ChartUpdateRequested += DrawChart;
+        _vm.ChartTypeUpdateRequested += UpdateType;
         _vm.ChartUpdateRequested += UpdateMenu;
 
         
@@ -130,12 +132,19 @@ public partial class Canvas : UserControl
         _canvasPlot.Refresh();
     }
 
+    private void UpdateType()
+    {
+        _boundsSaved = null;
+        _canvasPlot.Plot.Axes.AutoScale();
+        _followFlag = true;
+    }
     private void DrawChart()
     {
         Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
         {
             RemoveTooltip();
-            var boundsSaved = _canvasPlot.Plot.Axes.GetLimits();
+            _boundsSaved = _canvasPlot.Plot.Axes.GetLimits();
+            
             _canvasPlot.Plot.Clear();
             _canvasPlot.Plot.Axes.SquareUnits(false);
             _canvasPlot.Plot.YLabel("");
@@ -152,9 +161,9 @@ public partial class Canvas : UserControl
                 case "Pie": DrawPieChart(); break;
             }
 
-            if (!_followFlag)
+            if (!_followFlag &&  _boundsSaved != null)
             {
-                _canvasPlot.Plot.Axes.SetLimits(boundsSaved);
+                _canvasPlot.Plot.Axes.SetLimits((AxisLimits) _boundsSaved);
             }
             
             _canvasPlot.Refresh();
@@ -198,8 +207,6 @@ public partial class Canvas : UserControl
 
     private void DrawBarChart()
     {
-        _processColors.Clear();
-        _colorIndex = 0;
         
         SetGrid();
         var data = IsLive ? _vm.SnapshotHistory : _vm.AllHistorical;

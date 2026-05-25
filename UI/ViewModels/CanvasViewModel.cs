@@ -17,6 +17,8 @@ namespace UI.ViewModels
         public double RAMTotal => _resourceService.RAMTotal;
 
         public event Action? ChartUpdateRequested;
+        
+        public event Action? ChartTypeUpdateRequested;
         public string CurrentChartType => _chartService.ChartType;
 
         public List<IProgramData> LatestSnapshot => _resourceService.LatestSnapshot;
@@ -40,7 +42,7 @@ namespace UI.ViewModels
         public CanvasViewModel(ChartService chartService, ResourceService resourceService)
         {
             _chartService = chartService;
-            _chartService.ChartTypeChanged += UpdateChart;
+            _chartService.ChartTypeChanged += UpdateChartType;
             _resourceService = resourceService;
             _resourceService.DataUpdated += UpdateChart;
         }
@@ -48,6 +50,12 @@ namespace UI.ViewModels
         private void UpdateChart()
         {
             ChartUpdateRequested?.Invoke();
+        }
+        
+        private void UpdateChartType()
+        {
+            ChartUpdateRequested?.Invoke();
+            ChartTypeUpdateRequested?.Invoke();
         }
     }
 }
