@@ -156,7 +156,8 @@ public static class DBArithmetic
         
     }
 
-    public static async Task<Dictionary<string, List<double>>> LineGraphHistoricalProducer(DateTime? date1, DateTime? date2)
+    public static async Task<Dictionary<string, List<double>>> LineGraphHistoricalProducer(List<String> systemList,
+        DateTime? date1, DateTime? date2)
     {
         return await Task.Run(() =>
         {
@@ -164,7 +165,8 @@ public static class DBArithmetic
             {
                 
                 var capturedData = db.ProgramDataTable.Where(x =>
-                        (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)).ToList();
+                        (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)
+                        && (systemList.Contains(x.SystemName))).ToList();
 
                 var dict = new Dictionary<string, List<double>>
                 {
@@ -179,15 +181,15 @@ public static class DBArithmetic
         });    
     }
     
-    public static async Task<List<List<IProgramData>>> BarGraphHistoricalProducer(DateTime? date1, DateTime? date2)
+    public static async Task<List<List<IProgramData>>> BarGraphHistoricalProducer(List<String> systemList, DateTime? date1, DateTime? date2)
     {
         return await Task.Run(() =>
         {
             using (var db = new DBInteract())
             {
                 return db.ProgramDataTable.Where(x =>
-                        (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value))
-                    .AsEnumerable().GroupBy(x => x.Date)
+                        (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value) 
+                        && (systemList.Contains(x.SystemName))).AsEnumerable().GroupBy(x => x.Date)
                     .Select(g => g.Cast<IProgramData>().ToList())
                     .ToList();
             }

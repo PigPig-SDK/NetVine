@@ -78,9 +78,9 @@ namespace UI.ViewModels
         public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
         {
             
-            AllHistorical = await DBArithmetic.BarGraphHistoricalProducer(startDate, endDate);
+            AllHistorical = await DBArithmetic.BarGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
             
-            var dataDict = await DBArithmetic.LineGraphHistoricalProducer(startDate, endDate);
+            var dataDict = await DBArithmetic.LineGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
             HistoricalCpuHistory = dataDict["CPU"];
             HistoricalRamHistory = dataDict["RAM"];
             HistoricalDiskHistory = dataDict["DISK"];
