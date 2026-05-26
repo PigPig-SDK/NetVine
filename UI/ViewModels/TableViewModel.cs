@@ -146,8 +146,6 @@ namespace UI.ViewModels
             OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
             PopulateTableInit();
             FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
-            CombinationModel.ViewChangedEvent += ViewChangedCombination;
-            LiveViewModel.ViewChangedEvent += ViewChangedLive;
             RefreshFilter();
         }
 
@@ -402,10 +400,16 @@ namespace UI.ViewModels
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
+                FolderViewData.OnSelectionUpdated += SelectionUpdated;
+                CombinationModel.ViewChangedEvent += ViewChangedCombination;
+                LiveViewModel.ViewChangedEvent += ViewChangedLive;
             }
             else
             {
                 _tableViewActive = false;
+
+                CombinationModel.ViewChangedEvent -= ViewChangedCombination;
+                LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 MainWindowViewModel.OnTabChanged -= UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
@@ -414,7 +418,14 @@ namespace UI.ViewModels
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved -= NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified -= OnConnectedUserModified;
+                FolderViewData.OnSelectionUpdated -= SelectionUpdated;
             }
+        }
+
+        private void SelectionUpdated()
+        {
+            ViewChangedLive(LiveViewModel.IsLive);
+            ViewChangedCombination(CombinationModel.IsCombination);
         }
 
         private void OnConnectedUserModified(string username, bool isAdded)
