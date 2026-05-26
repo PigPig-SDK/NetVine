@@ -9,6 +9,7 @@ using Infrastructure.Networking;
 using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 
 namespace UI;
@@ -58,7 +59,7 @@ public partial class NetworkViewConnection : UserControl
         UpdateOnlineDot();
     }
 
-    private string ComputeConnectionErrorString() => $"{string.Join("\n", _connectionErrorText.Values)}{string.Join("\n", _socketErrors)}";
+    private string ComputeConnectionErrorString() => $"{string.Join("\n", _connectionErrorText.Values.ToList())}{string.Join("\n", _socketErrors)}";
 
     public void UpdateOnlineDot()
     {
