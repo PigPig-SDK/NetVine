@@ -43,19 +43,19 @@ public class ApiTracker
     private void DbSnapshot(List<ProgramData> programs, bool isDataLocal)
     {
         if (!GetUrlSetting(SettingString.ApiDataBaseSnapshot, out string? url)) return;
-        client.PostAsJsonAsync(url, (programs, isDataLocal));
+        _ = client.PostAsJsonAsync(url, (programs, isDataLocal));
     }
 
     private void OnNotified(Notification notification)
     {
         if (!GetUrlSetting(SettingString.ApiNotification, out string? url)) return;
-        client.PostAsJsonAsync(url, notification);
+        _ = client.PostAsJsonAsync(url, notification);
     }
 
     private void Snapshot(List<IProgramData> list)
     {
         if (!GetUrlSetting(SettingString.ApiSnapshot, out string? url)) return;
-        client.PostAsJsonAsync(url, list);
+        _ = client.PostAsJsonAsync(url, list);
     }
     /// <summary>
     /// 
