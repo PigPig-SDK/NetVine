@@ -93,7 +93,10 @@ public class ConfigManager
     private static readonly Dictionary<SettingString, string> _DefaultStringValues = new()
     {
         { SettingString.HostIP, NetworkManager.DefaultHost},
-        { SettingString.HostPassword, "password123" }
+        { SettingString.HostPassword, "password123" },
+        { SettingString.ApiSnapshot, "" },
+        { SettingString.ApiDataBaseSnapshot, "" },
+        { SettingString.ApiNotification, "" },
     };
     
     

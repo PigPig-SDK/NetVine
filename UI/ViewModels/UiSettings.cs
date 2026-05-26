@@ -222,6 +222,25 @@ public static class UiSettings
                 0,
                 "notification", "network"),
         ]),
+        new SettingGroup("API", [
+            new SettingInputField<SettingString>("POST Notification Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiNotification,
+                "api", "rest", "post"),
+
+            new SettingInputField<SettingString>("POST DB-Snapshot Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiDataBaseSnapshot,
+                "api", "rest", "post", "db"),
+
+            new SettingInputField<SettingString>("POST Snapshot Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiSnapshot,
+                "api", "rest", "post"),
+        ]),
     };
 
     public static SettingInput? GetInputField<T>(T inputType) where T : Enum
