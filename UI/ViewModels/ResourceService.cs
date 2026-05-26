@@ -45,8 +45,6 @@ namespace UI.ViewModels
 
         public List<IProgramData> LatestSnapshot { get; private set; } = new();
 
-        public IEnumerable<string> KnownDevices => _cpuHistories.Keys;
-
         public event Action? DataUpdated;
 
         private int MaxHistory => ConfigManager.ReadSetting(SettingInt.MaxHistory) is int m && m > 0 ? m : 60;
@@ -90,7 +88,7 @@ namespace UI.ViewModels
             }
             DevicesChanged?.Invoke();
         }
-        private void OnSnapshot(string device, List<IProgramData> data)
+        internal void OnSnapshot(string device, List<IProgramData> data)
         {
                 
 
@@ -148,6 +146,8 @@ namespace UI.ViewModels
             while (list.Count > MaxHistory)
                 list.RemoveAt(0);
         }
+
+
 
     }
 }

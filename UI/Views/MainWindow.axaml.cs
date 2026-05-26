@@ -22,6 +22,9 @@ public partial class MainWindow : Window
     private Dictionary<int, Button> _tabBarMapping;
     public bool IsWindowInitialized = false;
 
+    //for testing net users. use MockNetSetup() at end of OnOpenedEvent
+    private MockNetUser? _mockNetUser;
+
     private int CurrentSidebarTab = 0;
     private bool isAnimatingSidebar = false;
     private const int SidebarMinSize = 40;
@@ -88,6 +91,9 @@ public partial class MainWindow : Window
         }
         IsWindowInitialized = true;
         MainWindowViewModel.StartAnimation();
+
+        //test net users
+        MockNetSetup();
     }
 
     private void OnCloseEvent(object? sender, WindowClosingEventArgs e)
@@ -242,5 +248,13 @@ public partial class MainWindow : Window
             }
         };
         timer.Start();
+    }
+
+    private void MockNetSetup()
+    {
+        _mockNetUser = new MockNetUser("Aidan", "Sean", "Ben", "Ty");
+        Task.Delay(500).ContinueWith(_ =>
+            Dispatcher.UIThread.Post(() =>
+                _ = _mockNetUser.Start()));
     }
 }
