@@ -43,19 +43,37 @@ public class ApiTracker
     private void DbSnapshot(List<ProgramData> programs, bool isDataLocal)
     {
         if (!GetUrlSetting(SettingString.ApiDataBaseSnapshot, out string? url)) return;
-        _ = client.PostAsJsonAsync(url, (programs, isDataLocal));
+        _ = client.PostAsJsonAsync(url, (programs, isDataLocal)).ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                NotificationManager.WriteNotificationWithCooldown(new Notification(NotificationPriority.Critical, "DB API Error", $"Failed to send DB snapshot: {task.Exception?.Message}"));
+            }
+        });
     }
 
     private void OnNotified(Notification notification)
     {
         if (!GetUrlSetting(SettingString.ApiNotification, out string? url)) return;
-        _ = client.PostAsJsonAsync(url, notification);
+        _ = client.PostAsJsonAsync(url, notification).ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                NotificationManager.WriteNotificationWithCooldown(new Notification(NotificationPriority.Critical, "Notification API Error", $"Failed to send notification: {task.Exception?.Message}"));
+            }
+        });
     }
 
     private void Snapshot(List<IProgramData> list)
     {
         if (!GetUrlSetting(SettingString.ApiSnapshot, out string? url)) return;
-        _ = client.PostAsJsonAsync(url, list);
+        _ = client.PostAsJsonAsync(url, list).ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+            {
+                NotificationManager.WriteNotificationWithCooldown(new Notification(NotificationPriority.Critical, "Snapshot API Error", $"Failed to send snapshot: {task.Exception?.Message}"));
+            }
+        });
     }
     /// <summary>
     /// 

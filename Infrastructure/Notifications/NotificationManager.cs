@@ -44,7 +44,13 @@ public class NotificationManager
         Instance._notifications.Add(notification);
         OnNotified?.Invoke(notification);
     }
-
+    public static void WriteNotificationWithCooldown(Notification notification)
+    {
+        string key = $"{notification.Title}";
+        if (!KeyCooldownMet(key)) return;
+        Instance._notifications.Add(notification);
+        OnNotified?.Invoke(notification);
+    }
     public static void Initilaize()
     {
         try
