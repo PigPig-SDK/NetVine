@@ -107,6 +107,7 @@ public static class DBArithmetic
                 DiskUsageAvg = y.Average(z => z.DiskUsage),
                 NetworkUsageAvg = y.Average(z => z.NetworkUsage),
                 MemoryUsageAvg = y.Average(z => z.MemoryUsage),
+                MemoryUsageTotal = y.Sum(z => z.MemoryUsage),
 
                 CpuUsagePeak = y.Max(z => z.CpuUsage),
                 DiskUsagePeak = y.Max(z => z.DiskUsage),
@@ -129,12 +130,13 @@ public static class DBArithmetic
         existingEntry.DiskUsageAvg += (newEntry.DiskUsage - existingEntry.DiskUsageAvg) / existingEntry.ValueCount;
         existingEntry.NetworkUsageAvg += (newEntry.NetworkUsage - existingEntry.NetworkUsageAvg) / existingEntry.ValueCount;
         existingEntry.MemoryUsageAvg += (newEntry.MemoryUsage - existingEntry.MemoryUsageAvg) / existingEntry.ValueCount;
+        existingEntry.MemoryUsageTotal += (newEntry.MemoryUsage - existingEntry.MemoryUsageTotal) / existingEntry.ValueCount;
 
         existingEntry.CpuUsagePeak = MathF.Max(existingEntry.CpuUsagePeak, newEntry.CpuUsage);
         existingEntry.DiskUsagePeak = MathF.Max(existingEntry.DiskUsagePeak, newEntry.DiskUsage);
         existingEntry.NetworkUsagePeak = MathF.Max(existingEntry.NetworkUsagePeak, newEntry.NetworkUsage);
         existingEntry.MemoryUsagePeak = MathF.Max(existingEntry.MemoryUsagePeak, newEntry.MemoryUsage);
-
+        
         existingEntry.NetworkUsageTotal +=  newEntry.NetworkUsage;
         
     }
@@ -151,14 +153,16 @@ public static class DBArithmetic
                         (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)
                         && (systemList.Contains(x.SystemName))).ToList();
 
+                var grouped = capturedData.GroupBy(x => x.Date).OrderBy(x => x.Key);
+
                 var dict = new Dictionary<string, List<double>>
                 {
-                    ["CPU"] = capturedData.Select(x => (double) x.CpuUsage).ToList(),
-                    ["RAM"] = capturedData.Select(x => (double) x.MemoryUsage).ToList(),
-                    ["DISK"] = capturedData.Select(x => (double) x.DiskUsage).ToList(),
-                    ["NET"] = capturedData.Select(x => (double) x.NetworkUsage).ToList()
+                    ["CPU"] = grouped.Select(g => (double)g.Sum(x => x.CpuUsage)).ToList(),
+                    ["RAM"] = grouped.Select(g => (double)g.Sum(x => x.MemoryUsage)).ToList(),
+                    ["DISK"] = grouped.Select(g => (double)g.Sum(x => x.DiskUsage)).ToList(),
+                    ["NET"] = grouped.Select(g => (double)g.Sum(x => x.NetworkUsage)).ToList()
                 };
-                
+
                 return dict;
             }
         });    
