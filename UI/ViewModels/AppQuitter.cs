@@ -25,7 +25,7 @@ namespace UI.ViewModels
 
         private static void KillProcessByName(string processName)
         {
-            if(processName.Equals(Netvine.AppName))
+            if(processName.Equals(Netvine.RuntimeAppName))
             {
                 NotificationManager.WriteNotification(new Notification(NotificationPriority.Message, $"Failure closing {processName}", $"{processName} : {NetvineCloseJokes[Random.Shared.Next(NetvineCloseJokes.Length)]}"));
                 return;
