@@ -29,7 +29,7 @@ public partial class Canvas : UserControl
     //add to settings
     int _topCount = 10;
     private readonly Dictionary<string, ScottPlot.Color> _processColors = new();
-    private readonly ScottPlot.Palettes.Category10 _palette = new();
+    private readonly ScottPlot.Palettes.Category20 _palette = new();
     private int _colorIndex = 0;
     private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
 

@@ -51,7 +51,7 @@ namespace UI.ViewModels
 
         private int MaxHistory => ConfigManager.ReadSetting(SettingInt.MaxHistory) is int m && m > 0 ? m : 60;
 
-        private string SelectedDevice => ChartService.Instance.SelectedDevice ?? Environment.MachineName;
+        private string SelectedDevice => ChartService.Instance.SelectedDevice ?? SystemHistory.Instance.SystemName;
 
         public event Action? DevicesChanged;
         public event Action<string>? DeviceDisconnected;
@@ -68,7 +68,7 @@ namespace UI.ViewModels
         }
         private void OnLocalSnapshot(List<IProgramData> data)
         {
-            OnSnapshot(Environment.MachineName, data);
+            OnSnapshot(SystemHistory.Instance.SystemName, data);
         }
         private void OnRemoteSnapshot(ProgramData[] data)
         {
@@ -77,8 +77,7 @@ namespace UI.ViewModels
             var byDevice = data.GroupBy(p => p.SystemName);
             foreach (var group in byDevice)
             {
-                //skip owner device, handled by localsnapshot
-                if (group.Key.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase)) continue;
+                if (group.Key.Equals(SystemHistory.Instance.SystemName, StringComparison.OrdinalIgnoreCase)) continue;
                 OnSnapshot(group.Key, group.Cast<IProgramData>().ToList());
             }
         }
