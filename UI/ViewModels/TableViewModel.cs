@@ -147,6 +147,7 @@ namespace UI.ViewModels
             PopulateTableInit();
             FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
             CombinationModel.ViewChangedEvent += ViewChangedCombination;
+            LiveViewModel.ViewChangedEvent += ViewChangedLive;
             RefreshFilter();
         }
 
@@ -156,6 +157,7 @@ namespace UI.ViewModels
 
         private void CacheSelectedUserFolders()
         {
+            Core.Debug.Log("Caching selected user folders for filtering");
             _selectedUsersCache.Clear();
             _selectedUsersCache = [.. FolderViewData.SelectedUsers()];
             TableRowsView.Refresh();
@@ -340,12 +342,6 @@ namespace UI.ViewModels
 
         }
 
-        private void CombinationModelViewChanged(bool isCombination)
-        {
-            Debug.Log($"ViewChangedCombination fired, isCombination={isCombination}");
-            Debug.Log($"Printing Recieved Data to a file");
-            RefreshFilter();
-        }
 
         private void ViewChangedCombination(bool isCombination)
         {
@@ -353,6 +349,7 @@ namespace UI.ViewModels
             Debug.Log($"Printing Recieved Data to a file");
 
             OnSwitchToHistorical();
+            RefreshFilter();
 
         }
 
