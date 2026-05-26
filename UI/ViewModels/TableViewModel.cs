@@ -145,6 +145,7 @@ namespace UI.ViewModels
             OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
             PopulateTableInit();
             FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
+            DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             RefreshFilter();
         }
 
