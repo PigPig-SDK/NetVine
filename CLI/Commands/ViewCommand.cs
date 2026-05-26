@@ -113,11 +113,12 @@ public class ViewCommand : Command
         DBInteract.OnProgramListAdded -= OnDBProgramsAdded;
     }
 
-    private void OnDBProgramsAdded(List<ProgramData> programs, bool isDataLocal)
+    private async void OnDBProgramsAdded(List<ProgramData> programs, bool isDataLocal)
     {
+        var data = await DBArithmetic.HistoricalDataProducer(null, null);
         lock (_lock)
         {
-            DBPrograms = DBArithmetic.HistoricalDataProducer(null, null);
+            DBPrograms = data;
         }
         _isDirty = true;
     }

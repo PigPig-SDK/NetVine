@@ -34,6 +34,7 @@ namespace UI.ViewModels
 
         public List<List<IProgramData>> SnapshotHistory { get; } = new();
 
+        public List<List<IProgramData>> AllHistorical { get; set; } = new();
         public List<IProgramData> LatestSnapshot { get; private set; } = new();
 
         public event Action? DataUpdated;
@@ -51,8 +52,6 @@ namespace UI.ViewModels
         private void OnSnapshot(List<IProgramData> data)
         {
             LatestSnapshot = data;
-            
-            SnapshotHistory.Add(data.ToList());
 
             AddCappedSnapshot(SnapshotHistory, data.ToList());
 
@@ -76,10 +75,12 @@ namespace UI.ViewModels
             DataUpdated?.Invoke();
         }
         
-        public void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
+        public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
         {
-         
-            var dataDict = DBArithmetic.LineGraphHistoricalProducer(startDate, endDate);
+            
+            AllHistorical = await DBArithmetic.BarGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
+            
+            var dataDict = await DBArithmetic.LineGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
             HistoricalCpuHistory = dataDict["CPU"];
             HistoricalRamHistory = dataDict["RAM"];
             HistoricalDiskHistory = dataDict["DISK"];

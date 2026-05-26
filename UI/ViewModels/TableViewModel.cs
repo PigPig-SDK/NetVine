@@ -13,6 +13,7 @@ using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UI.ViewModels.SearchFilter;
 using UI.Views;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -161,13 +162,13 @@ namespace UI.ViewModels
         }
 
 
-        private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
+        private async void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
             if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
 
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-                DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
+                await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+                await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -358,11 +359,11 @@ namespace UI.ViewModels
             });
         }
 
-        private void OnSwitchToHistorical()
+        private async void OnSwitchToHistorical()
         {
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-            DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
+            await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+            await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
             
             Dispatcher.UIThread.Post(() =>
             {
