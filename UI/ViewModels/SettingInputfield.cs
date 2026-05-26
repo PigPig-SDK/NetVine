@@ -31,7 +31,7 @@ public class SettingInputField<T> : SettingInput where T : Enum
         TemplatedControl textbox;
         if (inputType == StringInputMethod.StringInput)
         {
-            textbox = new TextBox { Text = inputString, Width = 120, HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center, };
+            textbox = new TextBox { Text = inputString, Width = 250, HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center, };
         }
         else
         {
