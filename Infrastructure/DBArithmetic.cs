@@ -107,7 +107,6 @@ public static class DBArithmetic
                 DiskUsageAvg = y.Average(z => z.DiskUsage),
                 NetworkUsageAvg = y.Average(z => z.NetworkUsage),
                 MemoryUsageAvg = y.Average(z => z.MemoryUsage),
-                MemoryUsageTotal = y.Sum(z => z.MemoryUsage),
 
                 CpuUsagePeak = y.Max(z => z.CpuUsage),
                 DiskUsagePeak = y.Max(z => z.DiskUsage),
@@ -130,7 +129,6 @@ public static class DBArithmetic
         existingEntry.DiskUsageAvg += (newEntry.DiskUsage - existingEntry.DiskUsageAvg) / existingEntry.ValueCount;
         existingEntry.NetworkUsageAvg += (newEntry.NetworkUsage - existingEntry.NetworkUsageAvg) / existingEntry.ValueCount;
         existingEntry.MemoryUsageAvg += (newEntry.MemoryUsage - existingEntry.MemoryUsageAvg) / existingEntry.ValueCount;
-        existingEntry.MemoryUsageTotal += (newEntry.MemoryUsage - existingEntry.MemoryUsageTotal) / existingEntry.ValueCount;
 
         existingEntry.CpuUsagePeak = MathF.Max(existingEntry.CpuUsagePeak, newEntry.CpuUsage);
         existingEntry.DiskUsagePeak = MathF.Max(existingEntry.DiskUsagePeak, newEntry.DiskUsage);

@@ -21,7 +21,6 @@ public class ProgramDataHistorical : IProgramDataHistorical
     public float NetworkUsagePeak { get; set; }
     public float MemoryUsagePeak { get; set; }
     public float NetworkUsageTotal { get; set; }
-    public float MemoryUsageTotal { get;  set; }
 
     public ProgramDataHistorical()
     {
