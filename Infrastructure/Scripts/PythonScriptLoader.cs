@@ -1,4 +1,5 @@
-﻿using Infrastructure.Notifications;
+﻿using Infrastructure;
+using Infrastructure.Notifications;
 using Meziantou.Framework.Win32;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -12,6 +13,8 @@ public class PythonScriptLoader : IDisposable
 
     public static void Setup()
     {
+        if (!ConfigManager.ReadSettingBool(SettingInt.UsePythonScripting)) return;//No script loading.
+
         Instance = new();
         //Create directories.
         var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");

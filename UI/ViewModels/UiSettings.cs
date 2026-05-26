@@ -222,7 +222,13 @@ public static class UiSettings
                 0,
                 "notification", "network"),
         ]),
-        new SettingGroup("API", [
+        new SettingGroup("API/Scripting", [
+
+            new SettingInputCheckbox("Enable Python Script runner",
+                "[Requires restart] Should the scripts folder be executed on netvine startup? Security warning, any python files in the scripting folder will be executed!",
+                SettingInt.UsePythonScripting,
+                "notification"),
+
             new SettingInputField<SettingString>("POST Notification Destination",
                 "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
                 StringInputMethod.StringInput,

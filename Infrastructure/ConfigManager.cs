@@ -67,6 +67,7 @@ public class ConfigManager
         {SettingInt.UseNetworkPassword, 0 },
         {SettingInt.DisableToastPopups, 0 },
         {SettingInt.UseNotifications, 0 },
+        {SettingInt.UsePythonScripting, 0 },
         {SettingInt.NotificationTimeMS, 10000}
     };
 

@@ -22,5 +22,6 @@ public enum SettingInt
     UseNetworkPassword,
     DisableToastPopups,
     UseNotifications,
+    UsePythonScripting,
     NotificationTimeMS,
 };
