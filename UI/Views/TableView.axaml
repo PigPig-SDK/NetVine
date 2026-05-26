@@ -90,7 +90,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -105,7 +105,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).LiveData.MemoryUsage, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.MemoryUsage, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -120,7 +120,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).LiveData.DiskUsage, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.DiskUsage, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -135,7 +135,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).LiveData.NetworkUsage, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.NetworkUsage, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -150,7 +150,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.CpuUsageAvg, StringFormat={}{0:F2}%}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.CpuUsageAvg, StringFormat={}{0:F2}%}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -165,7 +165,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.CpuUsagePeak, StringFormat={}{0:F2}%}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.CpuUsagePeak, StringFormat={}{0:F2}%}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -180,7 +180,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.MemoryUsageAvg, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.MemoryUsageAvg, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -195,7 +195,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.MemoryUsagePeak, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.MemoryUsagePeak, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -210,7 +210,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.DiskUsageAvg, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.DiskUsageAvg, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -225,7 +225,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.DiskUsagePeak, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.DiskUsagePeak, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -240,7 +240,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsageAvg, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsageAvg, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -255,7 +255,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsagePeak, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsagePeak, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -270,7 +270,7 @@
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsageTotal, StringFormat={}{0:F2}}" Margin="12,0,0,0"/>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsageTotal, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
