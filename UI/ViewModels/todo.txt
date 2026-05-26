@@ -1,9 +1,0 @@
-﻿* Add cap to live graph plot points. Can use a default of 100, then explore other options/add setting to change cap. (linkedlist?)
-
-* Efficient graph redrawing. Ensure that graphs don't fully redraw when a new plot point is added, only redraw when resource changes.
-
-* Cap on pie chart. By default, only show the top 10 processes for a given resource. Explore options/setting to change later.
-
-* do an efficiency pass before doing pie. then do another efficiency pass after doing pie. 
-
-* add onloaded to do initial setup of graph and event handlers.
