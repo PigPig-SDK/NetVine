@@ -68,6 +68,7 @@ namespace UI.ViewModels
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
         public Action ClearSelection { get; set; } = () => { };
+        public bool IsCombinationView => CombinationModel.IsCombination && !LiveViewModel.IsLive;
         public string SearchText
         {
             get => _searchText;
@@ -452,8 +453,8 @@ namespace UI.ViewModels
         private bool FilterSelectedUsers(object obj)
         {
             if (obj is not TableRow row) return false;
-            return (_selectedUsersCache.Contains(row.SystemName) && !CombinationModel.IsCombination)  
-                || (row.SystemName == DBArithmetic.ComboString && CombinationModel.IsCombination);
+            return (_selectedUsersCache.Contains(row.SystemName) && !IsCombinationView)
+                || (row.SystemName == DBArithmetic.ComboString && IsCombinationView);
         }
 
         private bool FilterRow(object obj)
