@@ -17,6 +17,7 @@ public class Packet
         new() { 
             { PacketType.TextMessage, typeof(StringPayload)}, 
             { PacketType.DBUpdateRequest, typeof(DateRequestPayload)},
+            { PacketType.DBUpdateResponse, typeof(DBResponsePayload)},
             { PacketType.UserInfo, typeof(UserInfoPayload)},
             { PacketType.InitiateLiveView, typeof(SetLiveViewPayload)},
             { PacketType.CloseProcessPacket, typeof(CloseProcessPayload)},
