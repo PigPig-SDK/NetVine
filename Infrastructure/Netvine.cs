@@ -34,6 +34,8 @@ public static class Netvine
 
         //Notification Tracker setup last. Timings are not important
         NotificationTracker.Setup();
+
+        DbCatchup.SetupInstance();
     }
     public static void Shutdown()
     {
@@ -42,5 +44,7 @@ public static class Netvine
         NotificationManager.TrySaveToFile();
 
         NetworkManager.Instance.Disconnect();
+
+        DbCatchup.OnShutdown();
     }
 }
