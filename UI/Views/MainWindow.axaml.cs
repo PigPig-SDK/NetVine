@@ -93,7 +93,7 @@ public partial class MainWindow : Window
         MainWindowViewModel.StartAnimation();
 
         //test net users
-        MockNetSetup();
+        //MockNetSetup();
     }
 
     private void OnCloseEvent(object? sender, WindowClosingEventArgs e)

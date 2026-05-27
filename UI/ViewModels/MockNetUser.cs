@@ -31,7 +31,6 @@ namespace UI.ViewModels
                 device.Stop();
         }
 
-        // inner class representing a single mock device
         private class MockDevice
         {
             private Timer? _timer;
@@ -39,7 +38,6 @@ namespace UI.ViewModels
             private readonly string _deviceName;
             private readonly Random _random = new();
 
-            // offset so devices don't all oscillate in sync
             private readonly double _phaseOffset;
 
             public MockDevice(string deviceName)
