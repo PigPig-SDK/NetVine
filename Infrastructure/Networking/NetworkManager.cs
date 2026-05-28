@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Networking.Packets;
+using Infrastructure.Notifications;
 using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;
@@ -138,8 +139,18 @@ public class NetworkManager
         if (ConfigManager.ReadSettingBool(SettingInt.NetworkDisabled)) return;
 
         var context = new SslContext(SslProtocols.Tls12, ServerCertificate, (sender, certificate, chain, sslPolicyErrors) => true);
-        Host = new Host(context, IPAddress.Any, ConfigManager.ReadSetting(SettingInt.HostPort));
-        Host.Start();
+        Host = new Host(context, IPAddress.Parse(ConfigManager.ReadSetting(SettingString.HostIP)), ConfigManager.ReadSetting(SettingInt.HostPort));
+
+        try
+        {
+            Host.Start();
+        }
+        catch(SocketException ex)
+        {
+            Core.Debug.Log($"Failed to start host: {ex.Message}");
+            NotificationManager.WriteNotification(new Notification(NotificationPriority.Critical, "Failed to start host", $"Port {ConfigManager.ReadSetting(SettingInt.HostPort)} is likely in use. Please change the port and try again."));
+            Host = null;
+        }
 
     }
 
