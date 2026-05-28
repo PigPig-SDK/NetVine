@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UI.Canvas">
             <Grid>
-                <ScottPlot:AvaPlot Name="CanvasPlot"/>
+                <ScottPlot:AvaPlot x:Name="CanvasPlot"/>
                 <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                        IsHitTestVisible="False"
                        IsVisible="False"

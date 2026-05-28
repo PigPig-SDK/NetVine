@@ -7,6 +7,8 @@ public class ChartService
 {
     public static readonly ChartService Instance = new();
 
+    public event Action? ChartTypeChanged;
+
     public const string CPU = "CPU";
     public const string CPUHistory = "CPU History";
     
@@ -63,7 +65,7 @@ public class ChartService
         SelectedDevice = selected?.Username ?? Environment.MachineName;
     }
 
-    public  string LiveSwap(string chartMode)
+    public string LiveSwap(string chartMode)
     {
         switch (chartMode)
         {
@@ -87,5 +89,4 @@ public class ChartService
         }
         return null;
     }
-    public event Action? ChartTypeChanged;
 }
