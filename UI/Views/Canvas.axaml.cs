@@ -27,6 +27,7 @@ public partial class Canvas : UserControl
     private readonly Dictionary<string, Color> _processColors = new();
     private readonly ScottPlot.Palettes.Category20 _palette = new();
     private int _colorIndex = 0;
+    public int GraphYMargin { get; set; } = 10;
     private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
     private bool _timeSelected = false;
     private bool _showPlaceholder;
@@ -44,10 +45,6 @@ public partial class Canvas : UserControl
     public Canvas()
     {
         InitializeComponent();
-        ChartService.Instance.ChartTypeChanged += UpdateChartType;
-        ResourceService.Instance.DataUpdated += UpdateChart;
-        MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
-        LiveViewModel.ViewChangedEvent += LiveViewChanged;
         LiveViewChanged(LiveViewModel.IsLive);
         SetColors();
         SetMenuForGraphs();
@@ -60,7 +57,32 @@ public partial class Canvas : UserControl
         CanvasPlot.Plot.Axes.Right.IsVisible = false;
         CanvasPlot.Plot.Axes.Bottom.IsVisible = false;
         CanvasPlot.Plot.Axes.SquareUnits(false);
-        Loaded += OnLoaded;
+        CanvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
+        CanvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        CanvasPlot.PointerMoved += OnPointerMoved;
+        CanvasPlot.PointerExited += OnPointerExited;
+        ChartService.Instance.ChartTypeChanged += UpdateChartType;
+        ResourceService.Instance.DataUpdated += UpdateChart;
+        MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
+        LiveViewModel.ViewChangedEvent += LiveViewChanged;
+        DrawChart();//Force update.
+    }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        CanvasPlot.PointerMoved -= OnPointerMoved;
+        CanvasPlot.PointerExited -= OnPointerExited;
+        ChartService.Instance.ChartTypeChanged -= UpdateChartType;
+        ResourceService.Instance.DataUpdated -= UpdateChart;
+        MainWindowViewModel.OnTabChanged -= UpdateGraphTimeFrame;
+        LiveViewModel.ViewChangedEvent -= LiveViewChanged;
+        
+        base.OnDetachedFromVisualTree(e);
     }
 
     private void UpdateChart()
@@ -84,6 +106,7 @@ public partial class Canvas : UserControl
     {
         ShowPlaceholder = !islive && !_timeSelected;
         UpdateMenu();
+        DrawChart();
     }
 
     private void UpdateMenu()
@@ -114,19 +137,6 @@ public partial class Canvas : UserControl
         CanvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(0);//Transparent
         CanvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
         CanvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#2A2A2A");
-        Loaded += OnLoaded;
-    }
-    
-    
-    private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        CanvasPlot = this.Find<AvaPlot>("CanvasPlot")!;
-        SetColors();
-        CanvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
-        CanvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
-        CanvasPlot.PointerMoved += OnPointerMoved;
-        CanvasPlot.PointerExited += OnPointerExited;
-        CanvasPlot.Refresh();
     }
 
     private void UpdateType()
@@ -160,6 +170,42 @@ public partial class Canvas : UserControl
     }
 
     private void DrawLineChart()
+    {
+        if(LiveViewModel.IsLive)
+        {
+            DrawLiveLineChart();
+        }
+        else
+        {
+            DrawHistoryLineChart();
+        }
+    }
+
+    private void DrawHistoryLineChart()
+    {
+        SetGrid();
+
+        foreach (var user in FolderViewData.SelectedUsersWithIndex().ToArray())
+        {
+            var history = ResourceService.Instance.GetDatedResourceForUser(ChartService.Instance.SelectedResource, user.name);
+            if (history.data.Count == 0) continue;
+
+            var scatter = CanvasPlot.Plot.Add.Scatter(
+                history.timeStamps.Select(d => d.ToOADate()).ToArray(),
+                history.data.ToArray()
+            );
+            scatter.LegendText = history.title;
+            scatter.Color = _palette.GetColor(user.index);
+            scatter.MarkerSize = 0;
+        }
+
+        CanvasPlot.Plot.Axes.Bottom.IsVisible = false;
+        CanvasPlot.Plot.YLabel(ChartService.Instance.SelectedResource.ToString());
+        CanvasPlot.Plot.ShowLegend();
+        SetLimits();
+    }
+
+    private void DrawLiveLineChart()
     {
         SetGrid();
         int historyMax = 0;
@@ -197,7 +243,7 @@ public partial class Canvas : UserControl
     private void DrawBarChart()
     {
         SetGrid();
-        var data = LiveViewModel.IsLive ? ResourceService.Instance.SnapshotHistory : ResourceService.Instance.AllHistorical;
+        var data = LiveViewModel.IsLive ? ResourceService.Instance.SnapshotHistory : ResourceService.Instance.SnapshotHistory;
         
         if (data.Count == 0) return;
 
@@ -244,17 +290,10 @@ public partial class Canvas : UserControl
 
         var label = ChartService.Instance.SelectedResource switch
         {
-            ChartService.CPU => "CPU (%)",
-            ChartService.CPUHistory => "CPU History (%)",
-            
-            ChartService.RAM => "RAM (MB)",
-            ChartService.RAMHistory => "RAM History (MB)",
-            
-            ChartService.DISK => "Disk (MB/S)",
-            ChartService.DISKHistory => "Disk History (MB/S)",
-            
-            ChartService.NET => "Network (MB/s)",
-            ChartService.NETHistory => "Network History (MB/s)",
+            ResourceTypes.CPU => "CPU (%)",
+            ResourceTypes.RAM => "RAM (MB)",
+            ResourceTypes.Disk => "Disk (MB/S)",
+            ResourceTypes.Network => "Network (MB/s)",
             _ => ""
         };
 
@@ -305,17 +344,10 @@ public partial class Canvas : UserControl
     }
     private float GetValue(IProgramData p) => ChartService.Instance.SelectedResource switch
     {
-        ChartService.CPU => p.CpuUsage,
-        ChartService.CPUHistory => p.CpuUsage,
-        
-        ChartService.RAM => p.MemoryUsage,
-        ChartService.RAMHistory => p.MemoryUsage,
-        
-        ChartService.DISK => p.DiskUsage,
-        ChartService.DISKHistory => p.DiskUsage,
-        
-        ChartService.NET => p.NetworkUsage,
-        ChartService.NETHistory => p.NetworkUsage,
+        ResourceTypes.CPU => p.CpuUsage,
+        ResourceTypes.RAM => p.MemoryUsage,
+        ResourceTypes.Disk => p.DiskUsage,
+        ResourceTypes.Network => p.NetworkUsage,
         _ => p.CpuUsage
     };
 
@@ -332,7 +364,7 @@ public partial class Canvas : UserControl
 
     private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
     {
-        if (ChartService.Instance.ChartType!= ChartService.Bar || CanvasPlot is null) return;
+        if (ChartService.Instance.ChartType != ChartService.Bar || CanvasPlot is null) return;
         if (_barTooltipData.Count == 0) return;
 
         var pos = e.GetPosition(CanvasPlot);
@@ -373,14 +405,14 @@ public partial class Canvas : UserControl
     {
         switch(ChartService.Instance.SelectedResource)
         {
-            case ChartService.CPU: case ChartService.CPUHistory:
+            case ResourceTypes.CPU:
             return "%";
-            case ChartService.RAM: case ChartService.RAMHistory:
-            return "MB";
-            case ChartService.DISK: case ChartService.DISKHistory:
-            return "MB/s";
-            case ChartService.NET: case ChartService.NETHistory:
-            return "MB/s";
+            case ResourceTypes.RAM:
+                return "MB";
+            case ResourceTypes.Disk:
+                return "MB/s";
+            case ResourceTypes.Network:
+                return "MB/s";
             default:
             return "";
         }
@@ -401,13 +433,9 @@ public partial class Canvas : UserControl
 
     private void SetLimits()
     {
-        if (ChartService.Instance.SelectedResource == ChartService.RAM || ChartService.Instance.SelectedResource == ChartService.RAMHistory)
+        if (ChartService.Instance.SelectedResource == ResourceTypes.CPU)
         {
-            CanvasPlot.Plot.Axes.SetLimitsY(0, ResourceService.Instance.RAMTotal);
-        }
-        else if (ChartService.Instance.SelectedResource == ChartService.CPU || ChartService.Instance.SelectedResource == ChartService.CPUHistory)
-        {
-            CanvasPlot.Plot.Axes.SetLimitsY(0, 100);
+            CanvasPlot.Plot.Axes.SetLimitsY(0 - GraphYMargin, 100 + GraphYMargin);
         }
         else
         {
@@ -417,7 +445,6 @@ public partial class Canvas : UserControl
     
     private async void OpenGraphTimeFrame()
     {
-        Debug.Log("OpenGraphTimeFrame called");
         if (LiveViewModel.IsLive || MainWindowViewModel.ActiveTab != MainWindowViewModel.GraphView) return;
             
         var timeFrameWindow = new TimeFrameSelectionWindow();

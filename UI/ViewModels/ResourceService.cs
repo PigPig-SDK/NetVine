@@ -17,7 +17,6 @@ namespace UI.ViewModels
         public static readonly ResourceService Instance = new();
 
         public double RAMTotal { get; private set; }
-
         public double CpuUsage { get; private set; }
         public double RamUsage { get; private set; }
         public double DiskUsage { get; private set; }
@@ -28,15 +27,9 @@ namespace UI.ViewModels
         private Dictionary<string, List<double>> _diskHistories = new();
         private Dictionary<string, List<double>> _networkHistories = new();
         private Dictionary<string, List<List<IProgramData>>> _snapshotHistories = new();
+        private Dictionary<string, (List<DateTime> timeStamps, List<double> cpuUsage, List<double> ramUsage, List<double> diskUsage, List<double> netUsage)> _networkUsages = new();
         public string SelectedDevice => ChartService.Instance.SelectedDevice ?? SystemHistory.Instance.SystemName;
-        public List<List<IProgramData>> SnapshotHistory =>
-   _snapshotHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
-
-        public List<double> HistoricalCpuHistory { get; private set; } = new();
-        public List<double> HistoricalRamHistory { get; private set; } = new();
-        public List<double> HistoricalDiskHistory { get; private set; } = new();
-        public List<double> HistoricalNetworkHistory { get; private set; } = new();
-        public List<List<IProgramData>> AllHistorical { get; set; } = new();
+        public List<List<IProgramData>> SnapshotHistory => _snapshotHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
         public List<IProgramData> LatestSnapshot { get; private set; } = new();
 
         public event Action? DataUpdated;
@@ -47,14 +40,10 @@ namespace UI.ViewModels
         public event Action<string>? DeviceDisconnected;
         private ResourceService()
         {
-            SystemHistory.Instance.OnSnapshotTaken -= OnLocalSnapshot;
+            ConnectedUserInfo.OnUserConnectionModified += OnUserConnectionModified;
             SystemHistory.Instance.OnSnapshotTaken += OnLocalSnapshot;
-
-            NetworkDataManager.Instance.OnLiveDataRecieved -= OnRemoteSnapshot;
             NetworkDataManager.Instance.OnLiveDataRecieved += OnRemoteSnapshot;
             RAMTotal = SystemHistory.Instance.GetTotalRam();
-
-            ConnectedUserInfo.OnUserConnectionModified += OnUserConnectionModified;
         }
         private void OnLocalSnapshot(List<IProgramData> data)
         {
@@ -82,8 +71,6 @@ namespace UI.ViewModels
         }
         internal void OnSnapshot(string device, List<IProgramData> data)
         {
-                
-
             if (!_cpuHistories.ContainsKey(device))
             {
                 _cpuHistories[device] = new();
@@ -112,15 +99,7 @@ namespace UI.ViewModels
         
         public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
         {
-            
-            AllHistorical = await DBArithmetic.BarGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
-            
-            var dataDict = await DBArithmetic.LineGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
-            HistoricalCpuHistory = dataDict["CPU"];
-            HistoricalRamHistory = dataDict["RAM"];
-            HistoricalDiskHistory = dataDict["DISK"];
-            HistoricalNetworkHistory = dataDict["NET"];
-            
+            _networkUsages = await DBArithmetic.PerUserTimeline(startDate, endDate);
             DataUpdated?.Invoke();
         }
 
@@ -132,23 +111,29 @@ namespace UI.ViewModels
                 list.RemoveAt(0);
         }
 
-        public (List<double> data, string title) GetResourceForUser(string selectedResource, string user)
+        public (List<double> data, string title) GetResourceForUser(ResourceTypes selectedResource, string user)
         {
             return ChartService.Instance.SelectedResource switch
             {
-                ChartService.CPU => (data: _cpuHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} CPU (%)"),
-                ChartService.CPUHistory => (data: HistoricalCpuHistory, title: "CPU History (%)"),
-
-                ChartService.RAM => (data: _ramHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} RAM (MB)"),
-                ChartService.RAMHistory => (data: HistoricalRamHistory, title: "RAM History (MB)"),
-
-                ChartService.DISK => (data: _diskHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} Disk (MB/s)"),
-                ChartService.DISKHistory => (data: HistoricalDiskHistory, title: "Disk History (MB/s)"),
-
-                ChartService.NET => (data: _networkHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} Network (MB/s)"),
-                ChartService.NETHistory => (data: HistoricalNetworkHistory, title: "Network History (MB/s)"),
-
+                ResourceTypes.CPU => (data: _cpuHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} CPU (%)"),
+                ResourceTypes.RAM => (data: _ramHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} RAM (MB)"),
+                ResourceTypes.Disk => (data: _diskHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} Disk (MB/s)"),
+                ResourceTypes.Network => (data: _networkHistories.TryGetValue(user, out var data) ? data : new(), title: $"{user} Network (MB/s)"),
                 _ => (data: new(), title: "Invalid")
+            };
+        }
+
+        public (List<double> data, List<DateTime> timeStamps, string title) GetDatedResourceForUser(ResourceTypes selectedResource, string user)
+        {
+            var exists = _networkUsages.TryGetValue(user, out var u);
+
+            return ChartService.Instance.SelectedResource switch
+            {
+                ResourceTypes.CPU => (exists ? u.cpuUsage : new(), exists ? u.timeStamps : new(), $"{user} CPU History (%)"),
+                ResourceTypes.RAM => (exists ? u.ramUsage : new(), exists ? u.timeStamps : new(), $"{user} RAM History (MB)"),
+                ResourceTypes.Disk => (exists ? u.diskUsage : new(), exists ? u.timeStamps : new(), $"{user} Disk History (MB/s)"),
+                ResourceTypes.Network => (exists ? u.netUsage : new(), exists ? u.timeStamps : new(), $"{user} Network History (MB/s)"),
+                _ => (new(), new(), "Invalid")
             };
         }
     }

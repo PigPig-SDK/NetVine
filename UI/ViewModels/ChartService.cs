@@ -1,8 +1,11 @@
 using System;
 namespace UI.ViewModels;
+
+using Core;
 using Infrastructure.Networking;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 
 public class ChartService
 {
@@ -10,22 +13,16 @@ public class ChartService
 
     public event Action? ChartTypeChanged;
 
-    public const string CPU = "CPU";
-    public const string CPUHistory = "CPU History";
-    
-    public const string RAM = "RAM";
-    public const string RAMHistory = "RAM History";
-    
-    public const string DISK = "DISK";
-    public const string DISKHistory = "DISK History";
-    
-    public const string NET = "NET";
-    public const string NETHistory = "NET History";
-    
-
     public const string Line = "Line";
     public const string Bar = "Bar";
     public const string Pie = "Pie";
+
+    private ResourceTypes _selectedResource = ResourceTypes.CPU;
+    public ResourceTypes SelectedResource
+    {
+        get => _selectedResource;
+        set { _selectedResource = value; ChartTypeChanged?.Invoke(); }
+    }
 
     private string _chartType = "Line";
     public string ChartType
@@ -38,12 +35,6 @@ public class ChartService
         }
     }
 
-    private string _selectedResource = CPU;
-    public string SelectedResource
-    {
-        get => _selectedResource;
-        set { _selectedResource = value; ChartTypeChanged?.Invoke(); }
-    }
     private string? _selectedDevice = null;
     public string? SelectedDevice
     {
@@ -64,30 +55,5 @@ public class ChartService
             .FirstOrDefault(u => u.IsSelected && u.IsOnline);
 
         SelectedDevice = selected?.Username ?? Environment.MachineName;
-    }
-
-    public string LiveSwap(string chartMode)
-    {
-        switch (chartMode)
-        {
-            case CPU:
-                return CPUHistory;
-            case RAM:
-                return RAMHistory;
-            case DISK:
-                return DISKHistory;
-            case NET:
-                return NETHistory;
-            
-            case CPUHistory:
-                return CPU;
-            case RAMHistory:
-                return RAM;
-            case DISKHistory:
-                return DISK;
-            case NETHistory:
-                return NET;
-        }
-        return null;
     }
 }

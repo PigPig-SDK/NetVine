@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,31 +10,25 @@ namespace UI.ViewModels
 {
     public class ComponentViewModel : INotifyPropertyChanged
     {
-        private readonly ChartService _chartService;
-        private readonly ResourceService _resourceService;
-
         public ICommand SelectCpuCommand { get; }
         public ICommand SelectRamCommand { get; }
         public ICommand SelectDiskCommand { get; }
-        
         public ICommand SelectNetworkCommand { get; }
         
         public bool ComponentIsLive => LiveViewModel.IsLive;
         public bool ComponentIsNotLive => !LiveViewModel.IsLive;
 
-        public ComponentViewModel(ChartService chartService, ResourceService resourceService)
+        public ComponentViewModel()
         {
-            _chartService = chartService;
-            _resourceService = resourceService;
-            _resourceService.DataUpdated -= OnDataUpdated;
-            _resourceService.DataUpdated += OnDataUpdated;
+            ResourceService.Instance.DataUpdated -= OnDataUpdated;
+            ResourceService.Instance.DataUpdated += OnDataUpdated;
             LiveViewModel.ViewChangedEvent -= ViewChangedLive;
             LiveViewModel.ViewChangedEvent += ViewChangedLive;
 
-            SelectCpuCommand = new RelayCommand(() => _chartService.SelectedResource = ComponentIsLive ? ChartService.CPU : ChartService.CPUHistory);
-            SelectRamCommand = new RelayCommand(() => _chartService.SelectedResource = ComponentIsLive ? ChartService.RAM : ChartService.RAMHistory);
-            SelectDiskCommand = new RelayCommand(() => _chartService.SelectedResource = ComponentIsLive ? ChartService.DISK : ChartService.DISKHistory);
-            SelectNetworkCommand = new RelayCommand(() => _chartService.SelectedResource = ComponentIsLive ? ChartService.NET : ChartService.NETHistory);
+            SelectCpuCommand = new RelayCommand(() => ChartService.Instance.SelectedResource = ResourceTypes.CPU);
+            SelectRamCommand = new RelayCommand(() => ChartService.Instance.SelectedResource = ResourceTypes.RAM);
+            SelectDiskCommand = new RelayCommand(() => ChartService.Instance.SelectedResource = ResourceTypes.Disk);
+            SelectNetworkCommand = new RelayCommand(() => ChartService.Instance.SelectedResource = ResourceTypes.Network);
             
         }
 
@@ -47,21 +42,17 @@ namespace UI.ViewModels
             {
                 _selectedChartType = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedChartType)));
-                _chartService.ChartType = value;
             }
         }
-        public string ButtonCPUText => $"{_resourceService.CpuUsage:0.0}%";
-        public string ButtonRAMText => $"{_resourceService.RamUsage:0.0} MB";
-        public string ButtonDISKText => $"{_resourceService.DiskUsage:0.0} MB/s";
-        public string ButtonNetworkText => $"{_resourceService.NetworkUsage:0.0} MB/s";
+        public string ButtonCPUText => $"{ResourceService.Instance.CpuUsage:0.0}%";
+        public string ButtonRAMText => $"{ResourceService.Instance.RamUsage:0.0} MB";
+        public string ButtonDISKText => $"{ResourceService.Instance.DiskUsage:0.0} MB/s";
+        public string ButtonNetworkText => $"{ResourceService.Instance.NetworkUsage:0.0} MB/s";
         private void OnDataUpdated()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonCPUText)));
-            
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonRAMText)));
-            
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonDISKText)));
-            
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ButtonNetworkText)));
         }
 
@@ -69,7 +60,6 @@ namespace UI.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComponentIsLive)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComponentIsNotLive)));
-            _chartService.SelectedResource = _chartService.LiveSwap(_chartService.SelectedResource);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
