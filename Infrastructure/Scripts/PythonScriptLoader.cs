@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 public class PythonScriptLoader : IDisposable
 {
+    //Bad intent! TODO: FIX
     public static PythonScriptLoader Instance = null!;
     private readonly JobObject? _job;
     private readonly List<Process> _processes = new();
@@ -24,7 +25,10 @@ public class PythonScriptLoader : IDisposable
 
         Instance.LoadAll(folder);
     }
-
+    public static void Shutdown()
+    {
+        Instance?.Dispose();
+    }
     public PythonScriptLoader()
     {
         if (OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600))

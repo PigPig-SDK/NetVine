@@ -52,6 +52,6 @@ public static class Netvine
 
         ApiTracker.Shutdown();
 
-        PythonScriptLoader.Instance.Dispose();
+        PythonScriptLoader.Shutdown();
     }
 }
