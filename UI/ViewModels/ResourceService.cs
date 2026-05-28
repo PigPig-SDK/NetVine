@@ -1,11 +1,13 @@
 using Core;
 using Infrastructure;
+using Infrastructure;
+using Infrastructure.Networking;
+using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Serialization;
-using Infrastructure;
 
 namespace UI.ViewModels
 {
@@ -19,20 +21,27 @@ namespace UI.ViewModels
         public double RamUsage { get; private set; }
         public double DiskUsage { get; private set; }
         public double NetworkUsage { get; private set; }
-        
-        public List<double> LiveCpuHistory { get; } = new();
+
+        private Dictionary<string, List<double>> _cpuHistories = new();
+        private Dictionary<string, List<double>> _ramHistories = new();
+        private Dictionary<string, List<double>> _diskHistories = new();
+        private Dictionary<string, List<double>> _networkHistories = new();
+        private Dictionary<string, List<List<IProgramData>>> _snapshotHistories = new();
+
+        public List<double> LiveCpuHistory => _cpuHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
         public List<double> HistoricalCpuHistory { get; private set; } = new();
-        
-        public List<double> LiveRamHistory { get; } = new();
+
+        public List<double> LiveRamHistory => _ramHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
         public List<double> HistoricalRamHistory { get; private set; } = new();
-        
-        public List<double> LiveDiskHistory { get; } = new();
+
+        public List<double> LiveDiskHistory => _diskHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
         public List<double> HistoricalDiskHistory { get; private set; } = new();
-        
-        public List<double> LiveNetworkHistory { get; } = new();
+
+        public List<double> LiveNetworkHistory => _networkHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
         public List<double> HistoricalNetworkHistory { get; private set; } = new();
 
-        public List<List<IProgramData>> SnapshotHistory { get; } = new();
+        public List<List<IProgramData>> SnapshotHistory =>
+   _snapshotHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
 
         public List<List<IProgramData>> AllHistorical { get; set; } = new();
         public List<IProgramData> LatestSnapshot { get; private set; } = new();
@@ -41,38 +50,82 @@ namespace UI.ViewModels
 
         private int MaxHistory => ConfigManager.ReadSetting(SettingInt.MaxHistory) is int m && m > 0 ? m : 60;
 
+        private string SelectedDevice => ChartService.Instance.SelectedDevice ?? SystemHistory.Instance.SystemName;
 
+        public event Action? DevicesChanged;
+        public event Action<string>? DeviceDisconnected;
         private ResourceService()
         {
-            SystemHistory.Instance.OnSnapshotTaken -= OnSnapshot;
-            SystemHistory.Instance.OnSnapshotTaken += OnSnapshot;
+            SystemHistory.Instance.OnSnapshotTaken -= OnLocalSnapshot;
+            SystemHistory.Instance.OnSnapshotTaken += OnLocalSnapshot;
+
+            NetworkDataManager.Instance.OnLiveDataRecieved -= OnRemoteSnapshot;
+            NetworkDataManager.Instance.OnLiveDataRecieved += OnRemoteSnapshot;
             RAMTotal = SystemHistory.Instance.GetTotalRam();
+
+            ConnectedUserInfo.OnUserConnectionModified += OnUserConnectionModified;
+        }
+        private void OnLocalSnapshot(List<IProgramData> data)
+        {
+            OnSnapshot(SystemHistory.Instance.SystemName, data);
+        }
+        private void OnRemoteSnapshot(ProgramData[] data)
+        {
+            if (data.Length == 0) return;
+
+            var byDevice = data.GroupBy(p => p.SystemName);
+            foreach (var group in byDevice)
+            {
+                if (group.Key.Equals(SystemHistory.Instance.SystemName, StringComparison.OrdinalIgnoreCase)) continue;
+                OnSnapshot(group.Key, group.Cast<IProgramData>().ToList());
+            }
         }
 
-        private void OnSnapshot(List<IProgramData> data)
+        private void OnUserConnectionModified(string username, bool isAdded)
         {
-            LatestSnapshot = data;
+            if (!isAdded)
+            {
+                DeviceDisconnected?.Invoke(username);
+            }
+            DevicesChanged?.Invoke();
+        }
+        internal void OnSnapshot(string device, List<IProgramData> data)
+        {
+                
 
-            AddCappedSnapshot(SnapshotHistory, data.ToList());
+            if (!_cpuHistories.ContainsKey(device))
+            {
+                _cpuHistories[device] = new();
+                _ramHistories[device] = new();
+                _diskHistories[device] = new();
+                _networkHistories[device] = new();
+                _snapshotHistories[device] = new();
 
-            CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
+                DevicesChanged?.Invoke();
+            }
+
+            AddCapped(_snapshotHistories[device], data.ToList());
+
+            var cpu = Math.Min(data.Sum(p => p.CpuUsage), 100);
             
-            CpuUsage = Math.Min(data.Sum(p => p.CpuUsage), 100);
-            RamUsage = data.Sum(p => p.MemoryUsage);
-            DiskUsage = data.Sum(p => p.DiskUsage);
-            NetworkUsage = data.Sum(p => p.NetworkUsage);
+            var ram = data.Sum(p => p.MemoryUsage);
+            var disk = data.Sum(p => p.DiskUsage);
+            var network = data.Sum(p => p.NetworkUsage);
+
+            if (device == SelectedDevice)
+            {
+                LatestSnapshot = data;
+                CpuUsage = cpu;
+                RamUsage = ram;
+                DiskUsage = disk;
+                NetworkUsage = network;
+                DataUpdated?.Invoke();
+            }
             
-            LiveCpuHistory.Add(CpuUsage);
-            LiveRamHistory.Add(RamUsage);
-            LiveDiskHistory.Add(DiskUsage);
-            LiveNetworkHistory.Add(NetworkUsage);
-
-            AddCapped(LiveCpuHistory, CpuUsage);
-            AddCapped(LiveRamHistory, RamUsage);
-            AddCapped(LiveDiskHistory, DiskUsage);
-            AddCapped(LiveNetworkHistory, NetworkUsage);
-
-            DataUpdated?.Invoke();
+            AddCapped(_cpuHistories[device], cpu);
+            AddCapped(_ramHistories[device], ram);
+            AddCapped(_diskHistories[device], disk);
+            AddCapped(_networkHistories[device], network);
         }
         
         public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
@@ -90,20 +143,14 @@ namespace UI.ViewModels
         }
 
 
-        private void AddCapped(List<double> list, double value)
+        private void AddCapped<T>(List<T> list, T value)
         {
             list.Add(value);
-            //trim to current machistoty in case it was reduced in settings
             while (list.Count > MaxHistory)
                 list.RemoveAt(0);
         }
 
-        private void AddCappedSnapshot(List<List<IProgramData>> list, List<IProgramData> value)
-        {
-            list.Add(value);
-            while (list.Count > MaxHistory)
-                list.RemoveAt(0);
-        }
+
 
     }
 }
