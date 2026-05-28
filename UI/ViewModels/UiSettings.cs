@@ -1,4 +1,5 @@
-﻿using Infrastructure;
+﻿using Core;
+using Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -133,6 +134,118 @@ public static class UiSettings
                 20,
                 0,
                 "graph", "chart", "process", "pie", "bar"),
+        ]),
+        new SettingGroup("Notifications", [
+
+            new SettingInputCheckbox("Disable Toast Notifications",
+                "Sets weather the bottom right popups should occur when you get a notification.",
+                SettingInt.DisableToastPopups,
+                "notification"),
+
+            new SettingInputField<SettingInt>("Notification Toast Timeout (Milliseconds)",
+                "How long a toast notification should exist.",
+                StringInputMethod.IntInput,
+                SettingInt.NotificationTimeMS,
+                100_000,
+                0,
+                "notification", "ram"),
+
+            new SettingInputField<SettingFloat>("Application CPU Notification threshold (%)",
+                "Set the CPU usage percentage at which you want to be notified about a process." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteIndividualCpuUsage,
+                100,
+                0,
+                "notification", "cpu"),
+
+            new SettingInputField<SettingFloat>("Application RAM Notification threshold (MB)",
+                "Set the RAM usage at which you want to be notified about a process." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteIndividualRamUsage,
+                (int)SystemHistory.Instance.GetTotalRam(),
+                0,
+                "notification", "ram"),
+
+            new SettingInputField<SettingFloat>("Application Disk Notification threshold (MB/sec)",
+                "Set the DISK usage at which you want to be notified about a process." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteIndividualDiskUsage,
+                int.MaxValue,
+                0,
+                "notification", "disk"),
+
+            new SettingInputField<SettingFloat>("Application Network Notification threshold (MB/sec)",
+                "Set the NET usage at which you want to be notified about a process." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteIndividualNetworkUsage,
+                int.MaxValue,
+                0,
+                "notification", "network"),
+
+            new SettingInputField<SettingFloat>("Total CPU Notification threshold (%)",
+                "Set the CPU usage percentage at which you want to be notified." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteCpuUsage,
+                100,
+                0,
+                "notification", "cpu"),
+
+            new SettingInputField<SettingFloat>("Application RAM Notification threshold (MB)",
+                "Set the RAM usage at which you want to be notified." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteRamUsage,
+                (int)SystemHistory.Instance.GetTotalRam(),
+                0,
+                "notification", "ram"),
+
+            new SettingInputField<SettingFloat>("Application Disk Notification threshold (MB/sec)",
+                "Set the DISK usage at which you want to be notified." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteDiskUsage,
+                int.MaxValue,
+                0,
+                "notification", "disk"),
+
+            new SettingInputField<SettingFloat>("Application Network Notification threshold (MB/sec)",
+                "Set the NET usage at which you want to be notified." +
+                "If a process exceeds this threshold, Netvine will send you an alert.",
+                StringInputMethod.FloatInput,
+                SettingFloat.NoteNetworkUsage,
+                int.MaxValue,
+                0,
+                "notification", "network"),
+        ]),
+        new SettingGroup("API/Scripting", [
+
+            new SettingInputCheckbox("Enable Python Script runner",
+                "[Requires restart] Should the scripts folder be executed on netvine startup? Security warning, any python files in the scripting folder will be executed!",
+                SettingInt.UsePythonScripting,
+                "notification"),
+
+            new SettingInputField<SettingString>("POST Notification Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiNotification,
+                "api", "rest", "post"),
+
+            new SettingInputField<SettingString>("POST DB-Snapshot Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiDataBaseSnapshot,
+                "api", "rest", "post", "db"),
+
+            new SettingInputField<SettingString>("POST Snapshot Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiSnapshot,
+                "api", "rest", "post"),
         ]),
     };
 

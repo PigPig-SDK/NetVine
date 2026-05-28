@@ -31,27 +31,59 @@
 		          <TextBlock Classes="developerNames" Text="Aidan, Ben, Sean, Ty" Grid.Row="0" Grid.Column="1"/>
             </Grid>
             <Rectangle Classes="separator"/>
-            <!-- Version-->
-            <TextBlock Classes="bulletPoint" 
-                       Text=">  If there is a searchbar at the top of your screen, it can be used for filtering. CTRL+F quick searches."/>
+            <Grid RowDefinitions="auto,*" ColumnDefinitions="auto,*">
 
-            <TextBlock Classes="bulletPoint" 
-                       Text=">  Configuration changes are applied instantly"/>
+                  <StackPanel Grid.Row="0" HorizontalAlignment="Stretch" Margin="20">
+                      <Image Classes="logTab" Height="16" Width="16"/>
+		              <TextBlock Classes="developerTitle" Text="Info :" Margin="0"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" Margin="20">
+            
+                        <TextBlock  Classes="bulletPoint" 
+                                   Text=">  If there is a searchbar at the top of your screen, it can be used for filtering."/>
 
-            <TextBlock Classes="bulletPoint"
-                  Text=">  If something confuses you, it probably has a tooltip. Try hovering your mouse over it" />
+                        <TextBlock  Classes="bulletPoint" 
+                                   Text=">  Press enter to accept setting changes"/>
 
-            <TextBlock Classes="bulletPoint"
-                  Text=">  Ram is reported in total allocation"/>
+                        <TextBlock  Classes="bulletPoint"
+                              Text=">  A processes ram is reported in total allocation"/>
 
-            <TextBlock Classes="bulletPoint" 
-                  Text=">  You must give admin privileges to this application in order to gather network statistics" />
+                        <TextBlock  Classes="bulletPoint" 
+                              Text=">  Netvine requires admin privileges in order to collect network data" />
 
+                        <TextBlock  Classes="bulletPoint" 
+                              Text=">  Settings are always saved whenever the program is closed." />
+
+                        <TextBlock  Classes="bulletPoint" 
+                        Text=">  Notifications may occur when a batch is pushed to your DB" />
+
+                        <TextBlock  Classes="bulletPoint" 
+                        Text=">  Adjusting probe rates and DB storage rates can lower overhead" />
+
+                        <TextBlock  Classes="bulletPoint" 
+                        Text=">  Currently only Windows is supported. Some day a go-getter might fix that." />
+
+                        <TextBlock  Classes="bulletPoint" 
+                        Text=">  Clients submit to a host, and cannot see a hosts data." />
+
+                        <TextBlock  Classes="bulletPoint" 
+                        Text=">  Inside the table view - You can close or save the icon of an application by rightclicking it." />
+
+                        <TextBlock  Classes="bulletPoint" 
+                              Text=">  The Configuration/Database can be found at Appdata/Roaming/Netvine, Or by clicking the button below."/>
+                              <Button Margin="5" Click="OpenConfigLocation" BorderBrush="#888888" Background="#1E1E1E" HorizontalAlignment="Right" HorizontalContentAlignment="Center">
+                                <Label FontSize="12" Margin="-5">Open Configuration</Label>
+                              </Button>
+
+                        <TextBlock  Classes="bulletPoint" 
+                        Text=">  If you wish to modify this application, check it out on github!" />
+                        <HyperlinkButton NavigateUri="https://github.com/PigPig-SDK/NetVine" Margin="5" BorderBrush="#888888" Background="#1E1E1E" HorizontalAlignment="Right">
+                            <Label FontSize="12" Margin="-5">Github</Label>
+                        </HyperlinkButton>
+
+                  </StackPanel>
+            </Grid>
             <Rectangle Classes="separator"/>
-
-            <TextBlock Classes="developerTitle"
-                  Text="Something else goes here"/>
-
         </StackPanel>
       </ScrollViewer>
   </Grid>

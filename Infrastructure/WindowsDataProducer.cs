@@ -273,6 +273,8 @@ public class WindowsDataProducer : IProgramDataProducer
     {
         try
         {
+            if (process.HasExited) return (null, IconFileType.None);
+
             var version = Environment.OSVersion.Version;
             if (version.Major <= 6) return (null, IconFileType.None);
             //Safe. Cannot execute on version 6 or below.

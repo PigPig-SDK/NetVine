@@ -8,6 +8,7 @@ public static class Netvine
 {
     public const string Version = "0.0.1";
     public const string AppName = "Net-Vine";
+    public const string RuntimeAppName = "NetVine";
 
     public static void Startup()
     {
@@ -31,6 +32,15 @@ public static class Netvine
 
         //OS startup binding configuration
         SystemStartupBinder.Setup();
+
+        //Notification Tracker setup last. Timings are not important
+        NotificationTracker.Setup();
+
+
+        PythonScriptLoader.Setup();
+
+        ApiTracker.Setup();
+        
     }
     public static void Shutdown()
     {
@@ -39,5 +49,9 @@ public static class Netvine
         NotificationManager.TrySaveToFile();
 
         NetworkManager.Instance.Disconnect();
+
+        ApiTracker.Shutdown();
+
+        PythonScriptLoader.Instance.Dispose();
     }
 }

@@ -8,11 +8,15 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Core;
 using Infrastructure;
+using Infrastructure.Networking;
+using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UI.ViewModels.SearchFilter;
 using UI.Views;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UI.ViewModels
 {
@@ -39,6 +43,7 @@ namespace UI.ViewModels
         private TableDataManager _tableData;
         private bool _tableViewActive = false;
         private string _searchText = "";
+        private HashSet<string> _selectedUsersCache = new();
 
 
         private bool _showCpu = true;
@@ -53,7 +58,7 @@ namespace UI.ViewModels
 
         // Properties
         public TableDataManager TableData { get { return _tableData; } }
-        public string AllMenuText => (_showCpu && _showMemory && _showDisk && _showNetwork) ? "Hide All" : "Show All";
+        public string AllMenuText => (_showCpu || _showMemory || _showDisk || _showNetwork) ? "Hide All" : "Show All";
         public string CpuMenuText => _showCpu ? "Hide CPU usage" : "Show CPU usage";
         public string MemoryMenuText => _showMemory ? "Hide Memory usage" : "Show Memory usage";
         public string DiskMenuText => _showDisk ? "Hide Disk usage" : "Show Disk usage";
@@ -64,6 +69,7 @@ namespace UI.ViewModels
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
         public Action ClearSelection { get; set; } = () => { };
+        public bool IsCombinationView => CombinationModel.IsCombination && !LiveViewModel.IsLive;
         public string SearchText
         {
             get => _searchText;
@@ -74,9 +80,9 @@ namespace UI.ViewModels
                 TableFilter.Instance.UpdateSearchExpression(_searchText);
 
                 OnPropertyChanged();
-                TableRowsView.Filter = string.IsNullOrWhiteSpace(value)
-                    ? null
-                    : FilterRow;
+                TableRowsView.Filter =  (string.IsNullOrWhiteSpace(value)
+                    ? FilterSelectedUsers
+                    : FilterRow);
 
 
                 TableRowsView.Refresh();
@@ -97,7 +103,7 @@ namespace UI.ViewModels
         
         public IRelayCommand ToggleAllCommand => new RelayCommand(() =>
         {
-            var newValue = !(_showCpu && _showMemory && _showDisk && _showNetwork);
+            var newValue = !(_showCpu || _showMemory || _showDisk || _showNetwork);
             _showCpu = newValue;
             _showMemory = newValue;
             _showDisk = newValue;
@@ -132,7 +138,7 @@ namespace UI.ViewModels
 
             var lastActiveTab = ConfigManager.ReadSetting(SettingInt.LastActivePage);
             _tableViewActive = lastActiveTab == MainWindowViewModel.TableView;
-
+            CacheSelectedUserFolders();
             //Commands
             ToggleCpuCommand = new RelayCommand(ToggleCpu);
             ToggleDiskCommand = new RelayCommand(ToggleDisk);
@@ -140,15 +146,36 @@ namespace UI.ViewModels
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
             OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
             PopulateTableInit();
+            FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
+            RefreshFilter();
         }
 
-        private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
+
+
+
+
+        private void CacheSelectedUserFolders()
+        {
+            Core.Debug.Log("Caching selected user folders for filtering");
+            _selectedUsersCache.Clear();
+            _selectedUsersCache = [.. FolderViewData.SelectedUsers()];
+            TableRowsView.Refresh();
+        }
+
+        public void RefreshFilter()
+        {
+            ClearSelection();
+            TableRowsView.Refresh();
+        }
+
+
+        private async void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
             if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
 
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-                DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
+                await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+                await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -176,6 +203,17 @@ namespace UI.ViewModels
         {
             if (search == null) return;
             SearchText = search;
+        }
+        private void NetworkSnapshot(ProgramData[] data)
+        {
+            if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
+
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                _tableData.UpdateLiveData(new(data));
+                TableRowsView.Refresh();
+                ReapplySort();
+            });
         }
         public void OnSnapshotLive(List<IProgramData> data)
         {
@@ -205,7 +243,6 @@ namespace UI.ViewModels
         {
             OnPropertyChanged(nameof(ShowLive));
             OnPropertyChanged(nameof(ShowHistorical));
-
             OnPropertyChanged(nameof(ShowCpuLive));
             OnPropertyChanged(nameof(ShowCpuHistorical));
             OnPropertyChanged(nameof(ShowMemoryLive));
@@ -286,9 +323,10 @@ namespace UI.ViewModels
         //initial population on startup
         private void PopulateTableInit()
         {
-            //replace this with code that works. Right now, does nothing
-            OnSwitchToLive(); // just attempts to populate both with initial data
-            OnSwitchToHistorical();
+            if(LiveViewModel.IsLive)
+                OnSwitchToLive();
+            else
+                OnSwitchToHistorical();
         }
 
         private void ViewChangedLive(bool isLive)
@@ -302,13 +340,15 @@ namespace UI.ViewModels
                 OnSwitchToHistorical();
 
         }
-        
+
+
         private void ViewChangedCombination(bool isCombination)
         {
             Debug.Log($"ViewChangedCombination fired, isCombination={isCombination}");
             Debug.Log($"Printing Recieved Data to a file");
 
             OnSwitchToHistorical();
+            RefreshFilter();
 
         }
 
@@ -320,6 +360,7 @@ namespace UI.ViewModels
             Dispatcher.UIThread.Post(() =>
             {
                 Debug.Log("Dispatcher post executing for live");
+                _tableData.ClearTable();
                 _tableData.UpdateLiveData(data!);
                 OnIsVisiblePropertiesChanged();
                 TableRowsView.Refresh();
@@ -327,14 +368,15 @@ namespace UI.ViewModels
             });
         }
 
-        private void OnSwitchToHistorical()
+        private async void OnSwitchToHistorical()
         {
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-            DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
+            await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+            await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
             
             Dispatcher.UIThread.Post(() =>
             {
+                _tableData.ClearTable();
                 _tableData.UpdateHistoricalData(data!);
                 OnIsVisiblePropertiesChanged();
 
@@ -351,26 +393,56 @@ namespace UI.ViewModels
             if (isActive)
             {
                 _tableViewActive = true;
-                //resubscribe to events
-                // should be able to delete the subscribing and unsubscribing
                 MainWindowViewModel.OnTabChanged += UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent += ViewChangedLive;
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnProgramListAdded += OnSnapshotHistorical;
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
+                NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
+                ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
+                FolderViewData.OnSelectionUpdated += SelectionUpdated;
+                CombinationModel.ViewChangedEvent += ViewChangedCombination;
+                LiveViewModel.ViewChangedEvent += ViewChangedLive;
             }
             else
             {
                 _tableViewActive = false;
-                //unsubscribe from events
+
+                CombinationModel.ViewChangedEvent -= ViewChangedCombination;
+                LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 MainWindowViewModel.OnTabChanged -= UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
+                NetworkDataManager.Instance.OnLiveDataRecieved -= NetworkSnapshot;
+                ConnectedUserInfo.OnUserConnectionModified -= OnConnectedUserModified;
+                FolderViewData.OnSelectionUpdated -= SelectionUpdated;
             }
+        }
+
+        private void SelectionUpdated()
+        {
+            ViewChangedLive(LiveViewModel.IsLive);
+            ViewChangedCombination(CombinationModel.IsCombination);
+        }
+
+        private void OnConnectedUserModified(string username, bool isAdded)
+        {
+
+            if (!isAdded)//Removal / disconnected user
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _tableData.ClearUserFromTable(username);
+                    OnIsVisiblePropertiesChanged();
+                    TableRowsView.Refresh();
+                });
+            }
+            OnSwitchToHistorical();
+            OnSwitchToLive();
         }
 
         private void ReapplySort()
@@ -387,13 +459,20 @@ namespace UI.ViewModels
             return TableFilter.Instance.Evaluate(target);
         }
 
+        private bool FilterSelectedUsers(object obj)
+        {
+            if (obj is not TableRow row) return false;
+            return (_selectedUsersCache.Contains(row.SystemName) && !IsCombinationView)
+                || (row.SystemName == DBArithmetic.ComboString && IsCombinationView);
+        }
 
         private bool FilterRow(object obj)
         {
             if (obj is not TableRow row) return false;
-            return TryParseSearchExpression(row) ||
-                row.AppName.Contains(SearchText);
+            return FilterSelectedUsers(row) && (TryParseSearchExpression(row) ||
+                row.AppName.Contains(SearchText));
         }
+
 
     }
 }

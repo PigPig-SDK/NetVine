@@ -1,6 +1,9 @@
 ﻿using Infrastructure;
+using Infrastructure.Notifications;
 using System.Diagnostics;
 using System.Drawing;
+using System.Security.Cryptography.X509Certificates;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Core;
 
@@ -17,7 +20,12 @@ public class SystemHistory : IDisposable
     private Stopwatch _stopwatch;
 
     public uint SnapshotIterationCount { get; private set; }
-    public Action<List<IProgramData>>? OnSnapshotTaken { get; set; }
+    public event Action<List<IProgramData>>? OnSnapshotTaken;
+    /// <summary>
+    /// 
+    /// </summary>
+    public delegate void SnapshotTakenTotalEventHandler(IProgramData total, int count);
+    public event SnapshotTakenTotalEventHandler? OnSnapshotTakenTotal;
 
     public string SystemName { get { return _producer.SystemName; } }
 
@@ -96,6 +104,8 @@ public class SystemHistory : IDisposable
                 IEnumerable<ProgramData>? average = _tracker.GetAverage()?.Cast<ProgramData>();
                 if (average == null) return;
 
+                AggregateSnapshotData(average);
+
                 //Store data...
                 DBInteract.Store(average, true);
                 AddIcons();
@@ -113,6 +123,27 @@ public class SystemHistory : IDisposable
             }
         }
     }
+
+    private void AggregateSnapshotData(IEnumerable<ProgramData> snapshotSum)
+    {
+        ProgramData? total = new() { 
+            SystemName = SystemName, 
+            ProcessName = "All|Total", 
+            ProcessId = 0, 
+            Date = DateTime.Now, 
+            Timespan = snapshotSum.First().Timespan//Timespan is consistent across all inputs (Expected to be atleast...)
+        };
+        int count = 0;
+
+        foreach (ProgramData data in snapshotSum)
+        {
+            count++;
+            total += data;
+        }
+
+        OnSnapshotTakenTotal?.Invoke(total, count);
+    }
+
 
     public void AddIcons()
     {

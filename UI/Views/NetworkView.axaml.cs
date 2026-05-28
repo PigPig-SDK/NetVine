@@ -22,8 +22,8 @@ public partial class NetworkView : UserControl
         AttachedToLogicalTree += OnEnterScope;
         DetachedFromLogicalTree += OnLeaveScope;
         InitializeComponent();
-        _portInput = AddTextbox(SettingInt.HostPort, "Port");
         _ipInput = AddTextbox(SettingString.HostIP, "Host IP Binding");
+        _portInput = AddTextbox(SettingInt.HostPort, "Port");
         PopulateConnections();
         UpdateHostConfig();
         UpdateHostToggleButtonName();
@@ -35,15 +35,30 @@ public partial class NetworkView : UserControl
         SettingInput? input = UiSettings.GetInputField(setting);
         if (input is not null and SettingInputField<T> inputField)
         {
-            if (input.Input is not null and TextBox textbox)
+            if (input.Input is not null and Control controller)
             {
-                textbox.UseFloatingWatermark = true;
-                textbox.Watermark = watermark;
+                if (controller is TextBox tb)
+                {
+                    tb.UseFloatingWatermark = true;
+                    tb.Watermark = watermark;
+                    tb.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+                }
+                else if (controller is NumericUpDown updown)
+                {
+                    Label label = new Label();
+                    label.Content = watermark;
+                    label.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+                    label.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+                    hostSettingsStackPannel.Children.Add(label);
 
-                textbox.Margin = new(0);
-                textbox.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+                    updown.Watermark = watermark;
+                    updown.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+                }
 
-                textbox.KeyDown += (s, e) =>
+                controller.Margin = new(0);
+                controller.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+
+                controller.KeyDown += (s, e) =>
                 {
                     if (e.Key == Avalonia.Input.Key.Enter)
                     {

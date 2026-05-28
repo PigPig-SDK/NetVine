@@ -1,9 +1,11 @@
 ﻿
+using Core;
+
 namespace Infrastructure;
 
 public static class DBArithmetic
 {
-    private const string ComboString = "Combination";
+    public const string ComboString = "Combination";
 
     /// <summary>
     /// Takes in data, and calculates cumulative averages in Program Data Historical Table. If an entry doesnt exist,
@@ -11,88 +13,77 @@ public static class DBArithmetic
     /// </summary>
     public static void UpdatePDHTable(List<ProgramData> currentData, DBInteract db)
     {
-            foreach(var data in currentData)
-            {
-                if(!db.ValueInPDH(data.SystemName, data.ProcessName))
-                {
-                    var entryNotCombo =
-                        HistoricalQueryBuilder(db.ProgramDataTable
-                        .Where(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName)).FirstOrDefault();
-                    
-                    if (entryNotCombo != null)
-                    {
-                        db.AddPDHEntry(entryNotCombo);
-                    }
-                }
+        var existingEntries = db.PDHTable.ToDictionary(x => (x.SystemName, x.ProcessName));
 
-                if(!db.ValueInPDH(ComboString, data.ProcessName))
+        foreach (var data in currentData)
+        {
+            var uniqueDBKey = (data.SystemName, data.ProcessName);
+
+            if (!existingEntries.TryGetValue(uniqueDBKey, out var entry))
+            {
+                entry = HistoricalQueryBuilder(
+                        db.ProgramDataTable.Where(x => x.SystemName == uniqueDBKey.Item1 && x.ProcessName == uniqueDBKey.Item2))
+                    .FirstOrDefault();
+
+                if (entry != null)
                 {
-                    var entryCombo =
-                        HistoricalQueryBuilder(db.ProgramDataTable
-                                .Where(x => x.ProcessName == data.ProcessName), ComboString).FirstOrDefault();
-                    
-                    if (entryCombo != null)
-                    { 
-                        db.AddPDHEntry(entryCombo);
-                    }
-                }
-               
-                var existingNotComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == data.SystemName && x.ProcessName == data.ProcessName);
-                if (existingNotComboEntry != null)
-                {
-                    HistoricalCumulativeUpdater(existingNotComboEntry, data);
-                }
-                
-                var existingComboEntry = db.PDHTable.FirstOrDefault(x => x.SystemName == ComboString && x.ProcessName == data.ProcessName);
-                if (existingComboEntry != null)
-                {
-                    HistoricalCumulativeUpdater(existingComboEntry, data);
+                    db.PDHTable.Add(entry);
+                    existingEntries[uniqueDBKey] = entry;
                 }
             }
-            db.SaveChanges();
+
+            if (entry != null)
+                HistoricalCumulativeUpdater(entry, data);
+        }
+
+        db.SaveChanges();
     }
     
     /// <summary>
     /// Find historical data of database processes. Grouped by Systems and Processes.
     /// </summary>
     /// <returns>Historical Data</returns>
-    public static List<ProgramDataHistorical> HistoricalDataProducer(DateTime? date1, DateTime? date2)
+    public static async Task<List<ProgramDataHistorical>> HistoricalDataProducer(DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
+        return await Task.Run(() =>
         {
-            if (!date1.HasValue && !date2.HasValue)
+            using (var db = new DBInteract())
             {
-                return db.PDHTable.Where(x => x.SystemName != ComboString).ToList();
+                if (!date1.HasValue && !date2.HasValue)
+                {
+                    return db.PDHTable.Where(x => x.SystemName != ComboString).ToList();
+                }
+
+                return HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
+                        (!date1.HasValue || x.Date >= date1)
+                        && (!date2.HasValue || x.Date <= date2)))
+                    .ToList();
             }
-            
-            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
-                    (!date1.HasValue || x.Date >= date1)
-                    && (!date2.HasValue || x.Date <= date2)))
-                .ToList();
-        }
+        });
     }
 
     /// <summary>
     /// Find historical data of database processes. Grouped by Processes, and combines passed in Systems.
     /// </summary>
     /// <returns>Historical Data</returns>
-    public static List<ProgramDataHistorical> HistoricalDataProducer(List<String> systemList, DateTime? date1, DateTime? date2)
+    public static async Task<List<ProgramDataHistorical>> HistoricalDataProducer(List<String> systemList, DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
+        return await Task.Run(() =>
         {
-            
-            if (!date1.HasValue && !date2.HasValue)
+            using (var db = new DBInteract())
             {
-                return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
+                
+                if (!date1.HasValue && !date2.HasValue)
+                {
+                    return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
+                }
+                
+                return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
+                    && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
+                    .ToList();
             }
-            
-            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
-                && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
-                .ToList();
-        }
+        });
     }
-
-    
     
     /// <summary>
     /// Builder Helper method for Historical Data Queries so I didnt have to repeat this 10 unjillion times.
@@ -143,29 +134,51 @@ public static class DBArithmetic
         existingEntry.DiskUsagePeak = MathF.Max(existingEntry.DiskUsagePeak, newEntry.DiskUsage);
         existingEntry.NetworkUsagePeak = MathF.Max(existingEntry.NetworkUsagePeak, newEntry.NetworkUsage);
         existingEntry.MemoryUsagePeak = MathF.Max(existingEntry.MemoryUsagePeak, newEntry.MemoryUsage);
-
+        
         existingEntry.NetworkUsageTotal +=  newEntry.NetworkUsage;
         
     }
 
-    public static Dictionary<string, List<double>> LineGraphHistoricalProducer(DateTime? date1, DateTime? date2)
+    public static async Task<Dictionary<string, List<double>>> LineGraphHistoricalProducer(List<String> systemList,
+        DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
+        return await Task.Run(() =>
         {
-            
-            var capturedData = db.ProgramDataTable.Where(x =>
-                    (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)).ToList();
-
-            var dict = new Dictionary<string, List<double>>
+            using (var db = new DBInteract())
             {
-                ["CPU"] = capturedData.Select(x => (double) x.CpuUsage).ToList(),
-                ["RAM"] = capturedData.Select(x => (double) x.MemoryUsage).ToList(),
-                ["DISK"] = capturedData.Select(x => (double) x.DiskUsage).ToList(),
-                ["NET"] = capturedData.Select(x => (double) x.NetworkUsage).ToList()
-            };
-            
-            return dict;
-        }
+                
+                var capturedData = db.ProgramDataTable.Where(x =>
+                        (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)
+                        && (systemList.Contains(x.SystemName))).ToList();
+
+                var grouped = capturedData.GroupBy(x => x.Date).OrderBy(x => x.Key);
+
+                var dict = new Dictionary<string, List<double>>
+                {
+                    ["CPU"] = grouped.Select(g => (double)g.Sum(x => x.CpuUsage)).ToList(),
+                    ["RAM"] = grouped.Select(g => (double)g.Sum(x => x.MemoryUsage)).ToList(),
+                    ["DISK"] = grouped.Select(g => (double)g.Sum(x => x.DiskUsage)).ToList(),
+                    ["NET"] = grouped.Select(g => (double)g.Sum(x => x.NetworkUsage)).ToList()
+                };
+
+                return dict;
+            }
+        });    
+    }
+    
+    public static async Task<List<List<IProgramData>>> BarGraphHistoricalProducer(List<String> systemList, DateTime? date1, DateTime? date2)
+    {
+        return await Task.Run(() =>
+        {
+            using (var db = new DBInteract())
+            {
+                return db.ProgramDataTable.Where(x =>
+                        (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value) 
+                        && (systemList.Contains(x.SystemName))).AsEnumerable().GroupBy(x => x.Date)
+                    .Select(g => g.Cast<IProgramData>().ToList())
+                    .ToList();
+            }
+        });
     }
     
     

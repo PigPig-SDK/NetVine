@@ -43,6 +43,7 @@ namespace UI.ViewModels
         public List<List<IProgramData>> SnapshotHistory =>
    _snapshotHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
 
+        public List<List<IProgramData>> AllHistorical { get; set; } = new();
         public List<IProgramData> LatestSnapshot { get; private set; } = new();
 
         public event Action? DataUpdated;
@@ -127,10 +128,12 @@ namespace UI.ViewModels
             AddCapped(_networkHistories[device], network);
         }
         
-        public void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
+        public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
         {
-         
-            var dataDict = DBArithmetic.LineGraphHistoricalProducer(startDate, endDate);
+            
+            AllHistorical = await DBArithmetic.BarGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
+            
+            var dataDict = await DBArithmetic.LineGraphHistoricalProducer(FolderViewData.SelectedUsers().ToList(), startDate, endDate);
             HistoricalCpuHistory = dataDict["CPU"];
             HistoricalRamHistory = dataDict["RAM"];
             HistoricalDiskHistory = dataDict["DISK"];

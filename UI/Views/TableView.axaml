@@ -18,7 +18,6 @@
             <DataGrid.Styles>
                 <!-- 1. Context Menu for the BODY (Rows) -->
                 <Style Selector="DataGridRow">
-                    
                     <Setter Property="ContextMenu">
                         <ContextMenu Opened="ContextMenuOpened" 
                                      Closed="ContextMenuClosed">
@@ -40,7 +39,7 @@
                 <!-- 2. Context Menu for the HEADERS -->
                 <Style Selector="DataGridColumnHeader">
                     <Setter Property="BorderBrush" Value="Gray"/>
-                    <Setter Property="Background" Value="#B2000000"/>
+                    <Setter Property="Background" Value="#99222228"/>
                     <Setter Property="ContextMenu">
                         <ContextMenu>
                             <MenuItem Header="{Binding CpuMenuText}" Command="{Binding ToggleCpuCommand}"/>
@@ -81,70 +80,200 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 
-                <DataGridTextColumn Header="CPU (%)"     
-                                    Binding="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" 
-                                    IsVisible="{Binding ShowCpuLive}"
-                                    Width="*" MinWidth="100"/>
-                
-                <DataGridTextColumn Header="Memory (MB)"  
-                                    Binding="{Binding (vm:TableRow).LiveData.MemoryUsage, StringFormat={}{0:F2}}" 
-                                    IsVisible="{Binding ShowMemoryLive}"
-                                    Width="*" MinWidth="100"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowCpuLive}" Width="*" MinWidth="100"
+                                        CanUserSort="True" SortMemberPath="LiveData.CpuUsage">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="CPU (%)">
+                            <Image Source="/Assets/cpu.png" Height="16"/>
+                            <TextBlock Text="(%)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.CpuUsage, StringFormat={}{0:F2}%}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Disk"  
-                                    Binding="{Binding (vm:TableRow).LiveData.DiskUsage, StringFormat={}{0:F2}}" 
-                                    IsVisible="{Binding ShowDiskLive}"
-                                    Width="*" MinWidth="100"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowMemoryLive}" Width="*" MinWidth="100"
+                                        CanUserSort="True" SortMemberPath="LiveData.MemoryUsage">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Memory (MB)">
+                            <Image Source="/Assets/ram.png" Height="16"/>
+                            <TextBlock Text="(MB)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.MemoryUsage, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Network"  
-                                    Binding="{Binding (vm:TableRow).LiveData.NetworkUsage, StringFormat={}{0:F2}}" 
-                                    IsVisible="{Binding ShowNetworkLive}"
-                                    Width="*" MinWidth="100"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowDiskLive}" Width="*" MinWidth="100"
+                                        CanUserSort="True" SortMemberPath="LiveData.DiskUsage">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Disk">
+                            <Image Source="/Assets/disk.png" Height="16"/>
+                            <TextBlock Text="(MB/s)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.DiskUsage, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="CPU Avg"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.CpuUsageAvg, StringFormat={}{0:F2}%}"
-                                    IsVisible="{Binding ShowCpuHistorical}"
-                                    Width="*" />
+                <DataGridTemplateColumn IsVisible="{Binding ShowNetworkLive}" Width="*" MinWidth="100"
+                                        CanUserSort="True" SortMemberPath="LiveData.NetworkUsage">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Network">
+                            <Image Source="/Assets/network.png" Height="16"/>
+                            <TextBlock Text="(MB/s)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).LiveData.NetworkUsage, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="CPU Top"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.CpuUsagePeak, StringFormat={}{0:F2}%}"
-                                    IsVisible="{Binding ShowCpuHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowCpuHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.CpuUsageAvg">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="CPU Average">
+                            <Image Source="/Assets/cpu.png" Height="16"/>
+                            <TextBlock Text="Avg (%)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.CpuUsageAvg, StringFormat={}{0:F2}%}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Memory Avg"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.MemoryUsageAvg, StringFormat={}{0:F2}}"
-                                    IsVisible="{Binding ShowMemoryHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowCpuHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.CpuUsagePeak">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="CPU Peak">
+                            <Image Source="/Assets/cpu.png" Height="16"/>
+                            <TextBlock Text="Top (%)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.CpuUsagePeak, StringFormat={}{0:F2}%}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Memory Top"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.MemoryUsagePeak, StringFormat={}{0:F2}}"
-                                    IsVisible="{Binding ShowMemoryHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowMemoryHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.MemoryUsageAvg">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Memory Average">
+                            <Image Source="/Assets/ram.png" Height="16"/>
+                            <TextBlock Text="Avg (MB)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.MemoryUsageAvg, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Disk Avg"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.DiskUsageAvg, StringFormat={}{0:F2}}"
-                                    IsVisible="{Binding ShowDiskHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowMemoryHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.MemoryUsagePeak">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Memory Peak">
+                            <Image Source="/Assets/ram.png" Height="16"/>
+                            <TextBlock Text="Top (MB)"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.MemoryUsagePeak, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Disk Top"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.DiskUsagePeak, StringFormat={}{0:F2}}"
-                                    IsVisible="{Binding ShowDiskHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowDiskHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.DiskUsageAvg">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Disk Average">
+                            <Image Source="/Assets/disk.png" Height="16"/>
+                            <TextBlock Text="Avg"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.DiskUsageAvg, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Network Avg"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.NetworkUsageAvg, StringFormat={}{0:F2}}"
-                                    IsVisible="{Binding ShowNetworkHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowDiskHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.DiskUsagePeak">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Disk Peak">
+                            <Image Source="/Assets/disk.png" Height="16"/>
+                            <TextBlock Text="Top"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.DiskUsagePeak, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Network Top"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.NetworkUsagePeak, StringFormat={}{0:F2}}"
-                                    IsVisible="{Binding ShowNetworkHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowNetworkHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.NetworkUsageAvg">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Network Average">
+                            <Image Source="/Assets/network.png" Height="16"/>
+                            <TextBlock Text="Avg"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsageAvg, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
-                <DataGridTextColumn Header="Network Total"
-                                    Binding="{Binding (vm:TableRow).HistoricalData.NetworkUsageTotal, StringFormat={}{0:F2}}"
-                                    IsVisible="{Binding ShowNetworkHistorical}"
-                                    Width="*"/>
+                <DataGridTemplateColumn IsVisible="{Binding ShowNetworkHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.NetworkUsagePeak">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Network Peak">
+                            <Image Source="/Assets/network.png" Height="16"/>
+                            <TextBlock Text="Top"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsagePeak, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn IsVisible="{Binding ShowNetworkHistorical}" Width="*"
+                                        CanUserSort="True" SortMemberPath="HistoricalData.NetworkUsageTotal">
+                    <DataGridTemplateColumn.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="4" ToolTip.Tip="Network Total">
+                            <Image Source="/Assets/network.png" Height="16"/>
+                            <TextBlock Text="Total"/>
+                        </StackPanel>
+                    </DataGridTemplateColumn.Header>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding (vm:TableRow).HistoricalData.NetworkUsageTotal, StringFormat={}{0:F2}}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
 
             </DataGrid.Columns>
         </DataGrid>

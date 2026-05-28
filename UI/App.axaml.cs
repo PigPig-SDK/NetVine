@@ -17,6 +17,7 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        ToastServer.Initialize();
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -71,7 +72,7 @@ public partial class App : Application
         }
     }
 
-    private void ShowWindow(object? sender, System.EventArgs e)
+    public void ShowWindow(object? sender, System.EventArgs e)
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

@@ -25,7 +25,10 @@ public class StringPayload : IPacketPayload
 
     public void Execute(bool isServer, Guid id)
     {
-        NotificationManager.WriteNotification(new(Notification, Value));
+        NotificationManager.WriteNotification(new(
+            Notification,
+            $"Message : {ConnectedUserInfo.ResolveUser(id) ?? "Anon"}",
+            Value));
         //Relay to other clients.
         if(isServer)
         {
