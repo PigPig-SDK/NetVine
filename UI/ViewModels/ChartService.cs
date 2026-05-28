@@ -1,6 +1,7 @@
 using System;
 namespace UI.ViewModels;
 using Infrastructure.Networking;
+using System.Collections.Generic;
 using System.Linq;
 
 public class ChartService

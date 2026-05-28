@@ -8,6 +8,9 @@ public static class FolderViewData
 {
     public static Dictionary<string, FolderUser> UserMapping = [];
 
+    public static Action<User>? OnUserAdded;
+    public static Action? OnSelectionUpdated;
+
     public static IEnumerable<string> SelectedUsers()
     {
         foreach (var user in UserMapping)
@@ -16,6 +19,13 @@ public static class FolderViewData
         }
     }
 
-    public static Action<User>? OnUserAdded;
-    public static Action? OnSelectionUpdated;
+    public static IEnumerable<(string name, int index)> SelectedUsersWithIndex()
+    {
+        int index = 0;
+        foreach (var user in UserMapping)
+        {
+            if (user.Value.IsSelected) yield return (user.Key, index);
+            index++;
+        }
+    }
 }

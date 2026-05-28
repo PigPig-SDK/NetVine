@@ -59,13 +59,14 @@ public partial class Canvas : UserControl
         CanvasPlot.Plot.Axes.Top.IsVisible = false;
         CanvasPlot.Plot.Axes.Right.IsVisible = false;
         CanvasPlot.Plot.Axes.Bottom.IsVisible = false;
+        CanvasPlot.Plot.Axes.SquareUnits(false);
         Loaded += OnLoaded;
     }
 
     private void UpdateChart()
     {
-        UpdateMenu();
         DrawChart();
+        UpdateMenu();
     }
 
     private void UpdateChartType()
@@ -109,10 +110,10 @@ public partial class Canvas : UserControl
 
     void SetColors()
     {
-        CanvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(0);
-        CanvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(0);
+        CanvasPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(0);//Transparent
+        CanvasPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#2D2D38").WithAlpha(0);//Transparent
         CanvasPlot.Plot.Axes.Color(ScottPlot.Color.FromHex("#CCCCCC"));
-        CanvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#FFFFFF").WithAlpha(0.1);
+        CanvasPlot.Plot.Grid.MajorLineColor = ScottPlot.Color.FromHex("#2A2A2A");
         Loaded += OnLoaded;
     }
     
@@ -142,8 +143,6 @@ public partial class Canvas : UserControl
             _boundsSaved = CanvasPlot.Plot.Axes.GetLimits();
             
             CanvasPlot.Plot.Clear();
-            CanvasPlot.Plot.Axes.SquareUnits(false);
-            CanvasPlot.Plot.YLabel("");
             CanvasPlot.Plot.Axes.Left.IsVisible = true;
 
             switch (ChartService.Instance.ChartType)
@@ -154,9 +153,7 @@ public partial class Canvas : UserControl
             }
 
             if (!_followFlag &&  _boundsSaved != null)
-            {
                 CanvasPlot.Plot.Axes.SetLimits((AxisLimits) _boundsSaved);
-            }
             
             CanvasPlot.Refresh();
         });
@@ -164,42 +161,41 @@ public partial class Canvas : UserControl
 
     private void DrawLineChart()
     {
-        CanvasPlot.UserInputProcessor.IsEnabled = true;
         SetGrid();
+        int historyMax = 0;
 
-        var history = ChartService.Instance.SelectedResource switch
+        // First pass - find the true max length
+        var histories = new List<(double[] data, (string title, int index))>();
+        foreach (var user in FolderViewData.SelectedUsersWithIndex().ToArray())
         {
-            ChartService.CPU => (data: ResourceService.Instance.LiveCpuHistory, title: "CPU (%)"),
-            ChartService.CPUHistory =>  (data: ResourceService.Instance.HistoricalCpuHistory, title: "CPU History (%)"),
-            
-            ChartService.RAM => (data: ResourceService.Instance.LiveRamHistory, title: "RAM (MB)"),
-            ChartService.RAMHistory => (data: ResourceService.Instance.HistoricalRamHistory, title: "RAM History (MB)"),
-            
-            ChartService.DISK => (data: ResourceService.Instance.LiveDiskHistory, title: "Disk (MB/s)"),
-            ChartService.DISKHistory => (data: ResourceService.Instance.HistoricalDiskHistory, title: "Disk History (MB/s)"),
-            
-            ChartService.NET => (data: ResourceService.Instance.LiveNetworkHistory, title: "Network (MB/s)"),
-            ChartService.NETHistory => (data: ResourceService.Instance.HistoricalNetworkHistory, title: "Network History (MB/s)"),
-        
-            _ => (data: ResourceService.Instance.LiveCpuHistory, title: "CPU (%)")
-        };
+            var history = ResourceService.Instance.GetResourceForUser(ChartService.Instance.SelectedResource, user.name);
+            if (history.data.Count == 0) continue;
+            histories.Add((history.data.ToArray(), (history.title,user.index)));
+            historyMax = (int)MathF.Max(history.data.Count, historyMax);
+        }
 
-        if (history.data.Count == 0) return;
+        //Second pass - plot the data with padding to align to the right
+        foreach (var (data, displayData) in histories)
+        {
+            double[] padded = new double[historyMax];
+            int offset = historyMax - data.Length;
+            for (int i = 0; i < offset; i++)
+                padded[i] = 0;
+            Array.Copy(data, 0, padded, offset, data.Length);
 
-        var signal = CanvasPlot.Plot.Add.Signal(history.data.ToArray());
-        signal.LegendText = history.title;
-        signal.Color = ScottPlot.Colors.White;
+            var signal = CanvasPlot.Plot.Add.Signal(padded);
+            signal.LegendText = displayData.title;
+            signal.Color = _palette.GetColor(displayData.index);
+        }
 
-        CanvasPlot.Plot.YLabel(history.title);
+        CanvasPlot.Plot.YLabel(ChartService.Instance.SelectedResource.ToString());
         CanvasPlot.Plot.ShowLegend();
-
-        CanvasPlot.Plot.Axes.SetLimitsX(0, history.data.Count);
+        CanvasPlot.Plot.Axes.SetLimitsX(0, historyMax);
         SetLimits();
     }
 
     private void DrawBarChart()
     {
-        
         SetGrid();
         var data = LiveViewModel.IsLive ? ResourceService.Instance.SnapshotHistory : ResourceService.Instance.AllHistorical;
         
