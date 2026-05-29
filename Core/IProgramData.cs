@@ -33,4 +33,6 @@ public interface IProgramData
     public float Timespan { get; set; }
     
     public DateTime Date { get; set; }
+
+    public IProgramData DeepCopy();
 }

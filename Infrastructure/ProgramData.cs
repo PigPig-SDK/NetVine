@@ -25,6 +25,23 @@ public class ProgramData : IProgramData
     /// An applications ProcessID changes every time it is loaded.
     /// </summary>
     public int ProcessId { get; set; }
+
+    public IProgramData DeepCopy()
+    {
+        return new ProgramData
+        {
+            SystemName = this.SystemName,
+            ProcessName = this.ProcessName,
+            CpuUsage = this.CpuUsage,
+            DiskUsage = this.DiskUsage,
+            NetworkUsage = this.NetworkUsage,
+            MemoryUsage = this.MemoryUsage,
+            Timespan = this.Timespan,
+            Date = this.Date,
+            ProcessId = this.ProcessId
+        };
+    }
+
     /// <summary>
     /// A+B operator for simplicity
     /// NOTE: Program A is used for Date,Timespan, Systemname, so on...

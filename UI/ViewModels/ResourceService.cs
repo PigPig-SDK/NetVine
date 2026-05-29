@@ -128,6 +128,8 @@ namespace UI.ViewModels
                 _ => (new(), new(), "Invalid")
             };
         }
+        public Dictionary<string, (List<DateTime> timeStamps, List<List<IProgramData>> data)> HistoricalData => _historicalProcessData.ToDictionary();
+
         /// <summary>
         /// Get all live program entries for a specific
         /// </summary>

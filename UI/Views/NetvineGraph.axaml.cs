@@ -15,7 +15,7 @@ namespace UI;
 public partial class NetvineGraph : UserControl
 {
     private ScottPlot.Plottables.Annotation? _tooltip;
-    private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
+    private Dictionary<double, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
     private bool _followFlag = true;
     private bool _dragFlag = false;
     private AxisLimits? _boundsSaved;
@@ -194,11 +194,12 @@ public partial class NetvineGraph : UserControl
     {
         SetGrid();
 
-        foreach (var user in FolderViewData.SelectedUsersWithIndex().ToArray())
-        {
-            Debug.Log(ChartService.Instance.SelectedResource.ToString());
+        var users = FolderViewData.SelectedUsersWithIndex().ToArray();FolderViewData.SelectedUsersWithIndex().ToArray();
 
+        foreach (var user in users)
+        {
             var history = ResourceService.Instance.GetDatedResourceForUser(ChartService.Instance.SelectedResource, user.name);
+
             if (history.data.Count == 0) continue;
 
             var timestamps = history.timeStamps;
@@ -272,25 +273,36 @@ public partial class NetvineGraph : UserControl
     #region BarChart
     private void DrawBarChart()
     {
+        if(LiveViewModel.IsLive)
+            DrawBarChartLive();
+        else
+            DrawBarChartHistorical();
+    }
+    private void DrawBarChartLive()
+    {
         SetGrid();
         _barTooltipData.Clear();
 
         int historyMax = 0;
         var users = FolderViewData.SelectedUsersWithIndex().ToArray();
+        //Find maximum to add buffer, so bars allign
         foreach (var user in users)
         {
             var history = ResourceService.Instance.GetProgramUsageForUser(user.name);
             historyMax = (int)MathF.Max(history.Count, historyMax);
         }
 
-        var mergedPool = new List<IProgramData>[historyMax].Select(_ => new List<IProgramData>()).ToArray();
+        var mergedPool = new List<(IProgramData data, string user)>[historyMax]
+            .Select(_ => new List<(IProgramData data, string user)>())
+            .ToArray();
+
         foreach (var user in users)
         {
             var history = ResourceService.Instance.GetProgramUsageForUser(user.name);
             if (history.Count == 0) continue;
             int offset = historyMax - history.Count;
             for (int i = 0; i < history.Count; i++)
-                mergedPool[offset + i].AddRange(history[i]);
+                mergedPool[offset + i].AddRange(history[i].Select(p => (p.DeepCopy(), user.name)));
         }
 
         for (int i = 0; i < historyMax; i++)
@@ -298,8 +310,8 @@ public partial class NetvineGraph : UserControl
             if (mergedPool[i].Count == 0) continue;
 
             var topPrograms = mergedPool[i]
-                .GroupBy(x => x.ProcessName)
-                .OrderByDescending(g => g.Sum(x => GetValue(x)))
+                .GroupBy(x => $"{x.data.ProcessName} ({x.user})")
+                .OrderByDescending(g => g.Sum(x => GetValue(x.data)))
                 .Take(TopCount)
                 .ToList();
 
@@ -308,7 +320,7 @@ public partial class NetvineGraph : UserControl
 
             foreach (var group in topPrograms)
             {
-                double value = group.Sum(x => GetValue(x));
+                double value = group.Sum(x => GetValue(x.data));
                 if (!_processColors.ContainsKey(group.Key))
                     _processColors[group.Key] = _palette.GetColor(_colorIndex++);
 
@@ -329,6 +341,77 @@ public partial class NetvineGraph : UserControl
         }
 
         CanvasPlot.Plot.Axes.SetLimitsX(-0.5, historyMax + 0.5);
+        SetLimits();
+    }
+    private static DateTime FloorToMinute(DateTime dt, int minutes = 1)
+    => new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, (dt.Minute / minutes) * minutes, 0);
+    private void DrawBarChartHistorical()
+    {
+        SetGrid();
+        _barTooltipData.Clear();
+        _processColors.Clear();
+        _colorIndex = 0;
+
+        var users = FolderViewData.SelectedUsersWithIndex().ToArray();
+
+        // Collect all data bucketed by minute
+        var allEntries = users
+            .Where(user => ResourceService.Instance.GetDatedProgramUsageForUser(user.name).timeStamps.Count > 0)
+            .SelectMany(user =>
+            {
+                var history = ResourceService.Instance.GetDatedProgramUsageForUser(user.name);
+                return history.timeStamps
+                    .Zip(history.Item2, (ts, slot) => (slot, ts))
+                    .SelectMany(x => x.slot.Select(p => (data: p.DeepCopy(), user: user.name, bucket: FloorToMinute(x.ts))));
+            })
+            .GroupBy(x => x.bucket)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        var bucketKeys = allEntries.Select(g => g.Key).ToList();
+
+        for (int i = 0; i < allEntries.Count; i++)
+        {
+            var topPrograms = allEntries[i]
+                .GroupBy(x => x.user)
+                .SelectMany(userGroup => userGroup
+                    .GroupBy(x => $"{x.data.ProcessName} ({x.user})")
+                    .OrderByDescending(g => g.Average(x => GetValue(x.data)))
+                    .Take(TopCount)) 
+                .OrderByDescending(g => g.Average(x => GetValue(x.data)))
+                .ToList();
+
+            double cumulative = 0;
+            var segmentData = new List<(string name, double yBase, double yTop)>();
+
+            foreach (var group in topPrograms)
+            {
+                double value = group.Average(x => GetValue(x.data));
+                if (!_processColors.ContainsKey(group.Key))
+                    _processColors[group.Key] = _palette.GetColor(_colorIndex++);
+
+                CanvasPlot.Plot.Add.Bar(new ScottPlot.Bar
+                {
+                    Position = bucketKeys[i].ToOADate(),
+                    Value = cumulative + value,
+                    ValueBase = cumulative,
+                    FillColor = _processColors[group.Key],
+                    LineColor = ScottPlot.Colors.Transparent,
+                    Size = TimeSpan.FromMinutes(0.8).TotalDays // fixed width in OA date units
+                });
+
+                segmentData.Add((group.Key, cumulative, cumulative + value));
+                cumulative += value;
+            }
+
+            _barTooltipData[bucketKeys[i].ToOADate()] = segmentData;
+        }
+
+        CanvasPlot.Plot.Axes.Bottom.IsVisible = false;
+        CanvasPlot.Plot.Axes.SetLimitsX(
+            bucketKeys.First().ToOADate() - 0.5,
+            bucketKeys.Last().ToOADate() + 0.5
+        );
         SetLimits();
     }
     #endregion
@@ -401,18 +484,34 @@ public partial class NetvineGraph : UserControl
         var pos = e.GetPosition(CanvasPlot);
         var dataCoords = CanvasPlot.Plot.GetCoordinates((float)pos.X, (float)pos.Y);
 
-        int barIndex = (int)Math.Round(dataCoords.X);
+        List<(string name, double yBase, double yTop)>? segments = null;
 
-        if (!_barTooltipData.TryGetValue(barIndex, out var segments))
+        if (!LiveViewModel.IsLive)
         {
-            RemoveTooltip();
-            CanvasPlot.Refresh();
-            return;
+            var nearest = _barTooltipData.Keys
+                .OrderBy(k => Math.Abs(k - dataCoords.X))
+                .FirstOrDefault();
+
+            if (nearest == 0 || Math.Abs(nearest - dataCoords.X) > TimeSpan.FromMinutes(0.5).TotalDays)
+            {
+                RemoveTooltip();
+                CanvasPlot.Refresh();
+                return;
+            }
+            segments = _barTooltipData[nearest];
+        }
+        else
+        {
+            int barIndex = (int)Math.Round(dataCoords.X);
+            if (!_barTooltipData.TryGetValue(barIndex, out segments))
+            {
+                RemoveTooltip();
+                CanvasPlot.Refresh();
+                return;
+            }
         }
 
-        var hovered = segments.FirstOrDefault(s =>
-            dataCoords.Y >= s.yBase && dataCoords.Y <= s.yTop);
-
+        var hovered = segments.FirstOrDefault(s => dataCoords.Y >= s.yBase && dataCoords.Y <= s.yTop);
         if (hovered == default)
         {
             RemoveTooltip();
@@ -422,13 +521,11 @@ public partial class NetvineGraph : UserControl
 
         double val = hovered.yTop - hovered.yBase;
         string text = $"{hovered.name}\n{val:0.0} {ActiveUnit()}";
-
         RemoveTooltip();
         _tooltip = CanvasPlot.Plot.Add.Annotation(text, Alignment.UpperLeft);
         _tooltip.LabelFontColor = ScottPlot.Colors.White;
         _tooltip.LabelBorderColor = ScottPlot.Colors.White;
         _tooltip.LabelBorderWidth = 1;
-
         CanvasPlot.Refresh();
     }
 
