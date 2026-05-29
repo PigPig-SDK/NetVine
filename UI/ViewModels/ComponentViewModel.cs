@@ -17,9 +17,9 @@ namespace UI.ViewModels
         public ICommand SelectDiskCommand { get; }
         public ICommand SelectNetworkCommand { get; }
 
-        public List<string> ChartTypes { get; } = new() { "Line", "Bar", "Pie" };
+        public List<string> ChartTypes { get; } = new() { ChartService.Line, ChartService.Bar, ChartService.Pie};
 
-        private string _selectedChartType = "Line";
+        private string _selectedChartType = ChartService.Line;
         public string SelectedChartType
         {
             get => _selectedChartType;
@@ -27,6 +27,7 @@ namespace UI.ViewModels
             {
                 _selectedChartType = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedChartType)));
+                ChartService.Instance.ChartType = value;//TODO: Fix this stupid bullshit
             }
         }
         public string ButtonCPUText => $"{ResourceService.Instance.CpuUsage:0.0}%";
@@ -36,7 +37,6 @@ namespace UI.ViewModels
         public ComponentViewModel()
         {
             ResourceService.Instance.DataUpdated += OnDataUpdated;
-
             SelectCpuCommand = new RelayCommand(() => ChartService.Instance.SelectedResource = ResourceTypes.CPU);
             SelectRamCommand = new RelayCommand(() => ChartService.Instance.SelectedResource = ResourceTypes.RAM);
             SelectDiskCommand = new RelayCommand(() => ChartService.Instance.SelectedResource = ResourceTypes.Disk);

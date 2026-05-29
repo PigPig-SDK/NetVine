@@ -1,15 +1,12 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Core;
 using Infrastructure;
 using ScottPlot;
-using ScottPlot.Avalonia;
-using ScottPlot.Colormaps;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using UI.ViewModels;
 using UI.Views;
 
@@ -71,8 +68,11 @@ public partial class Canvas : UserControl
         ResourceService.Instance.DataUpdated += UpdateChart;
         MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
         LiveViewModel.ViewChangedEvent += LiveViewChanged;
+        FolderViewData.OnSelectionUpdated += SelectionUpdated;
         DrawChart();//Force update.
+        LiveViewChanged(LiveViewModel.IsLive);//Force update of live/historical view.
     }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         CanvasPlot.PointerMoved -= OnPointerMoved;
@@ -81,8 +81,14 @@ public partial class Canvas : UserControl
         ResourceService.Instance.DataUpdated -= UpdateChart;
         MainWindowViewModel.OnTabChanged -= UpdateGraphTimeFrame;
         LiveViewModel.ViewChangedEvent -= LiveViewChanged;
-        
+        FolderViewData.OnSelectionUpdated -= SelectionUpdated;
+
         base.OnDetachedFromVisualTree(e);
+    }
+
+    private void SelectionUpdated()
+    {
+        UpdateChart();
     }
 
     private void UpdateChart()
@@ -97,8 +103,6 @@ public partial class Canvas : UserControl
         DrawChart();
         UpdateType();
     }
-
-
     /// <summary>
     /// Called when "LIVE BUTTON" is flipped
     /// </summary>
@@ -164,7 +168,16 @@ public partial class Canvas : UserControl
 
             if (!_followFlag &&  _boundsSaved != null)
                 CanvasPlot.Plot.Axes.SetLimits((AxisLimits) _boundsSaved);
-            
+
+            var label = ChartService.Instance.SelectedResource switch
+            {
+                ResourceTypes.CPU => "CPU (%)",
+                ResourceTypes.RAM => "RAM (MB)",
+                ResourceTypes.Disk => "Disk (MB/S)",
+                ResourceTypes.Network => "Network (MB/s)",
+                _ => ""
+            };
+            CanvasPlot.Plot.YLabel(label);
             CanvasPlot.Refresh();
         });
     }
@@ -183,20 +196,39 @@ public partial class Canvas : UserControl
 
         foreach (var user in FolderViewData.SelectedUsersWithIndex().ToArray())
         {
+            Debug.Log(ChartService.Instance.SelectedResource.ToString());
+
             var history = ResourceService.Instance.GetDatedResourceForUser(ChartService.Instance.SelectedResource, user.name);
             if (history.data.Count == 0) continue;
 
+            var timestamps = history.timeStamps;
+            var data = history.data;
+
+            var paddedDates = new List<double>();
+            var paddedData = new List<double>();
+
+            var threshold = TimeSpan.FromSeconds(90);
+
+            for (int i = 0; i < timestamps.Count; i++)
+            {
+                if (i > 0 && timestamps[i] - timestamps[i - 1] > threshold)
+                {
+                    paddedDates.Add(timestamps[i - 1].AddSeconds(1).ToOADate());
+                    paddedData.Add(double.NaN);
+                }
+                paddedDates.Add(timestamps[i].ToOADate());
+                paddedData.Add(data[i] == 0 ? double.NaN : data[i]);
+            }
+
             var scatter = CanvasPlot.Plot.Add.Scatter(
-                history.timeStamps.Select(d => d.ToOADate()).ToArray(),
-                history.data.ToArray()
+                paddedDates.ToArray(),
+                paddedData.ToArray()
             );
             scatter.LegendText = history.title;
             scatter.Color = _palette.GetColor(user.index);
             scatter.MarkerSize = 0;
         }
-
-        CanvasPlot.Plot.Axes.Bottom.IsVisible = false;
-        CanvasPlot.Plot.YLabel(ChartService.Instance.SelectedResource.ToString());
+        CanvasPlot.Plot.Axes.AutoScaleX();
         CanvasPlot.Plot.ShowLegend();
         SetLimits();
     }
@@ -225,12 +257,12 @@ public partial class Canvas : UserControl
                 padded[i] = 0;
             Array.Copy(data, 0, padded, offset, data.Length);
 
+            //display
             var signal = CanvasPlot.Plot.Add.Signal(padded);
             signal.LegendText = displayData.title;
             signal.Color = _palette.GetColor(displayData.index);
         }
 
-        CanvasPlot.Plot.YLabel(ChartService.Instance.SelectedResource.ToString());
         CanvasPlot.Plot.ShowLegend();
         CanvasPlot.Plot.Axes.SetLimitsX(0, historyMax);
         SetLimits();
@@ -238,80 +270,71 @@ public partial class Canvas : UserControl
     #endregion
 
     #region BarChart
-
     private void DrawBarChart()
     {
         SetGrid();
-
-        
-        foreach (var user in FolderViewData.SelectedUsersWithIndex().ToArray())
-        {
-            var history = ResourceService.Instance.GetResourceForUser(ChartService.Instance.SelectedResource, user.name);
-            if (history.data.Count == 0) continue;
-            histories.Add((history.data.ToArray(), (history.title, user.index)));
-            historyMax = (int)MathF.Max(history.data.Count, historyMax);
-        }
-
-        if (data.Count == 0) return;
-
         _barTooltipData.Clear();
 
-        for (int i = 0; i < data.Count; i++)
+        int historyMax = 0;
+        var users = FolderViewData.SelectedUsersWithIndex().ToArray();
+        foreach (var user in users)
         {
-            
-            var snapshot = data[i];
-            
-            var bartop = snapshot
-                .OrderByDescending(p => GetValue(p))
-                .Where(p => GetValue(p) > 0)
+            var history = ResourceService.Instance.GetProgramUsageForUser(user.name);
+            historyMax = (int)MathF.Max(history.Count, historyMax);
+        }
+
+        var mergedPool = new List<IProgramData>[historyMax].Select(_ => new List<IProgramData>()).ToArray();
+        foreach (var user in users)
+        {
+            var history = ResourceService.Instance.GetProgramUsageForUser(user.name);
+            if (history.Count == 0) continue;
+            int offset = historyMax - history.Count;
+            for (int i = 0; i < history.Count; i++)
+                mergedPool[offset + i].AddRange(history[i]);
+        }
+
+        for (int i = 0; i < historyMax; i++)
+        {
+            if (mergedPool[i].Count == 0) continue;
+
+            var topPrograms = mergedPool[i]
+                .GroupBy(x => x.ProcessName)
+                .OrderByDescending(g => g.Sum(x => GetValue(x)))
                 .Take(TopCount)
                 .ToList();
 
             double cumulative = 0;
             var segmentData = new List<(string name, double yBase, double yTop)>();
 
-            foreach (var process in bartop)
+            foreach (var group in topPrograms)
             {
-                
-                double value = GetValue(process);
+                double value = group.Sum(x => GetValue(x));
+                if (!_processColors.ContainsKey(group.Key))
+                    _processColors[group.Key] = _palette.GetColor(_colorIndex++);
 
-                if (!_processColors.ContainsKey(process.ProcessName))
-                    _processColors[process.ProcessName] = _palette.GetColor(_colorIndex++);
-
-                var bar = new ScottPlot.Bar
+                CanvasPlot.Plot.Add.Bar(new ScottPlot.Bar
                 {
                     Position = i,
                     Value = cumulative + value,
                     ValueBase = cumulative,
-                    FillColor = _processColors[process.ProcessName],
+                    FillColor = _processColors[group.Key],
                     LineColor = ScottPlot.Colors.Transparent,
-                };
+                });
 
-                CanvasPlot!.Plot.Add.Bar(bar);
-                segmentData.Add((process.ProcessName, cumulative, cumulative + value));
+                segmentData.Add((group.Key, cumulative, cumulative + value));
                 cumulative += value;
             }
 
             _barTooltipData[i] = segmentData;
         }
 
-        var label = ChartService.Instance.SelectedResource switch
-        {
-            ResourceTypes.CPU => "CPU (%)",
-            ResourceTypes.RAM => "RAM (MB)",
-            ResourceTypes.Disk => "Disk (MB/S)",
-            ResourceTypes.Network => "Network (MB/s)",
-            _ => ""
-        };
-
-        CanvasPlot.Plot.YLabel(label);
-
-        CanvasPlot.Plot.Axes.SetLimitsX(-0.5, data.Count + 0.5);
+        CanvasPlot.Plot.Axes.SetLimitsX(-0.5, historyMax + 0.5);
         SetLimits();
     }
     #endregion
     #region PieChart
     private void DrawPieChart() {
+        return;
 
         _followFlag = true;
         CanvasPlot.Plot.Axes.SquareUnits(true);
@@ -324,8 +347,6 @@ public partial class Canvas : UserControl
         CanvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
 
         CanvasPlot.Plot.Axes.AutoScale();
-
-        if (ResourceService.Instance.LatestSnapshot.Count == 0) return;
 
         var pietop = GetTopProcesses();
         if (pietop.Count == 0) return;
@@ -363,13 +384,13 @@ public partial class Canvas : UserControl
 
     private List<IProgramData> GetTopProcesses()
     {
-        if (ResourceService.Instance.LatestSnapshot.Count == 0) return new();
+        return new();
 
-        return ResourceService.Instance.LatestSnapshot
-            .OrderByDescending(p => GetValue(p))
-            .Take(TopCount)
-            .Where(p => GetValue(p) > 0) 
-            .ToList();
+        //return ResourceService.Instance.LatestSnapshot
+        //    .OrderByDescending(p => GetValue(p))
+        //    .Take(TopCount)
+        //    .Where(p => GetValue(p) > 0) 
+        //    .ToList();
     }
 
     private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
@@ -466,18 +487,17 @@ public partial class Canvas : UserControl
             (mainWindow);
             
         if (!dateRange.HasValue)
-        {
             return;
-        }
             
         HistoricalStartGraph = dateRange.Value.date1;
         HistoricalEndGraph = dateRange.Value.date2;
 
         ShowPlaceholder = false;
         _timeSelected = true;
+        _followFlag = true;
 
         ResourceService.Instance.TimeFrameUpdate(HistoricalStartGraph, HistoricalEndGraph);
-            
+
         mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartGraph, HistoricalEndGraph);
     }
 

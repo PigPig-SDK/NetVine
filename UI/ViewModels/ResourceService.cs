@@ -43,6 +43,8 @@ namespace UI.ViewModels
         private void OnLocalSnapshot(List<IProgramData> data)
         {
             OnSnapshot(SystemHistory.Instance.SystemName, data);
+            if(LiveViewModel.IsLive)
+                DataUpdated?.Invoke();
         }
         private void OnRemoteSnapshot(ProgramData[] data)
         {
@@ -81,7 +83,6 @@ namespace UI.ViewModels
             AddCapped(_ramHistories[device], ram);
             AddCapped(_diskHistories[device], disk);
             AddCapped(_networkHistories[device], network);
-            DataUpdated?.Invoke();
         }
 
         public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
@@ -90,7 +91,6 @@ namespace UI.ViewModels
             _historicalUsages = await DBArithmetic.PerUserTimeline(startDate, endDate);
             DataUpdated?.Invoke();
         }
-
 
         private void AddCapped<T>(List<T> list, T value)
         {
