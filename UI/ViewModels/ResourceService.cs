@@ -15,8 +15,6 @@ namespace UI.ViewModels
     public class ResourceService
     {
         public static readonly ResourceService Instance = new();
-
-        public double RAMTotal { get; private set; }
         public double CpuUsage { get; private set; }
         public double RamUsage { get; private set; }
         public double DiskUsage { get; private set; }
@@ -26,24 +24,21 @@ namespace UI.ViewModels
         private Dictionary<string, List<double>> _ramHistories = new();
         private Dictionary<string, List<double>> _diskHistories = new();
         private Dictionary<string, List<double>> _networkHistories = new();
-        private Dictionary<string, List<List<IProgramData>>> _snapshotHistories = new();
-        private Dictionary<string, (List<DateTime> timeStamps, List<double> cpuUsage, List<double> ramUsage, List<double> diskUsage, List<double> netUsage)> _networkUsages = new();
-        public string SelectedDevice => ChartService.Instance.SelectedDevice ?? SystemHistory.Instance.SystemName;
-        public List<List<IProgramData>> SnapshotHistory => _snapshotHistories.TryGetValue(SelectedDevice, out var h) ? h : new();
-        public List<IProgramData> LatestSnapshot { get; private set; } = new();
+        private Dictionary<string, List<List<IProgramData>>> _liveProcessData = new();
 
-        public event Action? DataUpdated;
+        private Dictionary<string, (List<DateTime> timeStamps, List<double> cpuUsage, List<double> ramUsage, List<double> diskUsage, List<double> netUsage)> _historicalUsages = new();
+        private Dictionary<string, (List<DateTime> timeStamps, List<List<IProgramData>> data)> _historicalProcessData = new();
 
         private int MaxHistory => ConfigManager.ReadSetting(SettingInt.MaxHistory) is int m && m > 0 ? m : 60;
 
         public event Action? DevicesChanged;
-        public event Action<string>? DeviceDisconnected;
+        public event Action? DataUpdated;
+
         private ResourceService()
         {
             ConnectedUserInfo.OnUserConnectionModified += OnUserConnectionModified;
             SystemHistory.Instance.OnSnapshotTaken += OnLocalSnapshot;
             NetworkDataManager.Instance.OnLiveDataRecieved += OnRemoteSnapshot;
-            RAMTotal = SystemHistory.Instance.GetTotalRam();
         }
         private void OnLocalSnapshot(List<IProgramData> data)
         {
@@ -63,10 +58,6 @@ namespace UI.ViewModels
 
         private void OnUserConnectionModified(string username, bool isAdded)
         {
-            if (!isAdded)
-            {
-                DeviceDisconnected?.Invoke(username);
-            }
             DevicesChanged?.Invoke();
         }
         internal void OnSnapshot(string device, List<IProgramData> data)
@@ -77,29 +68,26 @@ namespace UI.ViewModels
                 _ramHistories[device] = new();
                 _diskHistories[device] = new();
                 _networkHistories[device] = new();
-                _snapshotHistories[device] = new();
-
+                _liveProcessData[device] = new();
                 DevicesChanged?.Invoke();
             }
 
-            AddCapped(_snapshotHistories[device], data.ToList());
-
             var cpu = Math.Min(data.Sum(p => p.CpuUsage), 100);
-            
             var ram = data.Sum(p => p.MemoryUsage);
             var disk = data.Sum(p => p.DiskUsage);
             var network = data.Sum(p => p.NetworkUsage);
-
-            DataUpdated?.Invoke();
+            AddCapped(_liveProcessData[device], data.ToList());
             AddCapped(_cpuHistories[device], cpu);
             AddCapped(_ramHistories[device], ram);
             AddCapped(_diskHistories[device], disk);
             AddCapped(_networkHistories[device], network);
+            DataUpdated?.Invoke();
         }
-        
+
         public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
         {
-            _networkUsages = await DBArithmetic.PerUserTimeline(startDate, endDate);
+            _historicalProcessData = await DBArithmetic.BarGraphHistoricalProducer(startDate, endDate);
+            _historicalUsages = await DBArithmetic.PerUserTimeline(startDate, endDate);
             DataUpdated?.Invoke();
         }
 
@@ -110,7 +98,9 @@ namespace UI.ViewModels
             while (list.Count > MaxHistory)
                 list.RemoveAt(0);
         }
-
+        /// <summary>
+        /// Gets all live resource entries for the specified user and resource type;
+        /// </summary>
         public (List<double> data, string title) GetResourceForUser(ResourceTypes selectedResource, string user)
         {
             return ChartService.Instance.SelectedResource switch
@@ -122,10 +112,12 @@ namespace UI.ViewModels
                 _ => (data: new(), title: "Invalid")
             };
         }
-
+        /// <summary>
+        /// Gets all historical entries for the specified timestamp
+        /// </summary>
         public (List<double> data, List<DateTime> timeStamps, string title) GetDatedResourceForUser(ResourceTypes selectedResource, string user)
         {
-            var exists = _networkUsages.TryGetValue(user, out var u);
+            var exists = _historicalUsages.TryGetValue(user, out var u);
 
             return ChartService.Instance.SelectedResource switch
             {
@@ -135,6 +127,21 @@ namespace UI.ViewModels
                 ResourceTypes.Network => (exists ? u.netUsage : new(), exists ? u.timeStamps : new(), $"{user} Network History (MB/s)"),
                 _ => (new(), new(), "Invalid")
             };
+        }
+        /// <summary>
+        /// Get all live program entries for a specific
+        /// </summary>
+        public List<List<IProgramData>> GetProgramUsageForUser(string user)
+        {
+            return _liveProcessData.TryGetValue(user, out var data) ? data : new();
+        }
+        /// <summary>
+        /// Get all live program entries for a specific
+        /// </summary>
+        public (List<DateTime> timeStamps, List<List<IProgramData>>) GetDatedProgramUsageForUser(string user)
+        {
+            var exists = _historicalProcessData.TryGetValue(user, out var u);
+            return (exists ? u.timeStamps : new(), exists ? u.data : new());
         }
     }
 }

@@ -24,7 +24,7 @@ public class ChartService
         set { _selectedResource = value; ChartTypeChanged?.Invoke(); }
     }
 
-    private string _chartType = "Line";
+    private string _chartType = Line;
     public string ChartType
     {
         get => _chartType;
@@ -33,27 +33,5 @@ public class ChartService
             _chartType = value;
             ChartTypeChanged?.Invoke();
         }
-    }
-
-    private string? _selectedDevice = null;
-    public string? SelectedDevice
-    {
-        get => _selectedDevice;
-        set
-        {
-            _selectedDevice = value;
-            ChartTypeChanged?.Invoke();
-        }
-    }
-    private ChartService()
-    {
-        FolderViewData.OnSelectionUpdated += OnSelectionUpdated;
-    }
-    private void OnSelectionUpdated()
-    {
-        var selected = FolderViewData.UserMapping.Values
-            .FirstOrDefault(u => u.IsSelected && u.IsOnline);
-
-        SelectedDevice = selected?.Username ?? Environment.MachineName;
     }
 }

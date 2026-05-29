@@ -139,6 +139,33 @@ public static class DBArithmetic
         
     }
 
+    public static async Task<Dictionary<string, (List<DateTime> timeStamps, List<List<IProgramData>> data)>> BarGraphHistoricalProducer(DateTime? date1, DateTime? date2)
+    {
+        return await Task.Run(() =>
+        {
+            using (var db = new DBInteract())
+            {
+                return db.ProgramDataTable
+                    .Where(x => (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value))
+                    .AsEnumerable()
+                    .GroupBy(x => x.SystemName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g =>
+                        {
+                            var byDate = g.GroupBy(x => x.Date)
+                                          .OrderBy(x => x.Key)
+                                          .ToList();
+                            return (
+                                timeStamps: byDate.Select(d => d.Key).ToList(),
+                                data: byDate.Select(d => d.Cast<IProgramData>().ToList()).ToList()
+                            );
+                        }
+                    );
+            }
+        });
+    }
+
     /// <returns> Username, List of programs resources in tuple</returns>
     public static async Task<Dictionary<string, (List<DateTime>timeStamps, List<double> cpuUsage, List<double> ramUsage, List<double> diskUsage, List<double> netUsage)>>
         PerUserTimeline(DateTime? date1, DateTime? date2)

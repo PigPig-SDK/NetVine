@@ -111,7 +111,7 @@ public partial class Canvas : UserControl
 
     private void UpdateMenu()
     {
-        if(ChartService.Instance.ChartType == "Pie")
+        if(ChartService.Instance.ChartType == ChartService.Pie)
         {
             SetMenuForPieChart();
             return;
@@ -157,9 +157,9 @@ public partial class Canvas : UserControl
 
             switch (ChartService.Instance.ChartType)
             {
-                case "Line": DrawLineChart(); break;
-                case "Bar": DrawBarChart(); break;
-                case "Pie": DrawPieChart(); break;
+                case ChartService.Line: DrawLineChart(); break;
+                case ChartService.Bar: DrawBarChart(); break;
+                case ChartService.Pie: DrawPieChart(); break;
             }
 
             if (!_followFlag &&  _boundsSaved != null)
@@ -169,18 +169,14 @@ public partial class Canvas : UserControl
         });
     }
 
+    #region LineChart
     private void DrawLineChart()
     {
         if(LiveViewModel.IsLive)
-        {
             DrawLiveLineChart();
-        }
         else
-        {
             DrawHistoryLineChart();
-        }
     }
-
     private void DrawHistoryLineChart()
     {
         SetGrid();
@@ -239,12 +235,23 @@ public partial class Canvas : UserControl
         CanvasPlot.Plot.Axes.SetLimitsX(0, historyMax);
         SetLimits();
     }
+    #endregion
+
+    #region BarChart
 
     private void DrawBarChart()
     {
         SetGrid();
-        var data = LiveViewModel.IsLive ? ResourceService.Instance.SnapshotHistory : ResourceService.Instance.SnapshotHistory;
+
         
+        foreach (var user in FolderViewData.SelectedUsersWithIndex().ToArray())
+        {
+            var history = ResourceService.Instance.GetResourceForUser(ChartService.Instance.SelectedResource, user.name);
+            if (history.data.Count == 0) continue;
+            histories.Add((history.data.ToArray(), (history.title, user.index)));
+            historyMax = (int)MathF.Max(history.data.Count, historyMax);
+        }
+
         if (data.Count == 0) return;
 
         _barTooltipData.Clear();
@@ -302,6 +309,8 @@ public partial class Canvas : UserControl
         CanvasPlot.Plot.Axes.SetLimitsX(-0.5, data.Count + 0.5);
         SetLimits();
     }
+    #endregion
+    #region PieChart
     private void DrawPieChart() {
 
         _followFlag = true;
@@ -342,6 +351,7 @@ public partial class Canvas : UserControl
         CanvasPlot.Plot.Axes.SetLimits(-1.5, 1.5, -1.5, 1.5);
         CanvasPlot.Refresh();
     }
+    #endregion
     private float GetValue(IProgramData p) => ChartService.Instance.SelectedResource switch
     {
         ResourceTypes.CPU => p.CpuUsage,
