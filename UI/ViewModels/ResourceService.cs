@@ -33,6 +33,10 @@ namespace UI.ViewModels
 
         public event Action? DevicesChanged;
         public event Action? DataUpdated;
+        /// <summary>
+        /// True : Loading, False : Not loading.
+        /// </summary>
+        public event Action<bool>? LoadingStatusChanged;
 
         private ResourceService()
         {
@@ -87,8 +91,10 @@ namespace UI.ViewModels
 
         public async void TimeFrameUpdate(DateTime? startDate, DateTime? endDate)
         {
+            LoadingStatusChanged?.Invoke(true);
             _historicalProcessData = await DBArithmetic.BarGraphHistoricalProducer(startDate, endDate);
             _historicalUsages = await DBArithmetic.PerUserTimeline(startDate, endDate);
+            LoadingStatusChanged?.Invoke(false);
             DataUpdated?.Invoke();
         }
 

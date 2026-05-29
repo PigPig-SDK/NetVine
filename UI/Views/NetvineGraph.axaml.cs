@@ -28,6 +28,7 @@ public partial class NetvineGraph : UserControl
     private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
     private bool _timeSelected = false;
     private bool _showPlaceholder;
+    private bool _isLoading = false;
     public bool ShowPlaceholder
     {
         get => _showPlaceholder;
@@ -66,11 +67,14 @@ public partial class NetvineGraph : UserControl
         CanvasPlot.PointerExited += OnPointerExited;
         ChartService.Instance.ChartTypeChanged += UpdateChartType;
         ResourceService.Instance.DataUpdated += UpdateChart;
+        ResourceService.Instance.LoadingStatusChanged += LoadingStatusChanged;
         MainWindowViewModel.OnTabChanged += UpdateGraphTimeFrame;
         LiveViewModel.ViewChangedEvent += LiveViewChanged;
         FolderViewData.OnSelectionUpdated += SelectionUpdated;
+        MainWindowViewModel.OnAnimateFrame += AnimationFrame;
         DrawChart();//Force update.
         LiveViewChanged(LiveViewModel.IsLive);//Force update of live/historical view.
+        SetCombinationLock(true);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -82,10 +86,24 @@ public partial class NetvineGraph : UserControl
         MainWindowViewModel.OnTabChanged -= UpdateGraphTimeFrame;
         LiveViewModel.ViewChangedEvent -= LiveViewChanged;
         FolderViewData.OnSelectionUpdated -= SelectionUpdated;
-
+        MainWindowViewModel.OnAnimateFrame -= AnimationFrame;
+        ResourceService.Instance.LoadingStatusChanged -= LoadingStatusChanged;
+        SetCombinationLock(false);
         base.OnDetachedFromVisualTree(e);
     }
 
+    private void LoadingStatusChanged(bool isLoading)
+    {
+        _isLoading = isLoading;
+        LoadingBar.IsVisible = isLoading;
+    }
+
+    private void AnimationFrame(double time)
+    {
+        if (!_isLoading) return;//Only animate when loading to save resources.
+
+        LoadingCircle.StrokeDashOffset = (time * 8) + MathF.Sin((float)time*2)*10;
+    }
     private void SelectionUpdated()
     {
         UpdateChart();
@@ -340,7 +358,7 @@ public partial class NetvineGraph : UserControl
             _barTooltipData[i] = segmentData;
         }
 
-        CanvasPlot.Plot.Axes.SetLimitsX(-0.5, historyMax + 0.5);
+        CanvasPlot.Plot.Axes.AutoScaleX();
         SetLimits();
     }
     private static DateTime FloorToMinute(DateTime dt, int minutes = 1)
@@ -408,10 +426,7 @@ public partial class NetvineGraph : UserControl
         }
 
         CanvasPlot.Plot.Axes.Bottom.IsVisible = false;
-        CanvasPlot.Plot.Axes.SetLimitsX(
-            bucketKeys.First().ToOADate() - 0.5,
-            bucketKeys.Last().ToOADate() + 0.5
-        );
+        CanvasPlot.Plot.Axes.AutoScaleX();
         SetLimits();
     }
     #endregion
@@ -600,10 +615,18 @@ public partial class NetvineGraph : UserControl
 
     private void UpdateGraphTimeFrame(int x)
     {
-        (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow
-            .FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartGraph, HistoricalEndGraph);
+        var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (mainWindow == null) return;
+        mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartGraph, HistoricalEndGraph);
     }
-
+    private void SetCombinationLock(bool isLocked)
+    {
+        var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if(mainWindow is null) return;
+        var folderview = mainWindow.FindControl<FolderView>("FolderView");
+        if (folderview is null) return;
+        folderview.CombinationBox.IsLocked = isLocked;
+    }
     private void SetGrid()
     {
         CanvasPlot.Plot.Grid.IsVisible = true;
