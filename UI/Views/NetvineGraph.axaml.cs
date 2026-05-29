@@ -12,7 +12,7 @@ using UI.Views;
 
 namespace UI;
 
-public partial class Canvas : UserControl
+public partial class NetvineGraph : UserControl
 {
     private ScottPlot.Plottables.Annotation? _tooltip;
     private Dictionary<int, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
@@ -39,7 +39,7 @@ public partial class Canvas : UserControl
         }
     }
 
-    public Canvas()
+    public NetvineGraph()
     {
         InitializeComponent();
         LiveViewChanged(LiveViewModel.IsLive);
