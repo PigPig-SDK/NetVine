@@ -55,13 +55,14 @@ public class SystemTracker
     public List<IProgramData>? GetAverage()
     {
         if (History.Count == 0) return null;
-
+        DateTime now = DateTime.Now;
         Dictionary<string, (IProgramData data, float sum)> programs = [];
         
         foreach (List<IProgramData> snapshot in History)
         {
             foreach (IProgramData data in snapshot)
             {
+                data.Date = now;//Set the date to now for all data, because we are averaging it and the date is no longer relevant.
                 if (!programs.ContainsKey(data.ProcessName))
                 {
                     //Place initial program
