@@ -43,7 +43,17 @@ namespace UI.ViewModels
             ConnectedUserInfo.OnUserConnectionModified += OnUserConnectionModified;
             SystemHistory.Instance.OnSnapshotTaken += OnLocalSnapshot;
             NetworkDataManager.Instance.OnLiveDataRecieved += OnRemoteSnapshot;
+            SystemHistory.Instance.OnSnapshotTakenTotal += TotalSnapshotData;
         }
+
+        private void TotalSnapshotData(IProgramData total, int count)
+        {
+                CpuUsage = total.CpuUsage;
+                RamUsage = total.MemoryUsage;
+                DiskUsage = total.DiskUsage;
+                NetworkUsage = total.NetworkUsage;
+        }
+
         private void OnLocalSnapshot(List<IProgramData> data)
         {
             OnSnapshot(SystemHistory.Instance.SystemName, data);
