@@ -1,28 +1,36 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Core;
 using Infrastructure;
+using Infrastructure.Notifications;
 using ScottPlot;
+using ScottPlot.Plottables;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UI.ViewModels;
 using UI.Views;
+
 
 namespace UI;
 
 public partial class NetvineGraph : UserControl
 {
-    private ScottPlot.Plottables.Annotation? _tooltip;
-    private Dictionary<double, List<(string name, double yBase, double yTop)>> _barTooltipData = new();
+    public ObservableCollection<GraphLedgendEntry> LogEntries { get; } = new();
+    private Dictionary<double, List<(string name, string programName, double yBase, double yTop)>> _barTooltipData = new();
     private bool _followFlag = true;
     private bool _dragFlag = false;
     private AxisLimits? _boundsSaved;
     private DateTime? HistoricalStartGraph = null;
     private DateTime? HistoricalEndGraph = null;
-    private readonly Dictionary<string, Color> _processColors = new();
-    private readonly ScottPlot.Palettes.Category20 _palette = new();
+    private readonly Dictionary<string, ScottPlot.Color> _processColors = new();
+    private readonly PastelPalette _palette = new();
     private int _colorIndex = 0;
     public int GraphYMargin { get; set; } = 10;
     private int TopCount => ConfigManager.ReadSetting(SettingInt.TopCount) is int t && t > 0 ? t : 10;
@@ -46,6 +54,7 @@ public partial class NetvineGraph : UserControl
         LiveViewChanged(LiveViewModel.IsLive);
         SetColors();
         SetMenuForGraphs();
+        DataContext = this;
         CanvasPlot.PointerWheelChanged += (_, e) => { _followFlag = false; };
         CanvasPlot.PointerPressed += (_, e) => {_dragFlag = true;};
         CanvasPlot.PointerReleased += (_, e) => {_dragFlag = false;};
@@ -57,6 +66,7 @@ public partial class NetvineGraph : UserControl
         CanvasPlot.Plot.Axes.SquareUnits(false);
         CanvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
         CanvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
+        CanvasPlot.Plot.HideLegend();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -173,9 +183,10 @@ public partial class NetvineGraph : UserControl
         {
             RemoveTooltip();
             _boundsSaved = CanvasPlot.Plot.Axes.GetLimits();
-            
+            CanvasPlot.Plot.Axes.SquareUnits(false);
             CanvasPlot.Plot.Clear();
             CanvasPlot.Plot.Axes.Left.IsVisible = true;
+            CanvasPlot.Plot.Grid.IsVisible = true;
 
             switch (ChartService.Instance.ChartType)
             {
@@ -211,7 +222,7 @@ public partial class NetvineGraph : UserControl
     private void DrawHistoryLineChart()
     {
         SetGrid();
-
+        LogEntries.Clear();
         var users = FolderViewData.SelectedUsersWithIndex().ToArray();FolderViewData.SelectedUsersWithIndex().ToArray();
 
         foreach (var user in users)
@@ -246,15 +257,16 @@ public partial class NetvineGraph : UserControl
             scatter.LegendText = history.title;
             scatter.Color = _palette.GetColor(user.index);
             scatter.MarkerSize = 0;
+            LogEntries.Add(new GraphLedgendEntry() { Title = scatter.LegendText, Color = new SolidColorBrush(new Avalonia.Media.Color(scatter.Color.Alpha, scatter.Color.R, scatter.Color.G, scatter.Color.B)) });
         }
         CanvasPlot.Plot.Axes.AutoScaleX();
-        CanvasPlot.Plot.ShowLegend();
         SetLimits();
     }
 
     private void DrawLiveLineChart()
     {
         SetGrid();
+        LogEntries.Clear();
         int historyMax = 0;
 
         // First pass - find the true max length
@@ -280,9 +292,8 @@ public partial class NetvineGraph : UserControl
             var signal = CanvasPlot.Plot.Add.Signal(padded);
             signal.LegendText = displayData.title;
             signal.Color = _palette.GetColor(displayData.index);
+            LogEntries.Add(new GraphLedgendEntry() { Title = signal.LegendText, Color = new SolidColorBrush(new Avalonia.Media.Color(signal.Color.Alpha, signal.Color.R, signal.Color.G, signal.Color.B)) });
         }
-
-        CanvasPlot.Plot.ShowLegend();
         CanvasPlot.Plot.Axes.SetLimitsX(0, historyMax);
         SetLimits();
     }
@@ -291,7 +302,8 @@ public partial class NetvineGraph : UserControl
     #region BarChart
     private void DrawBarChart()
     {
-        if(LiveViewModel.IsLive)
+        LogEntries.Clear();
+        if (LiveViewModel.IsLive)
             DrawBarChartLive();
         else
             DrawBarChartHistorical();
@@ -329,16 +341,16 @@ public partial class NetvineGraph : UserControl
 
             var topPrograms = mergedPool[i]
                 .GroupBy(x => $"{x.data.ProcessName} ({x.user})")
-                .OrderByDescending(g => g.Sum(x => GetValue(x.data)))
+                .OrderByDescending(g => g.Sum(x => GetActiveResourceValue(x.data)))
                 .Take(TopCount)
                 .ToList();
 
             double cumulative = 0;
-            var segmentData = new List<(string name, double yBase, double yTop)>();
+            var segmentData = new List<(string name, string, double yBase, double yTop)>();
 
             foreach (var group in topPrograms)
             {
-                double value = group.Sum(x => GetValue(x.data));
+                double value = group.Sum(x => GetActiveResourceValue(x.data));
                 if (!_processColors.ContainsKey(group.Key))
                     _processColors[group.Key] = _palette.GetColor(_colorIndex++);
 
@@ -351,7 +363,7 @@ public partial class NetvineGraph : UserControl
                     LineColor = ScottPlot.Colors.Transparent,
                 });
 
-                segmentData.Add((group.Key, cumulative, cumulative + value));
+                segmentData.Add((group.Key, group.FirstOrDefault().data.ProcessName, cumulative, cumulative + value));
                 cumulative += value;
             }
 
@@ -374,14 +386,11 @@ public partial class NetvineGraph : UserControl
 
         // Collect all data bucketed by minute
         var allEntries = users
-            .Where(user => ResourceService.Instance.GetDatedProgramUsageForUser(user.name).timeStamps.Count > 0)
-            .SelectMany(user =>
-            {
-                var history = ResourceService.Instance.GetDatedProgramUsageForUser(user.name);
-                return history.timeStamps
-                    .Zip(history.Item2, (ts, slot) => (slot, ts))
-                    .SelectMany(x => x.slot.Select(p => (data: p.DeepCopy(), user: user.name, bucket: FloorToMinute(x.ts))));
-            })
+            .Select(user => (user, history: ResourceService.Instance.GetDatedProgramUsageForUser(user.name)))
+            .Where(x => x.history.timeStamps.Count > 0)
+            .SelectMany(x => x.history.timeStamps
+                .Zip(x.history.data, (ts, slot) => (slot, ts))
+                .SelectMany(z => z.slot.Select(p => (data: p.DeepCopy(), user: x.user.name, bucket: FloorToMinute(z.ts)))))
             .GroupBy(x => x.bucket)
             .OrderBy(g => g.Key)
             .ToList();
@@ -394,17 +403,17 @@ public partial class NetvineGraph : UserControl
                 .GroupBy(x => x.user)
                 .SelectMany(userGroup => userGroup
                     .GroupBy(x => $"{x.data.ProcessName} ({x.user})")
-                    .OrderByDescending(g => g.Average(x => GetValue(x.data)))
+                    .OrderByDescending(g => g.Average(x => GetActiveResourceValue(x.data)))
                     .Take(TopCount)) 
-                .OrderByDescending(g => g.Average(x => GetValue(x.data)))
+                .OrderByDescending(g => g.Average(x => GetActiveResourceValue(x.data)))
                 .ToList();
 
             double cumulative = 0;
-            var segmentData = new List<(string name, double yBase, double yTop)>();
+            var segmentData = new List<(string name, string programName, double yBase, double yTop)>();
 
             foreach (var group in topPrograms)
             {
-                double value = group.Average(x => GetValue(x.data));
+                double value = group.Average(x => GetActiveResourceValue(x.data));
                 if (!_processColors.ContainsKey(group.Key))
                     _processColors[group.Key] = _palette.GetColor(_colorIndex++);
 
@@ -418,7 +427,7 @@ public partial class NetvineGraph : UserControl
                     Size = TimeSpan.FromMinutes(0.8).TotalDays // fixed width in OA date units
                 });
 
-                segmentData.Add((group.Key, cumulative, cumulative + value));
+                segmentData.Add((group.Key,group.FirstOrDefault().data.ProcessName, cumulative, cumulative + value));
                 cumulative += value;
             }
 
@@ -432,46 +441,42 @@ public partial class NetvineGraph : UserControl
     #endregion
     #region PieChart
     private void DrawPieChart() {
-        return;
-
+        LogEntries.Clear();
         _followFlag = true;
-        CanvasPlot.Plot.Axes.SquareUnits(true);
-        CanvasPlot.Plot.Grid.IsVisible = false;
-        CanvasPlot.Plot.Axes.Bottom.TickLabelStyle.IsVisible = false;
-        CanvasPlot.Plot.Axes.Left.TickLabelStyle.IsVisible = false;
         CanvasPlot.Plot.Axes.Left.IsVisible =  false;
-
-        CanvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 0;
-        CanvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 0;
-
-        CanvasPlot.Plot.Axes.AutoScale();
+        CanvasPlot.Plot.Grid.IsVisible = false;
 
         var pietop = GetTopProcesses();
         if (pietop.Count == 0) return;
 
-        double[] values = pietop.Select(p => (double)GetValue(p)).ToArray();
+        double[] values = pietop.Select(p => (double)GetActiveResourceValue(p)).ToArray();
 
-        var pie = CanvasPlot!.Plot.Add.Pie(values);
+        var pie = CanvasPlot.Plot.Add.Pie(values);
 
         for (int i = 0; i < pietop.Count; i++)
         {
             pie.Slices[i].FillColor = _palette.GetColor(i);
             pie.Slices[i].Label = "";
-            pie.Slices[i].LegendText = $"{pietop[i].ProcessName} ({GetValue(pietop[i]):0.0})";
+            LogEntries.Add(new GraphLedgendEntry() { Title = $"{pietop[i].ProcessName} ({GetActiveResourceValue(pietop[i]):0.0})", 
+                Color = new SolidColorBrush(
+                    new Avalonia.Media.Color
+                    (pie.Slices[i].FillColor.Alpha, 
+                    pie.Slices[i].FillColor.R, 
+                    pie.Slices[i].FillColor.G, 
+                    pie.Slices[i].FillColor.B)) 
+            });
         }
 
         pie.LineColor = ScottPlot.Colors.White;
         pie.LineWidth = 2;
         pie.DonutFraction = 0.25;
 
-
-        CanvasPlot.Plot.ShowLegend();
         CanvasPlot.Plot.Axes.AutoScale();
-        CanvasPlot.Plot.Axes.SetLimits(-1.5, 1.5, -1.5, 1.5);
-        CanvasPlot.Refresh();
+        float offset = -0.65f;
+        CanvasPlot.Plot.Axes.SetLimits(-1.5 + offset, 1.5 + offset, -1.5, 1.5);
     }
     #endregion
-    private float GetValue(IProgramData p) => ChartService.Instance.SelectedResource switch
+    private float GetActiveResourceValue(IProgramData p) => ChartService.Instance.SelectedResource switch
     {
         ResourceTypes.CPU => p.CpuUsage,
         ResourceTypes.RAM => p.MemoryUsage,
@@ -482,13 +487,44 @@ public partial class NetvineGraph : UserControl
 
     private List<IProgramData> GetTopProcesses()
     {
-        return new();
+        List<IProgramData> output = new();
+        var users = FolderViewData.SelectedUsersWithIndex().ToArray(); FolderViewData.SelectedUsersWithIndex().ToArray();
+        List<List<IProgramData>> history;
 
-        //return ResourceService.Instance.LatestSnapshot
-        //    .OrderByDescending(p => GetValue(p))
-        //    .Take(TopCount)
-        //    .Where(p => GetValue(p) > 0) 
-        //    .ToList();
+
+        foreach (var user in users)
+        {
+            if (LiveViewModel.IsLive)
+                history = ResourceService.Instance.GetProgramUsageForUser(user.name);
+            else
+                history = ResourceService.Instance.GetDatedProgramUsageForUser(user.name).data;
+
+            if (history.Count == 0) continue;
+            IEnumerable<IProgramData> topValues;
+
+            if(LiveViewModel.IsLive)
+                topValues = history.Last().OrderByDescending(x => GetActiveResourceValue(x)).Take(TopCount);//Top N from latest probe
+            else
+            {
+                //Get top N averaged over the entire timeframe to get a more accurate representation of usage.
+                topValues = history
+                    .SelectMany(slot => slot)
+                    .GroupBy(x => x.ProcessName)
+                    .Select(g =>
+                    {
+                        var copy = g.First().DeepCopy();
+                        copy.CpuUsage = (float)g.Average(x => x.CpuUsage);
+                        copy.MemoryUsage = (float)g.Average(x => x.MemoryUsage);
+                        copy.DiskUsage = (float)g.Average(x => x.DiskUsage);
+                        copy.NetworkUsage = (float)g.Average(x => x.NetworkUsage);
+                        return copy;
+                    })
+                    .OrderByDescending(x => GetActiveResourceValue(x))
+                    .Take(TopCount);
+            }
+            output.AddRange(topValues);
+        }
+        return output;
     }
 
     private void OnPointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
@@ -499,7 +535,7 @@ public partial class NetvineGraph : UserControl
         var pos = e.GetPosition(CanvasPlot);
         var dataCoords = CanvasPlot.Plot.GetCoordinates((float)pos.X, (float)pos.Y);
 
-        List<(string name, double yBase, double yTop)>? segments = null;
+        List<(string name, string processname, double yBase, double yTop)>? segments = null;
 
         if (!LiveViewModel.IsLive)
         {
@@ -536,12 +572,10 @@ public partial class NetvineGraph : UserControl
 
         double val = hovered.yTop - hovered.yBase;
         string text = $"{hovered.name}\n{val:0.0} {ActiveUnit()}";
+        _ = LoadIconAsync(hovered.processname);
         RemoveTooltip();
-        _tooltip = CanvasPlot.Plot.Add.Annotation(text, Alignment.UpperLeft);
-        _tooltip.LabelFontColor = ScottPlot.Colors.White;
-        _tooltip.LabelBorderColor = ScottPlot.Colors.White;
-        _tooltip.LabelBorderWidth = 1;
-        CanvasPlot.Refresh();
+        KeyTopLeftName.Content = text;
+        KeyTopLeft.IsVisible = true;
     }
 
     public string ActiveUnit()
@@ -569,9 +603,7 @@ public partial class NetvineGraph : UserControl
 
     private void RemoveTooltip()
     {
-        if (_tooltip is null || CanvasPlot is null) return;
-        CanvasPlot.Plot.Remove(_tooltip);
-        _tooltip = null;
+        KeyTopLeft.IsVisible = false;
     }
 
     private void SetLimits()
@@ -635,5 +667,43 @@ public partial class NetvineGraph : UserControl
         CanvasPlot.Plot.Axes.Bottom.MajorTickStyle.Length = 2;
         CanvasPlot.Plot.Axes.Left.MajorTickStyle.Length = 2;
     }
+    private async Task LoadIconAsync(string appName)
+    {
+        Bitmap? bitmap = await Task.Run(() =>
+        {
+            using var db = new DBInteract();
+            bool useDefaultIcon = false;
+            MemoryStream? ms;
+            if (db.HasIcon(appName))
+            {
+                CachedIcon? data = db.GetIconData(appName);
+                if (data is null) return null;
+                useDefaultIcon = data.IconFileType == IconFileType.None;//Has no icon.
+                ms = new(data.IconData);
+            }
+            else//Get live icon if possible...
+                ms = SystemHistory.Instance.GetIcon(appName).image;
 
+            if (useDefaultIcon)
+            {
+                return TableViewModel.UnknownIcon;
+            }
+            else
+            {
+                if (ms is null) return null;
+
+                ms.Position = 0;
+                var bitmap = new Bitmap(ms);
+                ms.Dispose();
+                return bitmap;
+            }
+        });
+
+        if (bitmap is null) return;
+
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            KeyTopLeftPicture.Source = bitmap;
+        });
+    }
 }

@@ -146,7 +146,7 @@ namespace UI.ViewModels
         /// <summary>
         /// Get all live program entries for a specific
         /// </summary>
-        public (List<DateTime> timeStamps, List<List<IProgramData>>) GetDatedProgramUsageForUser(string user)
+        public (List<DateTime> timeStamps, List<List<IProgramData>> data) GetDatedProgramUsageForUser(string user)
         {
             var exists = _historicalProcessData.TryGetValue(user, out var u);
             return (exists ? u.timeStamps : new(), exists ? u.data : new());

@@ -2,11 +2,63 @@
              xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:UI"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UI.NetvineGraph">
+             xmlns:conv="clr-namespace:UI"
+             x:Class="UI.NetvineGraph"
+             x:DataType="local:NetvineGraph">
             <Grid>
                 <ScottPlot:AvaPlot x:Name="CanvasPlot"/>
+                <Border x:Name="OverrideLedgend" Background="#99222228"
+                        IsVisible="{Binding LogEntries.Count, Converter={x:Static conv:CountToBoolConverter.Instance}}"
+                        Margin="70,10,0,0"
+                        BorderThickness="0"
+                        CornerRadius="16"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        IsHitTestVisible="False"
+                        Padding="5">
+                    <ListBox ItemsSource="{Binding LogEntries}"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                                <Setter Property="Background" Value="transparent"/>
+                            </Style>
+                            <Style Selector="ListBoxItem:selected /template/ Border">
+                                <Setter Property="Background" Value="transparent"/>
+                            </Style>
+                        </ListBox.Styles>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,Auto,*">
+                                    <Ellipse Grid.Column="1" Width="15" StrokeThickness="2"
+                                            HorizontalAlignment="Left"
+                                            Height="15" Margin="5"
+                                            Fill="{Binding Color}"/>
+                                    <TextBlock Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                               Text="{Binding Title}"
+                                               TextWrapping="NoWrap"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+                <Border x:Name="KeyTopLeft" Background="#99222228"
+                        Margin="70,10,0,0"
+                        BorderThickness="0"
+                        CornerRadius="16"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        IsHitTestVisible="False"
+                        Padding="5">
+                        <StackPanel Orientation="Horizontal">
+                            <Image x:Name="KeyTopLeftPicture" Height="24" Width="24" IsHitTestVisible="False"/>
+                            <Label x:Name="KeyTopLeftName" IsHitTestVisible="False"></Label>
+                        </StackPanel>
+                </Border>
                 <Grid HorizontalAlignment="Center" IsVisible="False" VerticalAlignment="Center" x:Name="LoadingBar">
                     <Ellipse Width="128" Height="128" StrokeThickness="10"
                              HorizontalAlignment="Center"
