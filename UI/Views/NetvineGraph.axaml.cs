@@ -457,7 +457,7 @@ public partial class NetvineGraph : UserControl
         {
             pie.Slices[i].FillColor = _palette.GetColor(i);
             pie.Slices[i].Label = "";
-            LogEntries.Add(new GraphLedgendEntry() { Title = $"{pietop[i].ProcessName} ({GetActiveResourceValue(pietop[i]):0.0})", 
+            LogEntries.Add(new GraphLedgendEntry() { Title = $"{pietop[i].ProcessName} ({GetActiveResourceValue(pietop[i]):0.0} {ActiveUnit()})", 
                 Color = new SolidColorBrush(
                     new Avalonia.Media.Color
                     (pie.Slices[i].FillColor.Alpha, 
@@ -608,7 +608,11 @@ public partial class NetvineGraph : UserControl
 
     private void SetLimits()
     {
-        if (ChartService.Instance.SelectedResource == ResourceTypes.CPU)
+        if (ChartService.Instance.SelectedResource == ResourceTypes.RAM)
+        {
+            CanvasPlot.Plot.Axes.SetLimitsY(0, SystemHistory.Instance.GetTotalRam());
+        }
+        else if (ChartService.Instance.SelectedResource == ResourceTypes.CPU)
         {
             CanvasPlot.Plot.Axes.SetLimitsY(0 - GraphYMargin, 100 + GraphYMargin);
         }

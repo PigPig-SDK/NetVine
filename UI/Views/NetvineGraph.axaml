@@ -17,7 +17,6 @@
                         CornerRadius="16"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
-                        IsHitTestVisible="False"
                         Padding="5">
                     <ListBox ItemsSource="{Binding LogEntries}"
                              Background="Transparent"
