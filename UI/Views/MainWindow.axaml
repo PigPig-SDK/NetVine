@@ -160,11 +160,25 @@
             </Grid>
 
             <!-- Canvas -->
+            <Rectangle Grid.Column="2" HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Bottom"
+                        IsHitTestVisible="False"
+                        Height="25">
+                <Rectangle.Fill>
+                    <VisualBrush TileMode="Tile"
+                                    SourceRect="0,0,48,25"
+                                    DestinationRect="0,0,48,25">
+                        <VisualBrush.Visual>
+                            <Image Source="/Assets/gradient.png" Width="48" Height="25" IsHitTestVisible="False"/>
+                        </VisualBrush.Visual>
+                    </VisualBrush>
+                </Rectangle.Fill>
+            </Rectangle>
             <TabControl Grid.Column="2" x:Name="CanvasTabControl" SelectionChanged="OnTabChanged" Padding="0">
                 <TabItem Header="GraphView" Classes="hiddenTab">
                     <Grid ColumnDefinitions="200, *">
                         <views:ComponentView VerticalAlignment="Center" Height="260" Margin="10"  Grid.Column="0"/>
-                        <views:Canvas Grid.Column="1"/>
+                        <views:NetvineGraph Grid.Column="1"/>
                     </Grid>
                 </TabItem>
                 <TabItem Header="TableView" Classes="hiddenTab">

@@ -134,6 +134,11 @@ public static class UiSettings
                 20,
                 0,
                 "graph", "chart", "process", "pie", "bar"),
+
+            new SettingInputCheckbox("Use 'Vivid' graph colors",
+                "Makes graph colors more aggressively contrasted",
+                SettingInt.UseVividGraphColors,
+                "graph", "chart", "process", "pie", "bar", "line"),
         ]),
         new SettingGroup("Notifications", [
 

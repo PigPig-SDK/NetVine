@@ -22,7 +22,6 @@ public partial class FolderView : UserControl
         DetachedFromLogicalTree += OnLeaveScope;
         SetDateRange(null, null);
         CombinationBox.IsChecked = false;
-        CombinationBox.IsLocked = true;
         UpdateUsers();
     }
 
@@ -99,14 +98,12 @@ public partial class FolderView : UserControl
     private void LiveViewChecked()
     {
         LiveViewModel.IsLive = true;
-        CombinationBox.IsLocked = true;
         NetworkDataManager.Instance.HostSendLivePayload(true);
     }
 
     private void LiveViewUnchecked()
     {
         LiveViewModel.IsLive = false;
-        CombinationBox.IsLocked = false;
         NetworkDataManager.Instance.HostSendLivePayload(false);
     }
 

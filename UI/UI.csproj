@@ -43,6 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\NetvineGraph.axaml.cs">
+      <DependentUpon>NetvineGraph.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\TableView.axaml.cs">
       <DependentUpon>TableView.axaml</DependentUpon>
     </Compile>
