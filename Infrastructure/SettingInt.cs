@@ -24,4 +24,5 @@ public enum SettingInt
     UseNotifications,
     UsePythonScripting,
     NotificationTimeMS,
+    UseVividGraphColors,
 };
