@@ -36,6 +36,7 @@ public static class Netvine
         //Notification Tracker setup last. Timings are not important
         NotificationTracker.Setup();
 
+        DbCatchup.SetupInstance();
 
         PythonScriptLoader.Setup();
 
@@ -49,6 +50,8 @@ public static class Netvine
         NotificationManager.TrySaveToFile();
 
         NetworkManager.Instance.Disconnect();
+
+        DbCatchup.OnShutdown();
 
         ApiTracker.Shutdown();
 
