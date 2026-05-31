@@ -80,27 +80,28 @@ public static class UiSettings
                 SettingInt.AllowHostManipulation,
                 "network", "usage", "host", "manipulation", "close"),
         ]),
-        new SettingGroup ("Database Storage", [
+        new SettingGroup ("Collection", [
 
-            new SettingInputCheckbox("Track CPU usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackCPUUsage,
-                "cpu", "usage", "db", "database"),
+            ///UNUSED!!!
+            //new SettingInputCheckbox("Track CPU usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackCPUUsage,
+            //    "cpu", "usage", "db", "database"),
 
-            new SettingInputCheckbox("Track memory usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackMemoryUsage,
-                "ram", "usage", "db", "database"),
+            //new SettingInputCheckbox("Track memory usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackMemoryUsage,
+            //    "ram", "usage", "db", "database"),
 
-            new SettingInputCheckbox("Track network usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackNetworkUsage,
-                "network", "usage", "db", "database"),
+            //new SettingInputCheckbox("Track network usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackNetworkUsage,
+            //    "network", "usage", "db", "database"),
 
-            new SettingInputCheckbox("Track disk usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackDiskUsage,
-                "disk", "usage", "db", "database"),
+            //new SettingInputCheckbox("Track disk usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackDiskUsage,
+            //    "disk", "usage", "db", "database"),
 
             new SettingInputField<SettingFloat>("Database save interval",
                 "[In Seconds] How often the application will write to your database.",
