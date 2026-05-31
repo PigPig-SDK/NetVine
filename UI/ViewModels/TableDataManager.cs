@@ -84,8 +84,16 @@ namespace UI.ViewModels
         {
             Debug.Log($"UpdateHistoricalData called with {data.Count} items");
 
-            var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
-            var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
+            //var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
+            //var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
+            var existing = TableRows
+                .GroupBy(x => (x.SystemName, x.AppName))
+                .ToDictionary(g => g.Key, g => g.Last());
+
+
+            var incoming = data
+                .GroupBy(x => (x.SystemName, x.ProcessName))
+                .ToDictionary(g => g.Key, g => g.Last());
 
             foreach (var item in data)
             {
