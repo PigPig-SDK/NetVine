@@ -5,4 +5,7 @@ public enum SettingString
 {
     HostIP,
     HostPassword,
+    ApiNotification,
+    ApiSnapshot,
+    ApiDataBaseSnapshot,
 };

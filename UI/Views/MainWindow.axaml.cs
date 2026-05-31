@@ -105,6 +105,9 @@ public partial class MainWindow : Window
         }
         IsWindowInitialized = true;
         MainWindowViewModel.StartAnimation();
+
+        //test net users
+        //MockNetSetup();
     }
 
     private void OnCloseEvent(object? sender, WindowClosingEventArgs e)

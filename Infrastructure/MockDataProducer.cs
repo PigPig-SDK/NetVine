@@ -14,6 +14,8 @@ public class MockDataProducer : IProgramDataProducer
 
     public string[] RandomProcessNames = { "FrySource", "KetcHub", "Tar-Tar United", "KebabConnect"};
 
+    private const double RamGigCount = 16;
+
     public MockDataProducer()
     {
         Core.Debug.Log("Mock data producer is being used!");
@@ -38,7 +40,7 @@ public class MockDataProducer : IProgramDataProducer
                     CpuUsage = (float)(random.NextDouble() * 50),
                     DiskUsage = (float)(random.NextDouble() * 4080),
                     NetworkUsage = (float)(random.NextDouble() * 0.5f),
-                    MemoryUsage = (float)(random.NextDouble() * 25.0f),
+                    MemoryUsage = (float)(GetTotalRam() /3),
                 });
             else
                 result.Add(new ProgramData
@@ -49,7 +51,7 @@ public class MockDataProducer : IProgramDataProducer
                     CpuUsage = (float)(random.NextDouble()),
                     DiskUsage = (float)(random.NextDouble() * 20),
                     NetworkUsage = (float)(random.NextDouble() * 0.1f),
-                    MemoryUsage = (float)(random.NextDouble() * 10.0f),
+                    MemoryUsage = (float)(GetTotalRam()/7 + random.NextDouble()*50),
                 });
         }
 
@@ -65,7 +67,7 @@ public class MockDataProducer : IProgramDataProducer
     /// </summary>
     public double GetTotalRam()
     {
-        return 12000 * 1024;
+        return RamGigCount * 1024;
     }
 
     public (MemoryStream? image, IconFileType fileType) GetProcessIcon(string processName)

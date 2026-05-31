@@ -80,27 +80,28 @@ public static class UiSettings
                 SettingInt.AllowHostManipulation,
                 "network", "usage", "host", "manipulation", "close"),
         ]),
-        new SettingGroup ("Database Storage", [
+        new SettingGroup ("Collection", [
 
-            new SettingInputCheckbox("Track CPU usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackCPUUsage,
-                "cpu", "usage", "db", "database"),
+            ///UNUSED!!!
+            //new SettingInputCheckbox("Track CPU usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackCPUUsage,
+            //    "cpu", "usage", "db", "database"),
 
-            new SettingInputCheckbox("Track memory usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackMemoryUsage,
-                "ram", "usage", "db", "database"),
+            //new SettingInputCheckbox("Track memory usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackMemoryUsage,
+            //    "ram", "usage", "db", "database"),
 
-            new SettingInputCheckbox("Track network usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackNetworkUsage,
-                "network", "usage", "db", "database"),
+            //new SettingInputCheckbox("Track network usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackNetworkUsage,
+            //    "network", "usage", "db", "database"),
 
-            new SettingInputCheckbox("Track disk usage",
-                "Enables/Disables tracking for this resource",
-                SettingInt.TrackDiskUsage,
-                "disk", "usage", "db", "database"),
+            //new SettingInputCheckbox("Track disk usage",
+            //    "Enables/Disables tracking for this resource",
+            //    SettingInt.TrackDiskUsage,
+            //    "disk", "usage", "db", "database"),
 
             new SettingInputField<SettingFloat>("Database save interval",
                 "[In Seconds] How often the application will write to your database.",
@@ -134,6 +135,11 @@ public static class UiSettings
                 20,
                 0,
                 "graph", "chart", "process", "pie", "bar"),
+
+            new SettingInputCheckbox("Use 'Vivid' graph colors",
+                "Makes graph colors more aggressively contrasted",
+                SettingInt.UseVividGraphColors,
+                "graph", "chart", "process", "pie", "bar", "line"),
         ]),
         new SettingGroup("Notifications", [
 
@@ -221,6 +227,31 @@ public static class UiSettings
                 int.MaxValue,
                 0,
                 "notification", "network"),
+        ]),
+        new SettingGroup("API/Scripting", [
+
+            new SettingInputCheckbox("Enable Python Script runner",
+                "[Requires restart] Should the scripts folder be executed on netvine startup? Security warning, any python files in the scripting folder will be executed!",
+                SettingInt.UsePythonScripting,
+                "notification"),
+
+            new SettingInputField<SettingString>("POST Notification Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiNotification,
+                "api", "rest", "post"),
+
+            new SettingInputField<SettingString>("POST DB-Snapshot Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiDataBaseSnapshot,
+                "api", "rest", "post", "db"),
+
+            new SettingInputField<SettingString>("POST Snapshot Destination",
+                "A URL for Net-Vine to make REST requests to. If left empty, no request is made.",
+                StringInputMethod.StringInput,
+                SettingString.ApiSnapshot,
+                "api", "rest", "post"),
         ]),
     };
 

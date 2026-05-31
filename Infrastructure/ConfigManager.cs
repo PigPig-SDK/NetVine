@@ -67,7 +67,9 @@ public class ConfigManager
         {SettingInt.UseNetworkPassword, 0 },
         {SettingInt.DisableToastPopups, 0 },
         {SettingInt.UseNotifications, 0 },
-        {SettingInt.NotificationTimeMS, 10000}
+        {SettingInt.UsePythonScripting, 0 },
+        {SettingInt.NotificationTimeMS, 10000},
+        {SettingInt.UseVividGraphColors, 0 }
     };
 
 
@@ -85,7 +87,7 @@ public class ConfigManager
         {SettingFloat.NoteRamUsage, 0},
         {SettingFloat.NoteDiskUsage, 0},
         {SettingFloat.NoteNetworkUsage, 0},
-        {SettingFloat.NoteDBCapacity,0 }
+        {SettingFloat.NoteDBCapacity,0 },
     };
 
 
@@ -93,7 +95,10 @@ public class ConfigManager
     private static readonly Dictionary<SettingString, string> _DefaultStringValues = new()
     {
         { SettingString.HostIP, NetworkManager.DefaultHost},
-        { SettingString.HostPassword, "password123" }
+        { SettingString.HostPassword, "password123" },
+        { SettingString.ApiSnapshot, "" },
+        { SettingString.ApiDataBaseSnapshot, "" },
+        { SettingString.ApiNotification, "" },
     };
     
     

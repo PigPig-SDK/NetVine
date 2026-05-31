@@ -1,4 +1,6 @@
 ﻿
+using Core;
+
 namespace Infrastructure;
 
 public static class DBArithmetic
@@ -41,60 +43,46 @@ public static class DBArithmetic
     /// Find historical data of database processes. Grouped by Systems and Processes.
     /// </summary>
     /// <returns>Historical Data</returns>
-    public static List<ProgramDataHistorical> HistoricalDataProducer(DateTime? date1, DateTime? date2)
+    public static async Task<List<ProgramDataHistorical>> HistoricalDataProducer(DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
+        return await Task.Run(() =>
         {
-            if (!date1.HasValue && !date2.HasValue)
+            using (var db = new DBInteract())
             {
-                return db.PDHTable.ToList();
+                if (!date1.HasValue && !date2.HasValue)
+                {
+                    return db.PDHTable.Where(x => x.SystemName != ComboString).ToList();
+                }
+
+                return HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
+                        (!date1.HasValue || x.Date >= date1)
+                        && (!date2.HasValue || x.Date <= date2)))
+                    .ToList();
             }
-            
-            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x =>
-                    (!date1.HasValue || x.Date >= date1)
-                    && (!date2.HasValue || x.Date <= date2)))
-                .ToList();
-        }
+        });
     }
 
     /// <summary>
     /// Find historical data of database processes. Grouped by Processes, and combines passed in Systems.
     /// </summary>
     /// <returns>Historical Data</returns>
-    public static List<ProgramDataHistorical> HistoricalDataProducer(List<String> systemList, DateTime? date1, DateTime? date2)
+    public static async Task<List<ProgramDataHistorical>> HistoricalDataProducer(List<String> systemList, DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
+        return await Task.Run(() =>
         {
-            
-            if (!date1.HasValue && !date2.HasValue)
+            using (var db = new DBInteract())
             {
-                return db.PDHTable.Where(x => systemList.Contains(x.SystemName)).ToList()
-                    .GroupBy(x => x.ProcessName)
-                    .Select(y => new ProgramDataHistorical
-                    {
-                        SystemName = ComboString,
-                        ProcessName = y.Key,
-
-                        ValueCount = y.Sum(x => x.ValueCount),
-                        CpuUsageAvg = y.Sum(x => x.CpuUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
-                        DiskUsageAvg = y.Sum(x => x.DiskUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
-                        NetworkUsageAvg = y.Sum(x => x.NetworkUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
-                        MemoryUsageAvg = y.Sum(x => x.MemoryUsageAvg * x.ValueCount) / y.Sum(x => x.ValueCount),
-
-                        CpuUsagePeak = y.Max(x => x.CpuUsagePeak),
-                        DiskUsagePeak = y.Max(x => x.DiskUsagePeak),
-                        NetworkUsagePeak = y.Max(x => x.NetworkUsagePeak),
-                        MemoryUsagePeak = y.Max(x => x.MemoryUsagePeak),
-
-                        NetworkUsageTotal = y.Sum(x => x.NetworkUsageTotal)
-                    })
-                    .ToList();;
+                
+                if (!date1.HasValue && !date2.HasValue)
+                {
+                    return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
+                }
+                
+                return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
+                    && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
+                    .ToList();
             }
-            
-            return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
-                && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
-                .ToList();
-        }
+        });
     }
     
     /// <summary>
@@ -146,30 +134,71 @@ public static class DBArithmetic
         existingEntry.DiskUsagePeak = MathF.Max(existingEntry.DiskUsagePeak, newEntry.DiskUsage);
         existingEntry.NetworkUsagePeak = MathF.Max(existingEntry.NetworkUsagePeak, newEntry.NetworkUsage);
         existingEntry.MemoryUsagePeak = MathF.Max(existingEntry.MemoryUsagePeak, newEntry.MemoryUsage);
-
+        
         existingEntry.NetworkUsageTotal +=  newEntry.NetworkUsage;
         
     }
 
-    public static Dictionary<string, List<double>> LineGraphHistoricalProducer(DateTime? date1, DateTime? date2)
+    public static async Task<Dictionary<string, (List<DateTime> timeStamps, List<List<IProgramData>> data)>> BarGraphHistoricalProducer(DateTime? date1, DateTime? date2)
     {
-        using (var db = new DBInteract())
+        return await Task.Run(() =>
         {
-            
-            var capturedData = db.ProgramDataTable.Where(x =>
-                    (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value)).ToList();
-
-            var dict = new Dictionary<string, List<double>>
+            using (var db = new DBInteract())
             {
-                ["CPU"] = capturedData.Select(x => (double) x.CpuUsage).ToList(),
-                ["RAM"] = capturedData.Select(x => (double) x.MemoryUsage).ToList(),
-                ["DISK"] = capturedData.Select(x => (double) x.DiskUsage).ToList(),
-                ["NET"] = capturedData.Select(x => (double) x.NetworkUsage).ToList()
-            };
-            
-            return dict;
-        }
+                return db.ProgramDataTable
+                    .Where(x => (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value))
+                    .AsEnumerable()
+                    .GroupBy(x => x.SystemName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g =>
+                        {
+                            var byDate = g.GroupBy(x => x.Date)
+                                          .OrderBy(x => x.Key)
+                                          .ToList();
+                            return (
+                                timeStamps: byDate.Select(d => d.Key).ToList(),
+                                data: byDate.Select(d => d.Cast<IProgramData>().ToList()).ToList()
+                            );
+                        }
+                    );
+            }
+        });
     }
-    
-    
+
+    /// <returns> Username, List of programs resources in tuple</returns>
+    public static async Task<Dictionary<string, (List<DateTime>timeStamps, List<double> cpuUsage, List<double> ramUsage, List<double> diskUsage, List<double> netUsage)>>
+        PerUserTimeline(DateTime? date1, DateTime? date2)
+    {
+        return await Task.Run(() =>
+        {
+            using (var db = new DBInteract())
+            {
+                var capturedData = db.ProgramDataTable
+                    .Where(x => (!date1.HasValue || x.Date >= date1.Value) && (!date2.HasValue || x.Date <= date2.Value))
+                    .ToList();
+
+                return capturedData
+                    .GroupBy(x => x.SystemName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g =>
+                        {
+                            var byDate = g
+                                .GroupBy(x => x.Date)
+                                .OrderBy(x => x.Key)
+                                .ToList();
+
+                            return (
+                                timeStamps: byDate.Select(d => d.Key).ToList(),
+                                cpuUsage: byDate.Select(d => (double)d.Sum(x => x.CpuUsage)).ToList(),
+                                ramUsage: byDate.Select(d => (double)d.Sum(x => x.MemoryUsage)).ToList(),
+                                diskUsage: byDate.Select(d => (double)d.Sum(x => x.DiskUsage)).ToList(),
+                                netUsage: byDate.Select(d => (double)d.Sum(x => x.NetworkUsage)).ToList()
+                            );
+                        }
+                    );
+            }
+        });
+    } 
 }

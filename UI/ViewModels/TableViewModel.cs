@@ -13,6 +13,7 @@ using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UI.ViewModels.SearchFilter;
 using UI.Views;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -68,6 +69,7 @@ namespace UI.ViewModels
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
         public Action ClearSelection { get; set; } = () => { };
+        public bool IsCombinationView => CombinationModel.IsCombination && !LiveViewModel.IsLive;
         public string SearchText
         {
             get => _searchText;
@@ -149,8 +151,13 @@ namespace UI.ViewModels
             RefreshFilter();
         }
 
+
+
+
+
         private void CacheSelectedUserFolders()
         {
+            Core.Debug.Log("Caching selected user folders for filtering");
             _selectedUsersCache.Clear();
             _selectedUsersCache = [.. FolderViewData.SelectedUsers()];
             TableRowsView.Refresh();
@@ -158,17 +165,18 @@ namespace UI.ViewModels
 
         public void RefreshFilter()
         {
+            ClearSelection();
             TableRowsView.Refresh();
         }
 
 
-        private void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
+        private async void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
             if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
 
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-                DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-                DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
+                await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+                await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
 
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
@@ -333,13 +341,15 @@ namespace UI.ViewModels
                 OnSwitchToHistorical();
 
         }
-        
+
+
         private void ViewChangedCombination(bool isCombination)
         {
             Debug.Log($"ViewChangedCombination fired, isCombination={isCombination}");
             Debug.Log($"Printing Recieved Data to a file");
 
             OnSwitchToHistorical();
+            RefreshFilter();
 
         }
 
@@ -359,11 +369,11 @@ namespace UI.ViewModels
             });
         }
 
-        private void OnSwitchToHistorical()
+        private async void OnSwitchToHistorical()
         {
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
-            DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-            DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
+            await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
+            await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
             
             Dispatcher.UIThread.Post(() =>
             {
@@ -392,10 +402,16 @@ namespace UI.ViewModels
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
+                FolderViewData.OnSelectionUpdated += SelectionUpdated;
+                CombinationModel.ViewChangedEvent += ViewChangedCombination;
+                LiveViewModel.ViewChangedEvent += ViewChangedLive;
             }
             else
             {
                 _tableViewActive = false;
+
+                CombinationModel.ViewChangedEvent -= ViewChangedCombination;
+                LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 MainWindowViewModel.OnTabChanged -= UpdateTableTimeFrame;
                 LiveViewModel.ViewChangedEvent -= ViewChangedLive;
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
@@ -404,11 +420,19 @@ namespace UI.ViewModels
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved -= NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified -= OnConnectedUserModified;
+                FolderViewData.OnSelectionUpdated -= SelectionUpdated;
             }
+        }
+
+        private void SelectionUpdated()
+        {
+            ViewChangedLive(LiveViewModel.IsLive);
+            ViewChangedCombination(CombinationModel.IsCombination);
         }
 
         private void OnConnectedUserModified(string username, bool isAdded)
         {
+
             if (!isAdded)//Removal / disconnected user
             {
                 Dispatcher.UIThread.Post(() =>
@@ -418,6 +442,8 @@ namespace UI.ViewModels
                     TableRowsView.Refresh();
                 });
             }
+            OnSwitchToHistorical();
+            OnSwitchToLive();
         }
 
         private void ReapplySort()
@@ -437,7 +463,8 @@ namespace UI.ViewModels
         private bool FilterSelectedUsers(object obj)
         {
             if (obj is not TableRow row) return false;
-            return _selectedUsersCache.Contains(row.SystemName) || row.SystemName == DBArithmetic.ComboString;
+            return (_selectedUsersCache.Contains(row.SystemName) && !IsCombinationView)
+                || (row.SystemName == DBArithmetic.ComboString && IsCombinationView);
         }
 
         private bool FilterRow(object obj)
