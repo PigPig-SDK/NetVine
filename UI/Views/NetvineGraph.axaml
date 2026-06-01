@@ -58,19 +58,7 @@
                             <Label x:Name="KeyTopLeftName" IsHitTestVisible="False"></Label>
                         </StackPanel>
                 </Border>
-                <Grid HorizontalAlignment="Center" IsVisible="False" VerticalAlignment="Center" x:Name="LoadingBar">
-                    <Ellipse Width="128" Height="128" StrokeThickness="10"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center"
-                             StrokeDashArray="32,32" Stroke="White"
-                              Margin="5,0,5,0"
-                             x:Name="LoadingCircle"
-                             ToolTip.Tip="These things take time."
-                             Fill="#40000000"/>
-                    <Label VerticalAlignment="Center" 
-                    FontFamily="avares://NetVine/Assets#Bebas Neue" FontSize="25" 
-                    HorizontalAlignment="Center">Loading</Label>
-                </Grid>
+                <local:LoadingComponent x:Name="LoadingBar" IsVisible="False"/>
                 <Panel HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                        IsHitTestVisible="False"
                        IsVisible="False"

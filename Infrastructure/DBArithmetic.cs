@@ -72,14 +72,8 @@ public static class DBArithmetic
         {
             using (var db = new DBInteract())
             {
-                
-                if (!date1.HasValue && !date2.HasValue)
-                {
-                    return db.PDHTable.Where(x => x.SystemName == ComboString).ToList();
-                }
-                
-                return HistoricalQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName) 
-                    && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)),ComboString)
+                return CombinationQueryBuilder(db.ProgramDataTable.Where(x => systemList.Contains(x.SystemName)
+                    && (!date1.HasValue || x.Date >= date1) && (!date2.HasValue || x.Date <= date2)), ComboString)
                     .ToList();
             }
         });
@@ -116,7 +110,42 @@ public static class DBArithmetic
                 NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
             });
     }
-    
+
+
+    static IQueryable<ProgramDataHistorical> CombinationQueryBuilder(
+        IQueryable<ProgramData> inputQuery, String? combinationName = null)
+    {
+        return inputQuery
+        .Select(x => new
+        {
+            SystemName = combinationName ?? x.SystemName,
+            x.ProcessName,
+            x.Date,
+            x.CpuUsage,
+            x.DiskUsage,
+            x.NetworkUsage,
+            x.MemoryUsage
+        })
+        .GroupBy(x => new { x.SystemName, x.ProcessName })
+        .Select(y => new ProgramDataHistorical()
+        {
+            SystemName = y.Key.SystemName,
+            ProcessName = y.Key.ProcessName,
+            StartDate = y.Min(z => z.Date).Date,
+            EndDate = y.Max(z => z.Date).Date,
+            ValueCount = y.Count(),
+            CpuUsageAvg = y.Average(z => z.CpuUsage),
+            DiskUsageAvg = y.Average(z => z.DiskUsage),
+            NetworkUsageAvg = y.Average(z => z.NetworkUsage),
+            MemoryUsageAvg = y.Average(z => z.MemoryUsage),
+            CpuUsagePeak = y.Max(z => z.CpuUsage),
+            DiskUsagePeak = y.Max(z => z.DiskUsage),
+            NetworkUsagePeak = y.Max(z => z.NetworkUsage),
+            MemoryUsagePeak = y.Max(z => z.MemoryUsage),
+            NetworkUsageTotal = y.Sum(z => z.NetworkUsage)
+        });
+    }
+
     /// <summary>
     /// Builder Helper method for Historical Data Update
     /// </summary>
