@@ -39,8 +39,8 @@ public class SystemStartupBinder
 
         using var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", writable: true);
 
-        string exePath = Environment.ProcessPath ?? Assembly.GetExecutingAssembly().Location;
-        
+        string exePath = Environment.ProcessPath ?? System.AppContext.BaseDirectory;
+
         Debug.Log("Configuring startup settings for Windows. Executable path: " + exePath); 
 
         if (key is null)

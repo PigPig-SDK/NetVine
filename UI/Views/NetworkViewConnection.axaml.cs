@@ -29,6 +29,11 @@ public partial class NetworkViewConnection : UserControl
         }
     }
 
+    public NetworkViewConnection()
+    {
+        InitializeComponent();
+        _connection = new ConnectionInfo();
+    }
     public NetworkViewConnection(ConnectionInfo connection)
     {
         InitializeComponent();

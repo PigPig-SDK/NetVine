@@ -631,7 +631,7 @@ public partial class NetvineGraph : UserControl
 
         if (Application.Current is null) return;
         var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
-            
+        if (mainWindow is null) return;
         (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
             (mainWindow);
             

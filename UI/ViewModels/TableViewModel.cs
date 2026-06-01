@@ -134,7 +134,7 @@ namespace UI.ViewModels
         public IRelayCommand ToggleNetworkCommand { get; }
         public IRelayCommand OpenTimeframeCommand { get; }
 
-        public event Action<bool> OnLoadingUpdated;
+        public event Action<bool>? OnLoadingUpdated;
         public static Bitmap UnknownIcon
         { 
             get 
@@ -310,15 +310,14 @@ namespace UI.ViewModels
             var timeFrameWindow = new TimeFrameSelectionWindow();
 
             if (Application.Current is null) return;
-            var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
-            
+            var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+            if (mainWindow is null) return;
+
             (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
             (mainWindow);
             
             if (!dateRange.HasValue)
-            {
                 return;
-            }
             
             HistoricalStartTable = dateRange.Value.date1;
             HistoricalEndTable = dateRange.Value.date2;
@@ -330,8 +329,9 @@ namespace UI.ViewModels
 
         private void UpdateTableTimeFrame(int x)
         {
-            (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow
-                .FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartTable, HistoricalEndTable);
+            var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+            if(mainWindow is null) return;
+            mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartTable, HistoricalEndTable);
         }
 
         //initial population on startup
