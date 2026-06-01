@@ -13,10 +13,8 @@ using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UI.ViewModels.SearchFilter;
 using UI.Views;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UI.ViewModels
 {
@@ -50,9 +48,7 @@ namespace UI.ViewModels
         private bool _showMemory = true;
         private bool _showDisk = true;
         private bool _showNetwork = true;
-
         private bool _updatePaused = false;
-
         private DateTime? HistoricalStartTable = null;
         private DateTime? HistoricalEndTable = null;
 
@@ -159,11 +155,16 @@ namespace UI.ViewModels
             ToggleMemoryCommand = new RelayCommand(ToggleMemory);
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
             OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
+
+            PopulateTableInit();
+            PopulateTableInit();
             PopulateTableInit();
             FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
-            RefreshFilter();
-        }
+            TableData.ResetToHomeUser(SystemHistory.Instance.SystemName);
+            SearchText = "";
 
+
+        }
 
 
 
@@ -225,6 +226,7 @@ namespace UI.ViewModels
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateLiveData(new(data));
+
                 TableRowsView.Refresh();
                 ReapplySort();
             });
@@ -361,8 +363,11 @@ namespace UI.ViewModels
             Debug.Log($"ViewChangedCombination fired, isCombination={isCombination}");
             Debug.Log($"Printing Recieved Data to a file");
 
-            OnSwitchToHistorical();
-            RefreshFilter();
+            if (LiveViewModel.IsLive)
+                OnSwitchToLive();
+            else
+                OnSwitchToHistorical();
+
 
         }
 
@@ -417,8 +422,7 @@ namespace UI.ViewModels
                 NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
                 FolderViewData.OnSelectionUpdated += SelectionUpdated;
-                CombinationModel.ViewChangedEvent += ViewChangedCombination;
-                LiveViewModel.ViewChangedEvent += ViewChangedLive;
+
             }
             else
             {
@@ -477,8 +481,8 @@ namespace UI.ViewModels
         private bool FilterSelectedUsers(object obj)
         {
             if (obj is not TableRow row) return false;
-            return (_selectedUsersCache.Contains(row.SystemName) && !IsCombinationView)
-                || (row.SystemName == DBArithmetic.ComboString && IsCombinationView);
+            return ((_selectedUsersCache.Contains(row.SystemName) && !IsCombinationView)
+                || (row.SystemName == DBArithmetic.ComboString && IsCombinationView));
         }
 
         private bool FilterRow(object obj)
