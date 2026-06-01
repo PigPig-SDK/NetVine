@@ -30,49 +30,53 @@ namespace UI.ViewModels
             TableRows = new ObservableCollection<TableRow>();
         }
 
+        public void ResetToHomeUser(string username)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                var toRemove = TableRows.Where(r => r.SystemName != username).ToList();
+                ClearSelection();
+                for (int i = 0; i < toRemove.Count; i++) TableRows.Remove(toRemove[i]);
+            }, DispatcherPriority.Background);
+        }
+
         /// <summary>
         /// Contains the update logic, getting the list of up-to-date data for the live view
         /// </summary>
         /// <param name="data"></param> new data to take in
         public void UpdateLiveData(List<IProgramData> data)
         {
-            if(data.Count == 0) return;// No data.
-
-            string username = data.First().SystemName;
-
-            var existing = TableRows.Where(x=>x.SystemName == username).ToDictionary(r => (r.SystemName, r.AppName));
-            var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
-
-            // Update or add
-            foreach (var item in data)
+            Dispatcher.UIThread.Post(() =>
             {
-                var key = (item.SystemName, item.ProcessName);
-                if (existing.TryGetValue(key, out var row))
-                    row.LiveData = item;
-                else
-                    TableRows.Add(new TableRow { SystemName = item.SystemName, AppName = item.ProcessName, LiveData = item });
-            }
+                if (data.Count == 0) return;// No data.
 
-            // Remove stale rows -- I guess that this is needed in order to keep things sorted. If not we can figure out a fix like dummy rows or something
-            var toRemove = TableRows
-                            .Where(r => r.SystemName == username && !incoming.ContainsKey((r.SystemName, r.AppName)))
-                            .ToList();
+                string username = data.First().SystemName;
 
-            if (toRemove.Count > 0)
-            {
-                Dispatcher.UIThread.Post(() =>
+                var existing = TableRows.Where(x=>x.SystemName == username).ToDictionary(r => (r.SystemName, r.AppName));
+                var incoming = data.ToDictionary(d => (d.SystemName, d.ProcessName));
+
+                // Update or add
+                foreach (var item in data)
+                {
+                    var key = (item.SystemName, item.ProcessName);
+                    if (existing.TryGetValue(key, out var row))
+                        row.LiveData = item;
+                    else
+                        TableRows.Add(new TableRow { SystemName = item.SystemName, AppName = item.ProcessName, LiveData = item });
+                }
+
+                // Remove stale rows -- I guess that this is needed in order to keep things sorted. If not we can figure out a fix like dummy rows or something
+                var toRemove = TableRows
+                                .Where(r => r.SystemName == username && !incoming.ContainsKey((r.SystemName, r.AppName)))
+                                .ToList();
+
+                if (toRemove.Count > 0)
                 {
                     if (_isPaused()) return;
                     ClearSelection();
-
-                    for (int i = 0; i < toRemove.Count; i++)
-                    {
-                        var item = toRemove[i];
-                        TableRows.Remove(item);
-                    }
-
-                }, DispatcherPriority.Background);
-            }
+                    for (int i = 0; i < toRemove.Count; i++) TableRows.Remove(toRemove[i]);
+                }       
+            }, DispatcherPriority.Background);
         }
 
 
@@ -82,6 +86,7 @@ namespace UI.ViewModels
         /// <param name="data"></param>
         public void UpdateHistoricalData(List<ProgramDataHistorical> data)
         {
+            if (LiveViewModel.IsLive) return;
             Debug.Log($"UpdateHistoricalData called with {data.Count} items");
 
             //var existing = TableRows.ToDictionary(r => (r.SystemName, r.AppName));
