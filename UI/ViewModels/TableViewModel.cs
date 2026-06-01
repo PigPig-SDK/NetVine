@@ -70,6 +70,19 @@ namespace UI.ViewModels
         public DataGridCollectionView TableRowsView { get; set; }
         public Action ClearSelection { get; set; } = () => { };
         public bool IsCombinationView => CombinationModel.IsCombination && !LiveViewModel.IsLive;
+        private bool _isLoading;
+        public bool IsLoading { 
+            get {
+                return _isLoading;
+            }
+            set 
+            {
+                bool oldValue = _isLoading;
+                _isLoading = value;
+                if(oldValue != value)//Actual change.
+                    OnLoadingUpdated?.Invoke(value);
+            }
+        }
         public string SearchText
         {
             get => _searchText;
@@ -121,6 +134,7 @@ namespace UI.ViewModels
         public IRelayCommand ToggleNetworkCommand { get; }
         public IRelayCommand OpenTimeframeCommand { get; }
 
+        public event Action<bool> OnLoadingUpdated;
         public static Bitmap UnknownIcon
         { 
             get 
@@ -172,11 +186,11 @@ namespace UI.ViewModels
         private async void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
             if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-
+            IsLoading = true;
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
                 await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-                await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
-
+                await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);
+            IsLoading = false;
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data);
@@ -370,10 +384,11 @@ namespace UI.ViewModels
 
         private async void OnSwitchToHistorical()
         {
+            IsLoading = true;
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
             await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-            await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
-            
+            await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);
+            IsLoading = false;
             Dispatcher.UIThread.Post(() =>
             {
                 _tableData.ClearTable();

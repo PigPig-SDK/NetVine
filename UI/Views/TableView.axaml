@@ -1,9 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:UI"
              xmlns:vm="using:UI.ViewModels"
              x:Class="UI.TableView"
              x:DataType="vm:TableViewModel"> 
-        <Grid RowDefinitions="Auto, *">
+        <Grid>
+        <local:LoadingComponent x:Name="LoadingBar" IsVisible="False"/>
+        
+        <Grid RowDefinitions="Auto, *" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        
         <Border BorderBrush="Black" BorderThickness="1">
         <DataGrid Grid.Row="1"
                   x:Name="MyDataGrid"
@@ -278,5 +283,6 @@
             </DataGrid.Columns>
         </DataGrid>
         </Border>
+    </Grid>
     </Grid>
 </UserControl>
