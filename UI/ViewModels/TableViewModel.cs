@@ -66,7 +66,7 @@ namespace UI.ViewModels
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
         public Action ClearSelection { get; set; } = () => { };
-        public bool IsCombinationView => CombinationModel.IsCombination && !LiveViewModel.IsLive;
+        public bool IsCombinationView => CombinationModel.IsCombination;
         private bool _isLoading;
         public bool IsLoading { 
             get {
@@ -223,7 +223,8 @@ namespace UI.ViewModels
         private void NetworkSnapshot(ProgramData[] data)
         {
             if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-
+            ReceivedCombinationData = ReceivedCombinationData.Concat(data).ToArray();
+            
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateLiveData(new(data));
@@ -237,27 +238,28 @@ namespace UI.ViewModels
             {
                 if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
             
+                if (CombinationModel.IsCombination)
+                {
+                    data = data
+                        .Concat(ReceivedCombinationData)
+                        .Where(x => FolderViewData.SelectedUsers().Contains(x.SystemName))
+                        .GroupBy(x => x.ProcessName)
+                        .Select(y => (IProgramData) new ProgramData()
+                        {
+                            SystemName = DBArithmetic.ComboString,
+                            ProcessName = y.Key,
+                                
+                            CpuUsage = y.Average(x => x.CpuUsage),
+                            DiskUsage = y.Sum(x => x.DiskUsage),
+                            NetworkUsage = y.Sum(x => x.NetworkUsage),
+                            MemoryUsage = y.Sum(x => x.MemoryUsage),
+                        })
+                        .ToList();
+                    ReceivedCombinationData = Array.Empty<ProgramData>();
+                }
+                
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    if (CombinationModel.IsCombination)
-                    {
-                        data = data
-                            .Concat(ReceivedCombinationData)
-                            .Where(x => FolderViewData.SelectedUsers().Contains(x.SystemName))
-                            .GroupBy(x => x.ProcessName)
-                            .Select(y => (IProgramData) new ProgramData()
-                            {
-                                SystemName = "Combination",
-                                ProcessName = y.Key,
-                                
-                                CpuUsage = y.Average(x => x.CpuUsage),
-                                DiskUsage = y.Sum(x => x.DiskUsage),
-                                NetworkUsage = y.Sum(x => x.NetworkUsage),
-                                MemoryUsage = y.Sum(x => x.MemoryUsage),
-                            })
-                            .ToList();
-                        ReceivedCombinationData = Array.Empty<ProgramData>();
-                    }
                     _tableData.UpdateLiveData(data);
                     TableRowsView.Refresh();
                     ReapplySort();
@@ -438,7 +440,6 @@ namespace UI.ViewModels
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnProgramListAdded += OnSnapshotHistorical;
-                NetworkDataManager.Instance.OnLiveDataRecieved += UpdateCombination;
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
@@ -456,7 +457,6 @@ namespace UI.ViewModels
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
-                NetworkDataManager.Instance.OnLiveDataRecieved += UpdateCombination;
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved -= NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified -= OnConnectedUserModified;
@@ -512,14 +512,6 @@ namespace UI.ViewModels
             if (obj is not TableRow row) return false;
             return FilterSelectedUsers(row) && (TryParseSearchExpression(row) ||
                 row.AppName.Contains(SearchText));
-        }
-
-        private void UpdateCombination(ProgramData[] input)
-        {
-            if (LiveViewModel.IsLive)
-            {
-                ReceivedCombinationData = ReceivedCombinationData.Concat(input).ToArray();
-            }
         }
 
     }

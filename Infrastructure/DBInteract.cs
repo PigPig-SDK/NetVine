@@ -179,7 +179,7 @@ public class DBInteract : DbContext
     /// <summary>
     /// Wipes Database and resets it
     /// </summary>
-    public static void WipeDB()
+    public static async void WipeDB()
     {
         ClearAllProgramData();
         ClearAllProgramDataHistorical();
