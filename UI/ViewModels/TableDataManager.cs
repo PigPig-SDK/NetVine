@@ -46,8 +46,6 @@ namespace UI.ViewModels
         /// <param name="data"></param> new data to take in
         public void UpdateLiveData(List<IProgramData> data)
         {
-            Dispatcher.UIThread.Post(() =>
-            {
                 if (data.Count == 0) return;// No data.
 
                 string username = data.First().SystemName;
@@ -69,6 +67,8 @@ namespace UI.ViewModels
                 var toRemove = TableRows
                                 .Where(r => r.SystemName == username && !incoming.ContainsKey((r.SystemName, r.AppName)))
                                 .ToList();
+            Dispatcher.UIThread.Post(() =>
+            {
 
                 if (toRemove.Count > 0)
                 {
