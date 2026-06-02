@@ -42,6 +42,7 @@ namespace UI.ViewModels
         private bool _tableViewActive = false;
         private string _searchText = "";
         private HashSet<string> _selectedUsersCache = new();
+        private ProgramData [] ReceivedCombinationData { get; set; } = Array.Empty<ProgramData>();
 
 
         private bool _showCpu = true;
@@ -65,7 +66,7 @@ namespace UI.ViewModels
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
         public Action ClearSelection { get; set; } = () => { };
-        public bool IsCombinationView => CombinationModel.IsCombination && !LiveViewModel.IsLive;
+        public bool IsCombinationView => CombinationModel.IsCombination;
         private bool _isLoading;
         public bool IsLoading { 
             get {
@@ -222,7 +223,8 @@ namespace UI.ViewModels
         private void NetworkSnapshot(ProgramData[] data)
         {
             if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-
+            if(CombinationModel.IsCombination) ReceivedCombinationData = ReceivedCombinationData.Concat(data).ToArray();
+            
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateLiveData(new(data));
@@ -236,6 +238,26 @@ namespace UI.ViewModels
             {
                 if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
             
+                if (CombinationModel.IsCombination)
+                {
+                    data = data
+                        .Concat(ReceivedCombinationData)
+                        .Where(x => FolderViewData.SelectedUsers().Contains(x.SystemName))
+                        .GroupBy(x => x.ProcessName)
+                        .Select(y => (IProgramData) new ProgramData()
+                        {
+                            SystemName = DBArithmetic.ComboString,
+                            ProcessName = y.Key,
+                                
+                            CpuUsage = y.Average(x => x.CpuUsage),
+                            DiskUsage = y.Sum(x => x.DiskUsage),
+                            NetworkUsage = y.Sum(x => x.NetworkUsage),
+                            MemoryUsage = y.Sum(x => x.MemoryUsage),
+                        })
+                        .ToList();
+                    ReceivedCombinationData = Array.Empty<ProgramData>();
+                }
+                
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
                     _tableData.UpdateLiveData(data);
@@ -491,7 +513,6 @@ namespace UI.ViewModels
             return FilterSelectedUsers(row) && (TryParseSearchExpression(row) ||
                 row.AppName.Contains(SearchText));
         }
-
 
     }
 }
