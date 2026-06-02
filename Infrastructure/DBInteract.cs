@@ -151,10 +151,13 @@ public class DBInteract : DbContext
     /// </summary>
     public static void ClearAllProgramData()
     {
-        using (var db = new DBInteract())
+        lock (DBLock)
         {
-            db.ProgramDataTable.RemoveRange(db.ProgramDataTable.ToList());
-            db.SaveChanges();
+            using (var db = new DBInteract())
+            {
+                db.ProgramDataTable.RemoveRange(db.ProgramDataTable.ToList());
+                db.SaveChanges();
+            }
         }
     }
     
@@ -163,10 +166,13 @@ public class DBInteract : DbContext
     /// </summary>
     public static void ClearAllProgramDataHistorical()
     {
-        using (var db = new DBInteract())
+        lock (DBLock)
         {
-            db.PDHTable.RemoveRange(db.PDHTable.ToList());
-            db.SaveChanges();
+            using (var db = new DBInteract())
+            {
+                db.PDHTable.RemoveRange(db.PDHTable.ToList());
+                db.SaveChanges();
+            }   
         }
     }
     
