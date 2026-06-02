@@ -42,6 +42,7 @@ namespace UI.ViewModels
         private bool _tableViewActive = false;
         private string _searchText = "";
         private HashSet<string> _selectedUsersCache = new();
+        private ProgramData [] ReceivedCombinationData { get; set; } = Array.Empty<ProgramData>();
 
 
         private bool _showCpu = true;
@@ -238,6 +239,25 @@ namespace UI.ViewModels
             
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
+                    if (CombinationModel.IsCombination)
+                    {
+                        data = data
+                            .Concat(ReceivedCombinationData)
+                            .Where(x => FolderViewData.SelectedUsers().Contains(x.SystemName))
+                            .GroupBy(x => x.ProcessName)
+                            .Select(y => (IProgramData) new ProgramData()
+                            {
+                                SystemName = "Combination",
+                                ProcessName = y.Key,
+                                
+                                CpuUsage = y.Average(x => x.CpuUsage),
+                                DiskUsage = y.Sum(x => x.DiskUsage),
+                                NetworkUsage = y.Sum(x => x.NetworkUsage),
+                                MemoryUsage = y.Sum(x => x.MemoryUsage),
+                            })
+                            .ToList();
+                        ReceivedCombinationData = Array.Empty<ProgramData>();
+                    }
                     _tableData.UpdateLiveData(data);
                     TableRowsView.Refresh();
                     ReapplySort();
@@ -418,6 +438,7 @@ namespace UI.ViewModels
                 CombinationModel.ViewChangedEvent += ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken += OnSnapshotLive;
                 DBInteract.OnProgramListAdded += OnSnapshotHistorical;
+                NetworkDataManager.Instance.OnLiveDataRecieved += UpdateCombination;
                 MainWindowViewModel.OnSearchKeyStroke += OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
@@ -435,6 +456,7 @@ namespace UI.ViewModels
                 CombinationModel.ViewChangedEvent -= ViewChangedCombination;
                 SystemHistory.Instance.OnSnapshotTaken -= OnSnapshotLive;
                 DBInteract.OnProgramListAdded -= OnSnapshotHistorical;
+                NetworkDataManager.Instance.OnLiveDataRecieved += UpdateCombination;
                 MainWindowViewModel.OnSearchKeyStroke -= OnSearchKeyStroke;
                 NetworkDataManager.Instance.OnLiveDataRecieved -= NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified -= OnConnectedUserModified;
@@ -492,6 +514,13 @@ namespace UI.ViewModels
                 row.AppName.Contains(SearchText));
         }
 
+        private void UpdateCombination(ProgramData[] input)
+        {
+            if (LiveViewModel.IsLive)
+            {
+                ReceivedCombinationData = ReceivedCombinationData.Concat(input).ToArray();
+            }
+        }
 
     }
 }
