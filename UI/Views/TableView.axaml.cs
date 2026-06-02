@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using System;
 using System.Collections.Generic;
@@ -27,11 +28,18 @@ public partial class TableView : UserControl
         {
             vm.TableData.ClearSelection = () => MyDataGrid.SelectedItem = null;
             vm.ClearSelection = () => MyDataGrid.SelectedItem = null;
+            vm.OnLoadingUpdated += LoadingUpdated;
         }
         LiveViewModel.ViewChangedEvent += OnViewChanged;
         LiveViewModel.ViewChangedEvent += TimeFrameDisableOnLive;
+        
 
         MyDataGrid.LoadingRow += RecolorRows;
+    }
+
+    private void LoadingUpdated(bool isLoading)
+    {
+        Dispatcher.UIThread.Post(() => LoadingBar.IsVisible = isLoading);
     }
 
     private void SetupSearchTooltip()
@@ -71,21 +79,31 @@ public partial class TableView : UserControl
         };
     }
 
+    private void Animate(double time)
+    {
+        if(DataContext is TableViewModel vm && vm.IsLoading)
+        {
+            LoadingBar.Animate(time);
+        }
+    }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        base.OnAttachedToVisualTree(e);
         if (DataContext is TableViewModel vm)
         {
             vm.ToggleEvents(true);
         }
-        base.OnAttachedToVisualTree(e);
+        MainWindowViewModel.OnAnimateFrame += Animate;
         SetupSearchTooltip();
     }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (DataContext is TableViewModel vm)
         {
             vm.ToggleEvents(false);
         }
+        MainWindowViewModel.OnAnimateFrame -= Animate;
         base.OnDetachedFromVisualTree(e);
     }
 

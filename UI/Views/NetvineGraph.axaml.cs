@@ -98,6 +98,7 @@ public partial class NetvineGraph : UserControl
         FolderViewData.OnSelectionUpdated -= SelectionUpdated;
         MainWindowViewModel.OnAnimateFrame -= AnimationFrame;
         ResourceService.Instance.LoadingStatusChanged -= LoadingStatusChanged;
+        LoadingBar.IsVisible = false;//Hide on change screen.
         SetCombinationLock(false);
         base.OnDetachedFromVisualTree(e);
     }
@@ -112,7 +113,7 @@ public partial class NetvineGraph : UserControl
     {
         if (!_isLoading) return;//Only animate when loading to save resources.
 
-        LoadingCircle.StrokeDashOffset = (time * 8) + MathF.Sin((float)time*2)*10;
+        LoadingBar.Animate(time);
     }
     private void SelectionUpdated()
     {
@@ -630,7 +631,7 @@ public partial class NetvineGraph : UserControl
 
         if (Application.Current is null) return;
         var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
-            
+        if (mainWindow is null) return;
         (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
             (mainWindow);
             

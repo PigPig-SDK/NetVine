@@ -13,10 +13,8 @@ using Infrastructure.Networking.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UI.ViewModels.SearchFilter;
 using UI.Views;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UI.ViewModels
 {
@@ -44,15 +42,14 @@ namespace UI.ViewModels
         private bool _tableViewActive = false;
         private string _searchText = "";
         private HashSet<string> _selectedUsersCache = new();
+        private ProgramData [] ReceivedCombinationData { get; set; } = Array.Empty<ProgramData>();
 
 
         private bool _showCpu = true;
         private bool _showMemory = true;
         private bool _showDisk = true;
         private bool _showNetwork = true;
-
         private bool _updatePaused = false;
-
         private DateTime? HistoricalStartTable = null;
         private DateTime? HistoricalEndTable = null;
 
@@ -69,7 +66,20 @@ namespace UI.ViewModels
         public bool ShowHistorical => !LiveViewModel.IsLive;
         public DataGridCollectionView TableRowsView { get; set; }
         public Action ClearSelection { get; set; } = () => { };
-        public bool IsCombinationView => CombinationModel.IsCombination && !LiveViewModel.IsLive;
+        public bool IsCombinationView => CombinationModel.IsCombination;
+        private bool _isLoading;
+        public bool IsLoading { 
+            get {
+                return _isLoading;
+            }
+            set 
+            {
+                bool oldValue = _isLoading;
+                _isLoading = value;
+                if(oldValue != value)//Actual change.
+                    OnLoadingUpdated?.Invoke(value);
+            }
+        }
         public string SearchText
         {
             get => _searchText;
@@ -121,6 +131,7 @@ namespace UI.ViewModels
         public IRelayCommand ToggleNetworkCommand { get; }
         public IRelayCommand OpenTimeframeCommand { get; }
 
+        public event Action<bool>? OnLoadingUpdated;
         public static Bitmap UnknownIcon
         { 
             get 
@@ -145,12 +156,19 @@ namespace UI.ViewModels
             ToggleMemoryCommand = new RelayCommand(ToggleMemory);
             ToggleNetworkCommand = new RelayCommand(ToggleNetwork);
             OpenTimeframeCommand = new RelayCommand(OpenTableTimeframe);
+
+            PopulateTableInit();
+            PopulateTableInit();
             PopulateTableInit();
             FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
             DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             RefreshFilter();
         }
+            TableData.ResetToHomeUser(SystemHistory.Instance.SystemName);
+            SearchText = "";
 
+
+        }
 
 
 
@@ -173,11 +191,11 @@ namespace UI.ViewModels
         private async void OnSnapshotHistorical(List<ProgramData> programs, bool isDataLocal)
         {
             if (LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-
+            IsLoading = true;
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
                 await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-                await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable); 
-
+                await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);
+            IsLoading = false;
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateHistoricalData(data);
@@ -208,10 +226,12 @@ namespace UI.ViewModels
         private void NetworkSnapshot(ProgramData[] data)
         {
             if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-
+            if(CombinationModel.IsCombination) ReceivedCombinationData = ReceivedCombinationData.Concat(data).ToArray();
+            
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
                 _tableData.UpdateLiveData(new(data));
+
                 TableRowsView.Refresh();
                 ReapplySort();
             });
@@ -221,6 +241,26 @@ namespace UI.ViewModels
             {
                 if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
             
+                if (CombinationModel.IsCombination)
+                {
+                    data = data
+                        .Concat(ReceivedCombinationData)
+                        .Where(x => FolderViewData.SelectedUsers().Contains(x.SystemName))
+                        .GroupBy(x => x.ProcessName)
+                        .Select(y => (IProgramData) new ProgramData()
+                        {
+                            SystemName = DBArithmetic.ComboString,
+                            ProcessName = y.Key,
+                                
+                            CpuUsage = y.Average(x => x.CpuUsage),
+                            DiskUsage = y.Sum(x => x.DiskUsage),
+                            NetworkUsage = y.Sum(x => x.NetworkUsage),
+                            MemoryUsage = y.Sum(x => x.MemoryUsage),
+                        })
+                        .ToList();
+                    ReceivedCombinationData = Array.Empty<ProgramData>();
+                }
+                
                 Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
                     _tableData.UpdateLiveData(data);
@@ -297,15 +337,14 @@ namespace UI.ViewModels
             var timeFrameWindow = new TimeFrameSelectionWindow();
 
             if (Application.Current is null) return;
-            var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow;
-            
+            var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+            if (mainWindow is null) return;
+
             (DateTime? date1, DateTime? date2)? dateRange = await timeFrameWindow.ShowDialog<(DateTime?, DateTime?)?>
             (mainWindow);
             
             if (!dateRange.HasValue)
-            {
                 return;
-            }
             
             HistoricalStartTable = dateRange.Value.date1;
             HistoricalEndTable = dateRange.Value.date2;
@@ -317,8 +356,9 @@ namespace UI.ViewModels
 
         private void UpdateTableTimeFrame(int x)
         {
-            (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)!.MainWindow
-                .FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartTable, HistoricalEndTable);
+            var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+            if(mainWindow is null) return;
+            mainWindow.FindControl<FolderView>("FolderView")?.SetDateRange(HistoricalStartTable, HistoricalEndTable);
         }
 
         //initial population on startup
@@ -348,8 +388,11 @@ namespace UI.ViewModels
             Debug.Log($"ViewChangedCombination fired, isCombination={isCombination}");
             Debug.Log($"Printing Recieved Data to a file");
 
-            OnSwitchToHistorical();
-            RefreshFilter();
+            if (LiveViewModel.IsLive)
+                OnSwitchToLive();
+            else
+                OnSwitchToHistorical();
+
 
         }
 
@@ -371,10 +414,11 @@ namespace UI.ViewModels
 
         private async void OnSwitchToHistorical()
         {
+            IsLoading = true;
             var data = (CombinationModel.IsCombination && !LiveViewModel.IsLive) ?
             await DBArithmetic.HistoricalDataProducer(FolderViewData.SelectedUsers().ToList(), HistoricalStartTable, HistoricalEndTable) :    
-            await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);   
-            
+            await DBArithmetic.HistoricalDataProducer(HistoricalStartTable, HistoricalEndTable);
+            IsLoading = false;
             Dispatcher.UIThread.Post(() =>
             {
                 _tableData.ClearTable();
@@ -403,8 +447,7 @@ namespace UI.ViewModels
                 NetworkDataManager.Instance.OnLiveDataRecieved += NetworkSnapshot;
                 ConnectedUserInfo.OnUserConnectionModified += OnConnectedUserModified;
                 FolderViewData.OnSelectionUpdated += SelectionUpdated;
-                CombinationModel.ViewChangedEvent += ViewChangedCombination;
-                LiveViewModel.ViewChangedEvent += ViewChangedLive;
+
             }
             else
             {
@@ -463,8 +506,8 @@ namespace UI.ViewModels
         private bool FilterSelectedUsers(object obj)
         {
             if (obj is not TableRow row) return false;
-            return (_selectedUsersCache.Contains(row.SystemName) && !IsCombinationView)
-                || (row.SystemName == DBArithmetic.ComboString && IsCombinationView);
+            return ((_selectedUsersCache.Contains(row.SystemName) && !IsCombinationView)
+                || (row.SystemName == DBArithmetic.ComboString && IsCombinationView));
         }
 
         private bool FilterRow(object obj)
@@ -473,7 +516,6 @@ namespace UI.ViewModels
             return FilterSelectedUsers(row) && (TryParseSearchExpression(row) ||
                 row.AppName.Contains(SearchText));
         }
-
 
     }
 }
