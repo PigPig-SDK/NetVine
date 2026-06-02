@@ -223,7 +223,7 @@ namespace UI.ViewModels
         private void NetworkSnapshot(ProgramData[] data)
         {
             if (!LiveViewModel.IsLive || !_tableViewActive || _updatePaused) return;
-            ReceivedCombinationData = ReceivedCombinationData.Concat(data).ToArray();
+            if(CombinationModel.IsCombination) ReceivedCombinationData = ReceivedCombinationData.Concat(data).ToArray();
             
             Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
