@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Core;
 using Infrastructure;
+using Infrastructure.Networking;
 using Infrastructure.Notifications;
 using ScottPlot;
 using ScottPlot.Plottables;
@@ -608,9 +609,27 @@ public partial class NetvineGraph : UserControl
 
     private void SetLimits()
     {
+        var users = FolderViewData.SelectedUsersWithIndex().ToArray(); FolderViewData.SelectedUsersWithIndex().ToArray();
+        
         if (ChartService.Instance.SelectedResource == ResourceTypes.RAM)
         {
-            CanvasPlot.Plot.Axes.SetLimitsY(0, SystemHistory.Instance.GetTotalRam());
+            string device = FolderViewData.SelectedUsers().FirstOrDefault();
+
+            double maxRam;
+
+            if (device == SystemHistory.Instance.SystemName)
+            {
+                maxRam = SystemHistory.Instance.GetTotalRam();
+            }
+            else
+            {
+                maxRam = NetworkDataManager.Instance.GetRemoteTotalRam(device);
+
+                if (maxRam <= 0)
+                    maxRam = SystemHistory.Instance.GetTotalRam();
+            }
+
+            CanvasPlot.Plot.Axes.SetLimitsY(0 - GraphYMargin, maxRam + GraphYMargin);
         }
         else if (ChartService.Instance.SelectedResource == ResourceTypes.CPU)
         {

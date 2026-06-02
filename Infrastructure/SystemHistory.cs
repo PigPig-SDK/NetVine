@@ -190,6 +190,13 @@ public class SystemHistory : IDisposable
         if (_producer is null) return 0;
         return _producer.GetTotalRam();
     }
+    public double GetUsedRam()
+    {
+        if (_producer is WindowsDataProducer win)
+            return win.GetUsedRam();
+
+        return 0;
+    }
 
     public (MemoryStream? image, IconFileType fileType) GetIcon(string processName) => _producer.GetProcessIcon(processName);
 }

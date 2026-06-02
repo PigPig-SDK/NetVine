@@ -238,6 +238,24 @@ public class WindowsDataProducer : IProgramDataProducer
 
         _cpuDelta = freshCpuDelta;
         _diskDelta = freshDiskDelta;
+
+        double processRam =
+            programs.Values.Sum(x => x.MemoryUsage);
+
+        double actualRam =
+            GetUsedRam();
+
+        double scale =
+    processRam > 0
+        ? actualRam / processRam
+        : 1.0;
+
+        foreach (var p in programs.Values)
+        {
+            p.MemoryUsage =
+                (float)(p.MemoryUsage * scale);
+        }
+
         return programs.Values;
     }
 
@@ -258,6 +276,18 @@ public class WindowsDataProducer : IProgramDataProducer
         var status = new MemoryStatusEx { dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>() };
         GlobalMemoryStatusEx(ref status);
         return status.ullTotalPhys / (1024.0 * 1024.0);
+    }
+    public double GetUsedRam()
+    {
+        var status = new MemoryStatusEx
+        {
+            dwLength = (uint)Marshal.SizeOf<MemoryStatusEx>()
+        };
+
+        GlobalMemoryStatusEx(ref status);
+
+        return (status.ullTotalPhys - status.ullAvailPhys)
+               / (1024.0 * 1024.0);
     }
 
     public (MemoryStream? image, IconFileType fileType) GetProcessIcon(string processName)

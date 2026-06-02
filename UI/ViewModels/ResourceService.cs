@@ -29,6 +29,8 @@ namespace UI.ViewModels
         private Dictionary<string, (List<DateTime> timeStamps, List<double> cpuUsage, List<double> ramUsage, List<double> diskUsage, List<double> netUsage)> _historicalUsages = new();
         private Dictionary<string, (List<DateTime> timeStamps, List<List<IProgramData>> data)> _historicalProcessData = new();
 
+        private Dictionary<string, double> _deviceTotalRam = new();
+
         private int MaxHistory => ConfigManager.ReadSetting(SettingInt.MaxHistory) is int m && m > 0 ? m : 60;
 
         public event Action? DevicesChanged;

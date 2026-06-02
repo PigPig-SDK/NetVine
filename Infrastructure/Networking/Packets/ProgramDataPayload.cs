@@ -11,6 +11,11 @@ public class ProgramDataPayload : IPacketPayload
     public bool IsForDatabase { get; set; }
     [ProtoMember(2)]
     public ProgramData[] ProgramDataArray { get; set; } = [];
+    [ProtoMember(3)]
+    public double UsedRamMb { get; set; }
+
+    [ProtoMember(4)]
+    public double TotalRamMb { get; set; }
 
     public void Execute(bool isServer, Guid id)
     {
@@ -19,6 +24,12 @@ public class ProgramDataPayload : IPacketPayload
         if (IsForDatabase)
             DBInteract.Store(ProgramDataArray, false);
         else
-            NetworkDataManager.Instance.LiveDataRecieved(ProgramDataArray);
+            NetworkDataManager.Instance.StoreRemoteMetrics(
+                ProgramDataArray.FirstOrDefault()?.SystemName ?? "",
+                UsedRamMb,
+                TotalRamMb);
+
+        NetworkDataManager.Instance.LiveDataRecieved(ProgramDataArray);
     }
+
 }

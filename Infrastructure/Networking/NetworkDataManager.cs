@@ -10,6 +10,8 @@ public class NetworkDataManager
     public event Action<ProgramData[]>? OnLiveDataRecieved;
     public HashSet<Guid> LivePushHostSet = [];
     public bool IsHostExpectingLiveData = false;
+    private readonly Dictionary<string, double> _remoteUsedRam = new();
+    private readonly Dictionary<string, double> _remoteTotalRam = new();
     public static NetworkDataManager Instance {
         get
         {
@@ -49,7 +51,14 @@ public class NetworkDataManager
     {
         if(!isDataLocal) return;//Only submit our unique data.
 
-        ProgramDataPayload programdata = new() { IsForDatabase = true, ProgramDataArray = programs.ToArray() };
+        ProgramDataPayload programdata = new()
+        {
+            IsForDatabase = false,
+            ProgramDataArray = programs.ToArray(),
+
+            UsedRamMb = SystemHistory.Instance.GetUsedRam(),
+            TotalRamMb = SystemHistory.Instance.GetTotalRam()
+        };
         byte[] packetBytes = Packet.CreatePacket(programdata).ToBytes();
 
         NetworkManager.Instance.SendToAllHosts(packetBytes);
@@ -83,5 +92,31 @@ public class NetworkDataManager
         IsHostExpectingLiveData = shouldPush;
         var packetBytes = Packet.CreatePacket(new SetLiveViewPayload(shouldPush)).ToBytes();
         NetworkManager.Instance.Host?.Multicast(packetBytes);
+    }
+
+    public double GetRemoteUsedRam(string device)
+    {
+        return _remoteUsedRam.TryGetValue(device, out var value)
+            ? value
+            : 0;
+    }
+
+    public double GetRemoteTotalRam(string device)
+    {
+        return _remoteTotalRam.TryGetValue(device, out var value)
+            ? value
+            : 0;
+    }
+
+    public void StoreRemoteMetrics(
+    string device,
+    double usedRam,
+    double totalRam)
+    {
+        if (string.IsNullOrWhiteSpace(device))
+            return;
+
+        _remoteUsedRam[device] = usedRam;
+        _remoteTotalRam[device] = totalRam;
     }
 }
