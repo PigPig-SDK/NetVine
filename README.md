@@ -21,6 +21,7 @@ Born from the desire to easily profile applications over long periods of time, N
 - Monitor and manage programs on external machines
 - Visualize Line, Bar and Pie charts of live or historic data
 - Close programs on permitted external machines
+- Mock data with the ``-mock`` launch argument
 
 > The DB and Scripts folder can be found within `AppData\Roaming\NetVine` in case you want to fully utilize this application.
 
