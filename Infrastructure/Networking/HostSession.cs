@@ -13,9 +13,10 @@ public class HostSession : SslSession
 
     public bool IsPasswordAccepted = false;
     public string Username = string.Empty;
-
+    public string Ip => Socket.RemoteEndPoint?.ToString() ?? "Unknown";
 
     public static event Action<HostSession>? OnAuthorized;
+
 
     protected override void OnHandshaked()
     {
@@ -24,6 +25,7 @@ public class HostSession : SslSession
         //Possibly codesmell, but it prevents me from writing two different packets for basically the same action.
         SendAsync(Packet.CreatePacket(new UserInfoPayload(SystemHistory.Instance.SystemName,  "Disregard")).ToBytes());
         //Send(Packet.CreatePacket(new DateRequestPayload(DateTime.Now, DateTime.Now.AddSeconds(1))).ToBytes());
+        
     }
     protected override void OnDisconnected()
     {

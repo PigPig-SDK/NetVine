@@ -36,8 +36,8 @@ public partial class FolderUser : UserControl
     {
         InitializeComponent();
         UpdateVisual();
-        UsernameLabel.Content = user.Username;
         _user = user;
+        UsernameLabel.Content = user.Username;
     }
 
     private bool _isOnline = false;
@@ -50,6 +50,20 @@ public partial class FolderUser : UserControl
         set
         {
             _isOnline = value;
+            UpdateVisual();
+        }
+    }
+
+    private bool _isHost = false;
+    public bool IsHost
+    {
+        get
+        {
+            return _isHost;
+        }
+        set
+        {
+            _isHost = value;
             UpdateVisual();
         }
     }
@@ -69,6 +83,7 @@ public partial class FolderUser : UserControl
         OnlineCircle.Fill = IsOnline ? OnlineColor : OfflineColor;
         OnlineCircle.StrokeThickness = IsOnline ? 2 : 0;
         UsernameLabel.Foreground = IsSelected ? DarkText : LightText;
+        KingIcon.IsVisible = _isHost;
 
         ToolTip.SetTip(OnlineCircle, IsOnline ? "Online" : "Offline");
     }
@@ -82,7 +97,11 @@ public partial class FolderUser : UserControl
 
     private void CopyIP(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Debug.Log("TODO: Implement user -> IP sync");
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is not null)
+        {
+            clipboard.SetTextAsync(_user.IpAddress);
+        }
     }
 
     private void CopyUsername(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

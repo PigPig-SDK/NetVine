@@ -77,6 +77,7 @@ public partial class FolderView : UserControl
         ScrollView.Children.Add(folderUser);
         FolderViewData.UserMapping.Add(user.Username, folderUser);
         folderUser.IsOnline = user.IsOnline;
+        folderUser.IsHost = user.IsHost;
     }
 
     public void UpdateUsers()

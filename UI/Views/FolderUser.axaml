@@ -31,5 +31,11 @@
                 </Button>
             </Border>
         </Grid>
+        <Image Grid.Row="0" 
+        x:Name="KingIcon"
+        IsVisible="False"
+        Source="/Assets/manager.png" HorizontalAlignment="Left"
+        ToolTip.Tip="This user is hosting"
+        Margin="-2,-51, 0,0" Width="40" Height="36" RenderOptions.BitmapInterpolationMode="HighQuality"/>
     </Panel>
 </UserControl>
