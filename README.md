@@ -6,10 +6,10 @@
 Born from the desire to easily profile applications over long periods of time, NetVine is a networked process monitor used to track and manipulate running programs across multiple machines. Review per-process statistics both live and historically, get notifications about programs exceeding thresholds and write rest API scripts to create actions based on collected data.
 
 <div align="center">
-    <img src="./images/barChart.png" width="450">
+    <img src="./images/barChart.png" width="700">
 </div>
 <div align="center">
-    <img src="./images/table.png" width="450">
+    <img src="./images/table.png" width="700">
 </div>
 
 ## Details
