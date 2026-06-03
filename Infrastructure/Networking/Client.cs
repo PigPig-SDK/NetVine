@@ -58,7 +58,8 @@ public class Client : SslClient
 
     public void DisconnectShutdown()
     {
-        DisconnectAsync();
+        if(IsConnected)
+            DisconnectAsync();
         while (IsConnected)
             Thread.Yield();//This Yield shouldn't take that long.
     }
