@@ -14,7 +14,7 @@ namespace Infrastructure
     public class DbCatchup
     {
         private static DbCatchup? _instance = null;
-        public static DbCatchup? Instance
+        public static DbCatchup  Instance
         {
             get
             {
@@ -29,7 +29,7 @@ namespace Infrastructure
         }
 
         private ConcurrentDictionary<string, DateTime> _dateTimeLastDisonnected;
-        private const string _fileName = "CatchupFile.json";
+        private string FileName => MockDataProducer.IsBeingUsed()? "mockcatchupfile.json" : "catchupfile.json";
 
         private DbCatchup()
         {
@@ -42,7 +42,7 @@ namespace Infrastructure
 
         public static void OnShutdown()
         {
-            Instance!.HostDisconnects();
+            Instance.HostDisconnects();
         }
 
         public static void SetupInstance()
@@ -98,7 +98,7 @@ namespace Infrastructure
 
         private void LoadLastDisonnectedFromJsonFile()
         {
-            if (!JsonLoader.TryLoadFromFile<Dictionary<string, DateTime>>(out var cd, _fileName))
+            if (!JsonLoader.TryLoadFromFile<Dictionary<string, DateTime>>(out var cd, FileName))
             {
                 Core.Debug.Log("Json load Failed! Creating new save file: CatchupFile.json!");
                 _dateTimeLastDisonnected = new();
@@ -110,7 +110,7 @@ namespace Infrastructure
         private void SaveLastDisonnectedToJsonFile()
         {
             //JsonLoader.SaveToFile<NameDateMap>(_dateTimeLastDisonnected, _fileName);
-            if (!JsonLoader.TrySaveToFile<NameDateMap>(_dateTimeLastDisonnected, _fileName))
+            if (!JsonLoader.TrySaveToFile<NameDateMap>(_dateTimeLastDisonnected, FileName))
                 Core.Debug.Log("Json save Failed!");
         }
     }
