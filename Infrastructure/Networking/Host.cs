@@ -1,4 +1,5 @@
-﻿using NetCoreServer;
+﻿using Core;
+using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;
 
@@ -43,6 +44,7 @@ public class Host : SslServer
 
     protected override void OnError(SocketError error)
     {
+        Debug.Log($"Host error : {error}");
         base.OnError(error);
     }
 }
