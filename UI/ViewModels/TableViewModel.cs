@@ -163,11 +163,8 @@ namespace UI.ViewModels
             FolderViewData.OnSelectionUpdated += CacheSelectedUserFolders;
             DBInteract.OnProgramListAdded += OnSnapshotHistorical;
             RefreshFilter();
-        }
             TableData.ResetToHomeUser(SystemHistory.Instance.SystemName);
             SearchText = "";
-
-
         }
 
 
