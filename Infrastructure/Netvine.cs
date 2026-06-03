@@ -12,6 +12,9 @@ public static class Netvine
 
     public static void Startup()
     {
+
+        CrashHandler.Setup();
+
         // Load configuration
         ConfigManager.Initialize();
 

@@ -13,11 +13,15 @@ public static partial class Debug
     public static bool FileEnabled = false;
     public static bool Enabled = true;
 
+    private static List<string> _debugMessages = [];
+    public static IReadOnlyList<string> DebugMessages => _debugMessages;
+
     public static void Log(string message, string? fileName = null)
     {
         if (!Enabled) return;
         var elapsed = DateTime.Now - _startTime;
         var line = $"[{DateTime.Now:HH:mm:ss\\:ms}] [+{elapsed:hh\\:mm\\:ss\\:ms}] {message}";
+        _debugMessages.Add(line);
         if (ConsoleEnabled) Console.WriteLine(line);
         var file = fileName ?? _logFile;
         if (FileEnabled) System.IO.File.AppendAllText(file, line + Environment.NewLine);
