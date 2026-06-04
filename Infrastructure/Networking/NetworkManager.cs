@@ -255,7 +255,15 @@ public class NetworkManager
         }
         return null;
     }
-
+    public HostSession? GuidToHostSession(Guid id)
+    {
+        if (Host is null) return null!;
+        foreach (var session in Host.OurSessions.ToArray())
+        {
+            if (session.Id == id) return session as HostSession;
+        }
+        return null;
+    }
     public bool IsOnline(ConnectionInfo connectionInfo)
     {
         foreach (Client info in EstablishedClientConnections.Values)

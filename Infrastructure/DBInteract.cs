@@ -350,6 +350,13 @@ public class DBInteract : DbContext
         {
             if (!EntryExists(user, this))
                 UserTable.Add(user);
+            else//Update instead.
+            {
+                var foundUser = UserTable.Find(user.Username);
+                if (foundUser is null) return;//Do nothing.
+                foundUser.IpAddress = user.IpAddress;
+                foundUser.IsHost = user.IsHost;
+            }
         }
     }
 
@@ -359,10 +366,9 @@ public class DBInteract : DbContext
         {
             //Submit our local machine as a user.
             db.Database.EnsureCreated();
-            User localUser = new User(SystemHistory.Instance.SystemName);
+            User localUser = new User(SystemHistory.Instance.SystemName, false, "localhost");
             db.AddUser(localUser);
             db.SaveChanges();
-            
         }
     }
 
