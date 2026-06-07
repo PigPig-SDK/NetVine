@@ -26,8 +26,7 @@ Born from the desire to easily profile applications over long periods of time, N
 > The DB and Scripts folder can be found within `AppData\Roaming\NetVine` in case you want to fully utilize this application.
 
 
-## Download
-
+## Releases
 Currently only runs on windows.
 
-[TODO: Put executable download link here]
+[Releases Page](https://github.com/PigPig-SDK/NetVine/releases)
