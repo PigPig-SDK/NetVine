@@ -1,9 +1,6 @@
 ﻿using Infrastructure;
-using Infrastructure.Notifications;
 using System.Diagnostics;
-using System.Drawing;
-using System.Security.Cryptography.X509Certificates;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Timers;
 
 namespace Core;
 
@@ -15,7 +12,7 @@ public class SystemHistory : IDisposable
     private SystemTracker _tracker;
     private IProgramDataProducer _producer;
     private TimeSpan _snapshotInterval;
-    private Timer _timer;
+    private System.Threading.Timer _timer;
     private readonly Lock _timerLock = new Lock();
     private Stopwatch _stopwatch;
 
@@ -29,14 +26,13 @@ public class SystemHistory : IDisposable
 
     public string SystemName { get { return _producer.SystemName; } }
 
-    public SystemHistory(IProgramDataProducer producer, TimeSpan? snapshotInterval = null)
+    public SystemHistory(IProgramDataProducer producer, TimeSpan? snapshotInterval = null, bool startStopwatch = true)
     {
         _producer = producer;
         _tracker = new SystemTracker(producer);
         _snapshotInterval = snapshotInterval ?? TimeSpan.FromSeconds(ConfigManager.ReadSetting(SettingFloat.TickRate));
-        _stopwatch = Stopwatch.StartNew();
-        _timer = new Timer(TakeSnapshot, null, _snapshotInterval, Timeout.InfiniteTimeSpan);
-        
+        _stopwatch = startStopwatch ? Stopwatch.StartNew() : new Stopwatch();
+        _timer = new(TakeSnapshot, null, _snapshotInterval, Timeout.InfiniteTimeSpan);
         ConfigManager.OnSettingChanged += OnSettingChanged;
     }
 

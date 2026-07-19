@@ -12,6 +12,8 @@ namespace Infrastructure;
 
 public class ConfigManager
 {
+    private const string TestingEnvVar = "DOTNET_ENVIRONMENT";
+    private const string TestingEnvValue = "Testing";
 
     private static ConfigManager? _Instance;
 
@@ -41,8 +43,11 @@ public class ConfigManager
             var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NetVine");
             Directory.CreateDirectory(folder);
 
+            bool isTesting = Environment.GetEnvironmentVariable(TestingEnvVar) == TestingEnvValue;
             bool isMockSetup = Environment.GetCommandLineArgs().Contains(MockDataProducer.LaunchArgument);
-            return Path.Combine(folder,isMockSetup ? "mockconfig.yaml" :"config.yaml");
+
+            var fileName = isTesting ? "testconfig.yaml" : isMockSetup ? "mockconfig.yaml" : "config.yaml";
+            return Path.Combine(folder, fileName);
         }
     }
     /// <summary>Dictionary containing default integer setting values.</summary>

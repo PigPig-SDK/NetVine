@@ -2,7 +2,7 @@
 using ProtoBuf;
 
 [ProtoContract]
-public class ProgramData : IProgramData
+public record class ProgramData : IProgramData
 {
     [ProtoMember(1)]
     public string SystemName { get; set; } = string.Empty;

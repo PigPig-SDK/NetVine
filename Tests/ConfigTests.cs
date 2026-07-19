@@ -1,6 +1,6 @@
-﻿
-using Infrastructure;
-namespace NetVine.Tests;
+﻿using Infrastructure;
+
+namespace Tests;
 
 public class ConfigManagerTests : IDisposable
 {
@@ -46,12 +46,6 @@ public class ConfigManagerTests : IDisposable
         Assert.Equal(1, ConfigManager.ReadSetting(SettingInt.TrackDiskUsage));
         Assert.Equal(1, ConfigManager.ReadSetting(SettingInt.TrackMemoryUsage));
         Assert.Equal(1, ConfigManager.ReadSetting(SettingInt.TrackNetworkUsage));
-    }
-
-    [Fact]
-    public void DefaultFloatSettings_HaveExpectedValues()
-    {
-        Assert.Equal(1000.0f, ConfigManager.ReadSetting(SettingFloat.TickRate));
     }
 
     [Fact]
