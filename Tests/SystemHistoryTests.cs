@@ -139,4 +139,18 @@ public class SystemHistoryTests
         //Assert
         Assert.Equal(0, totalDBCalls);
     }
+    [Fact]
+    public void OnSnapshotTaken_OnceIncrement_EventFired()
+    {
+        //Assign
+        ConfigManager.WriteSetting(SettingFloat.DatabaseSaveInterval, 2);
+        int calls = 0;
+        List<IProgramData> output = [];
+        SystemHistory.OnSnapshotTaken += (List<IProgramData> data) => { calls++; output = data; };
+        //Act
+        IncrementPoll();
+        //Assert
+        Assert.Equal(1, calls);
+        Assert.Equal(output, TestingProgramData());
+    }
 }
